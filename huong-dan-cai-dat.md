@@ -3,7 +3,7 @@
 ## Tạo Project
 
 ```bash
-npm create vite@latest
+npm create vite@latest . 
 ```
 
 ## Cài thư viện
