@@ -1,9 +1,13 @@
+import React from "react";
+import LoginPage from "./pages/auth/LoginPage"; // Lệnh kéo trang Đăng nhập 
+
 function App() {
   return (
-    <div className="text-5xl font-bold text-blue-500">
-      Frontend Web Account Laptop
-    </div>
-  )
+    <>
+      {/* Gọi trang Đăng nhập hiển thị lên màn hình chính */}
+      <LoginPage />
+    </>
+  );
 }
 
-export default App
+export default App;
