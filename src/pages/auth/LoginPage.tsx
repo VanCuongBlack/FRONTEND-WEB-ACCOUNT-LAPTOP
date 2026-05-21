@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 
-// 1. Luật validate Form bằng Zod gốc của dự án
+// Kiểm tra người dùng có để trống hay nhập sai không
 const loginSchema = z.object({
   username: z.string().min(1, { message: "Tài khoản không được để trống" }),
   password: z.string().min(6, { message: "Mật khẩu phải từ 6 ký tự trở lên" }),
@@ -111,7 +111,7 @@ export default function LoginPage() {
             <p className="text-[20px] font-normal text-black/60">Hoặc đăng nhập bằng</p>
             
             <div className="flex gap-6 justify-center items-center">
-              {/* Ô tròn 1: Google */}
+              {/* Ô Google */}
               <button
                 type="button"
                 className="w-[60px] h-[60px] rounded-full border border-black/20 flex items-center justify-center hover:bg-gray-50 active:scale-95 transition-all shadow-sm cursor-pointer"
@@ -137,7 +137,7 @@ export default function LoginPage() {
                 </svg>
               </button>
 
-              {/* Ô tròn 2: Facebook */}
+              {/* Ô Facebook */}
               <button
                 type="button"
                 className="w-[60px] h-[60px] rounded-full border border-black/20 flex items-center justify-center hover:bg-gray-50 active:scale-95 transition-all shadow-sm cursor-pointer"
