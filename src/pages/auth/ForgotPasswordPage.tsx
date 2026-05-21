@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { ChevronLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { forgotPassword } from "@/services/auth.service";
 
 const forgotPasswordSchema = z.object({
   emailOrPhone: z
@@ -26,6 +28,7 @@ type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;
 
 export default function ForgotPasswordPage() {
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
 
   const {
     register,
@@ -38,7 +41,7 @@ export default function ForgotPasswordPage() {
     },
   });
 
-  const onSubmit = (values: ForgotPasswordFormValues) => {
+  const onSubmit = async (values: ForgotPasswordFormValues) => {
     const result = forgotPasswordSchema.safeParse(values);
 
     if (!result.success) {
@@ -49,8 +52,21 @@ export default function ForgotPasswordPage() {
       return;
     }
 
-    console.log("Dữ liệu quên mật khẩu:", values);
-    navigate("/reset-password");
+    try {
+      setIsLoading(true);
+
+      await forgotPassword({
+        emailOrPhone: values.emailOrPhone,
+      });
+
+      navigate("/reset-password");
+    } catch {
+      setError("emailOrPhone", {
+        message: "Không thể gửi yêu cầu đặt lại mật khẩu",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -96,9 +112,10 @@ export default function ForgotPasswordPage() {
 
           <button
             type="submit"
-            className="w-[704px] h-[57px] rounded-[84px] bg-[#3783EC]/58 hover:bg-[#3783EC]/83 active:bg-[#3783EC]/83 text-black text-[20px] font-normal transition-all cursor-pointer"
+            disabled={isLoading}
+            className="w-[704px] h-[57px] rounded-[84px] bg-[#3783EC]/58 hover:bg-[#3783EC]/83 active:bg-[#3783EC]/83 disabled:opacity-60 disabled:cursor-not-allowed text-black text-[20px] font-normal transition-all cursor-pointer"
           >
-            Tiếp tục
+            {isLoading ? "Đang xử lý..." : "Tiếp tục"}
           </button>
         </form>
       </div>
