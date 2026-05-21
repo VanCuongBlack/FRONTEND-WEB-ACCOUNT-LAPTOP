@@ -1,9 +1,11 @@
-function App() {
+import { Toaster } from 'sonner'
+import AppRouter from '@/routes'
+
+export default function App() {
   return (
-    <div className="text-5xl font-bold text-blue-500">
-      Frontend Web Account Laptop
-    </div>
+    <>
+      <AppRouter />
+      <Toaster position="top-right" richColors closeButton />
+    </>
   )
 }
-
-export default App
