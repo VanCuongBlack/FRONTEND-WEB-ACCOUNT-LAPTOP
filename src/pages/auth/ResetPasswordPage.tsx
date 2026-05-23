@@ -1,29 +1,39 @@
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { ChevronLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { resetPassword } from "@/services/auth.service";
 
-const resetPasswordSchema = z.object({
-  verificationCode: z
-    .string()
-    .min(1, {
-      message: "Mã xác nhận không được để trống",
-    })
-    .regex(/^[0-9]{4,6}$/, {
-      message: "Mã xác nhận phải gồm 4 đến 6 chữ số",
-    }),
+const resetPasswordSchema = z
+  .object({
+    verificationCode: z
+      .string()
+      .min(1, {
+        message: "Mã xác nhận không được để trống",
+      })
+      .regex(/^[0-9]{4,6}$/, {
+        message: "Mã xác nhận phải gồm 4 đến 6 chữ số",
+      }),
 
-  newPassword: z
-    .string()
-    .min(6, {
+    newPassword: z.string().min(6, {
       message: "Mật khẩu phải từ 6 ký tự trở lên",
     }),
-});
+
+    confirmPassword: z.string().min(1, {
+      message: "Vui lòng xác nhận mật khẩu",
+    }),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Mật khẩu xác nhận không khớp",
+    path: ["confirmPassword"],
+  });
 
 type ResetPasswordFormValues = z.infer<typeof resetPasswordSchema>;
 
 export default function ResetPasswordPage() {
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
 
   const {
     register,
@@ -34,10 +44,11 @@ export default function ResetPasswordPage() {
     defaultValues: {
       verificationCode: "",
       newPassword: "",
+      confirmPassword: "",
     },
   });
 
-  const onSubmit = (values: ResetPasswordFormValues) => {
+  const onSubmit = async (values: ResetPasswordFormValues) => {
     const result = resetPasswordSchema.safeParse(values);
 
     if (!result.success) {
@@ -48,13 +59,27 @@ export default function ResetPasswordPage() {
       return;
     }
 
-    console.log("Dữ liệu tạo mật khẩu mới:", values);
-    navigate("/login");
+    try {
+      setIsLoading(true);
+
+      await resetPassword({
+        verificationCode: values.verificationCode,
+        newPassword: values.newPassword,
+      });
+
+      navigate("/login");
+    } catch {
+      setError("verificationCode", {
+        message: "Mã xác nhận không đúng hoặc đã hết hạn",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div className="w-full max-w-[1440px] min-h-screen mx-auto bg-white font-['Inter',_sans-serif]">
-      <div className="pt-[90px] pl-[75px]">
+    <div className="w-full min-h-screen mx-auto bg-white font-['Inter',_sans-serif] px-4 py-10 sm:px-6">
+      <div className="w-full max-w-[900px] mx-auto pt-[40px] sm:pt-[90px]">
         <button
           type="button"
           onClick={() => navigate("/forgot-password")}
@@ -66,10 +91,10 @@ export default function ResetPasswordPage() {
 
         <form
           onSubmit={handleSubmit(onSubmit)}
-          className="mt-[27px] ml-[189px] flex flex-col gap-[47px]"
+          className="w-full max-w-[722px] mx-auto mt-[35px] sm:mt-[45px] flex flex-col gap-[32px] sm:gap-[47px]"
         >
           <div className="flex flex-col gap-3">
-            <label className="text-[20px] font-normal text-black">
+            <label className="text-[16px] sm:text-[20px] font-normal text-black">
               Nhập mã xác nhận
             </label>
 
@@ -79,7 +104,7 @@ export default function ResetPasswordPage() {
               maxLength={6}
               placeholder="Mã xác nhận"
               {...register("verificationCode")}
-              className="w-[722px] h-[82px] rounded-[29px] bg-transparent border border-black/34 px-5 text-[20px] text-black placeholder-[#ADA2A2] placeholder-opacity-100 focus:outline-none focus:border-[#3783EC] transition-all"
+              className="w-full h-[64px] sm:h-[82px] rounded-[29px] bg-transparent border border-black/34 px-5 text-[16px] sm:text-[20px] text-black placeholder-[#ADA2A2] placeholder-opacity-100 focus:outline-none focus:border-[#3783EC] transition-all"
             />
 
             {errors.verificationCode && (
@@ -90,7 +115,7 @@ export default function ResetPasswordPage() {
           </div>
 
           <div className="flex flex-col gap-3">
-            <label className="text-[20px] font-normal text-black">
+            <label className="text-[16px] sm:text-[20px] font-normal text-black">
               Tạo mật khẩu mới
             </label>
 
@@ -98,7 +123,7 @@ export default function ResetPasswordPage() {
               type="password"
               placeholder="Mật khẩu mới"
               {...register("newPassword")}
-              className="w-[722px] h-[82px] rounded-[29px] bg-transparent border border-black/34 px-5 text-[20px] text-black placeholder-[#ADA2A2] placeholder-opacity-100 focus:outline-none focus:border-[#3783EC] transition-all"
+              className="w-full h-[64px] sm:h-[82px] rounded-[29px] bg-transparent border border-black/34 px-5 text-[16px] sm:text-[20px] text-black placeholder-[#ADA2A2] placeholder-opacity-100 focus:outline-none focus:border-[#3783EC] transition-all"
             />
 
             {errors.newPassword && (
@@ -108,11 +133,31 @@ export default function ResetPasswordPage() {
             )}
           </div>
 
+          <div className="flex flex-col gap-3">
+            <label className="text-[16px] sm:text-[20px] font-normal text-black">
+              Xác nhận mật khẩu mới
+            </label>
+
+            <input
+              type="password"
+              placeholder="Nhập lại mật khẩu mới"
+              {...register("confirmPassword")}
+              className="w-full h-[64px] sm:h-[82px] rounded-[29px] bg-transparent border border-black/34 px-5 text-[16px] sm:text-[20px] text-black placeholder-[#ADA2A2] placeholder-opacity-100 focus:outline-none focus:border-[#3783EC] transition-all"
+            />
+
+            {errors.confirmPassword && (
+              <span className="text-red-500 text-sm">
+                {errors.confirmPassword.message}
+              </span>
+            )}
+          </div>
+
           <button
             type="submit"
-            className="w-[704px] h-[57px] rounded-[84px] bg-[#3783EC]/58 hover:bg-[#3783EC]/83 active:bg-[#3783EC]/83 text-black text-[20px] font-normal transition-all cursor-pointer"
+            disabled={isLoading}
+            className="w-full h-[52px] sm:h-[57px] rounded-[84px] bg-[#3783EC]/58 hover:bg-[#3783EC]/83 active:bg-[#3783EC]/83 disabled:opacity-60 disabled:cursor-not-allowed text-black text-[16px] sm:text-[20px] font-normal transition-all cursor-pointer"
           >
-            Lưu thay đổi
+            {isLoading ? "Đang lưu..." : "Lưu thay đổi"}
           </button>
         </form>
       </div>

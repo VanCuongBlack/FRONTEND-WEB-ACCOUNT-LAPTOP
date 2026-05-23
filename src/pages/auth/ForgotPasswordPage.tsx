@@ -70,9 +70,9 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="w-full max-w-[1440px] min-h-screen mx-auto bg-white font-['Inter',_sans-serif]">
-      <div className="pt-[90px] pl-[35px]">
-        <div className="flex items-center gap-[40px]">
+    <div className="w-full min-h-screen mx-auto bg-white font-['Inter',_sans-serif] px-4 py-10 sm:px-6">
+      <div className="w-full max-w-[900px] mx-auto pt-[40px] sm:pt-[90px]">
+        <div className="flex items-center gap-4 sm:gap-[40px]">
           <button
             type="button"
             onClick={() => navigate("/login")}
@@ -82,17 +82,17 @@ export default function ForgotPasswordPage() {
             <ChevronLeft size={24} strokeWidth={2} />
           </button>
 
-          <h1 className="text-[36px] font-bold text-black">
+          <h1 className="text-[28px] sm:text-[36px] font-bold text-black">
             Đặt lại mật khẩu
           </h1>
         </div>
 
         <form
           onSubmit={handleSubmit(onSubmit)}
-          className="mt-[75px] ml-[243px] flex flex-col gap-[47px]"
+          className="w-full max-w-[722px] mx-auto mt-[45px] sm:mt-[75px] flex flex-col gap-[32px] sm:gap-[47px]"
         >
-          <div className="flex flex-col gap-3">
-            <label className="text-[20px] font-normal text-black">
+          <div className="w-full flex flex-col gap-3">
+            <label className="text-[16px] sm:text-[20px] font-normal text-black">
               Email hoặc số điện thoại
             </label>
 
@@ -100,7 +100,7 @@ export default function ForgotPasswordPage() {
               type="text"
               placeholder="Email hoặc số điện thoại"
               {...register("emailOrPhone")}
-              className="w-[722px] h-[82px] rounded-[29px] bg-transparent border border-black/34 px-5 text-[20px] text-black placeholder-[#ADA2A2] placeholder-opacity-100 focus:outline-none focus:border-[#3783EC] transition-all"
+              className="w-full h-[64px] sm:h-[82px] rounded-[29px] bg-transparent border border-black/34 px-5 text-[16px] sm:text-[20px] text-black placeholder-[#ADA2A2] placeholder-opacity-100 focus:outline-none focus:border-[#3783EC] transition-all"
             />
 
             {errors.emailOrPhone && (
@@ -113,7 +113,7 @@ export default function ForgotPasswordPage() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-[704px] h-[57px] rounded-[84px] bg-[#3783EC]/58 hover:bg-[#3783EC]/83 active:bg-[#3783EC]/83 disabled:opacity-60 disabled:cursor-not-allowed text-black text-[20px] font-normal transition-all cursor-pointer"
+            className="w-full h-[52px] sm:h-[57px] rounded-[84px] bg-[#3783EC]/58 hover:bg-[#3783EC]/83 active:bg-[#3783EC]/83 disabled:opacity-60 disabled:cursor-not-allowed text-black text-[16px] sm:text-[20px] font-normal transition-all cursor-pointer"
           >
             {isLoading ? "Đang xử lý..." : "Tiếp tục"}
           </button>
