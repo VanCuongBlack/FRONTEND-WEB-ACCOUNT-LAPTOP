@@ -350,22 +350,7 @@ export default function BestSellerPage() {
         desktopCartRef={desktopCartRef}
         cartIconClassName={isCartBumping ? "cart-bump" : ""}
       />
-      <div className="w-full max-w-[1200px] mx-auto px-4 pt-4 flex justify-end">
-        <button
-          onClick={() => {
-            localStorage.removeItem("accessToken");
-            localStorage.removeItem("user");
-
-            alert("Đăng xuất thành công");
-
-            window.location.href = "/login";
-          }}
-          className="h-[42px] rounded-xl border border-red-500 px-5 text-sm font-semibold text-red-500 transition-all hover:bg-red-500 hover:text-white"
-        >
-          Đăng xuất
-        </button>
-      </div>
-
+      
       {/* BODY */}
       <main className="w-full max-w-[1200px] mx-auto px-4 py-6 flex-1">
 
