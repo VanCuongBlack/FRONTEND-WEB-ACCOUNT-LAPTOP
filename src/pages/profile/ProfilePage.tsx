@@ -1,6 +1,6 @@
 import React from "react";
-import Header from "../../layout/Header";
-import Footer from "../../layout/Footer";
+import Header from "../../components/layout/Header";
+import Footer from "../../components/layout/Footer";
 
 export default function ProfilePage() {
   const supportRequests = [
@@ -47,6 +47,25 @@ export default function ProfilePage() {
               <button className="mt-4 h-[40px] px-5 rounded-lg border border-[#3783EC] text-[#3783EC] hover:bg-[#3783EC] hover:text-white transition-all text-[14px] font-medium">
                 Sửa hồ sơ
               </button>
+              <div className="mt-4 flex flex-wrap gap-3">
+              <button className="h-[40px] px-5 rounded-lg border border-[#3783EC] text-[#3783EC] hover:bg-[#3783EC] hover:text-white transition-all text-[14px] font-medium">
+                Sửa hồ sơ
+              </button>
+
+              <button
+                onClick={() => {
+                  localStorage.removeItem("accessToken");
+                  localStorage.removeItem("user");
+
+                  alert("Đăng xuất thành công");
+
+                  window.location.href = "/login";
+                }}
+                className="h-[40px] px-5 rounded-lg border border-red-500 text-red-500 hover:bg-red-500 hover:text-white transition-all text-[14px] font-medium"
+              >
+                Đăng xuất
+              </button>
+            </div>
             </div>
           </div>
         </div>
