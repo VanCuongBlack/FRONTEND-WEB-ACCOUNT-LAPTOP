@@ -1,5 +1,6 @@
-import React, { ReactNode } from 'react';
-import { SPACING, LAYOUT } from '@/constants/designTokens';
+import React from 'react';
+import type { ReactNode } from 'react';
+import { LAYOUT } from '@/constants/designTokens';
 import { cn } from '@/utils/cn';
 
 interface FormProps extends React.FormHTMLAttributes<HTMLFormElement> {

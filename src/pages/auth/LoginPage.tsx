@@ -1,21 +1,24 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
+import { useNavigate } from "react-router-dom";
+import { login } from "@/services/auth.service";
 
-// Kiểm tra người dùng có để trống hay nhập sai không
 const loginSchema = z.object({
-  // Kiểm tra ô tài khoản: Nếu trống (dưới 1 ký tự) thì báo lỗi
-  username: z.string().min(1, { message: "Tài khoản không được để trống" }),
-  
-  // Kiểm tra ô mật khẩu: Nếu ngắn hơn 6 ký tự thì báo lỗi
-  password: z.string().min(6, { message: "Mật khẩu phải từ 6 ký tự trở lên" }),
+  email: z.string().min(1, {
+    message: "Email không được để trống",
+  }),
+  password: z.string().min(6, {
+    message: "Mật khẩu phải từ 6 ký tự trở lên",
+  }),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
-  // Biến trạng thái dùng để ẩn/hiện mật khẩu
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const {
     register,
@@ -24,13 +27,14 @@ export default function LoginPage() {
     formState: { errors },
   } = useForm<LoginFormValues>({
     defaultValues: {
-      username: "",
+      email: "",
       password: "",
     },
   });
 
-  const onSubmit = (values: LoginFormValues) => {
+  const onSubmit = async (values: LoginFormValues) => {
     const result = loginSchema.safeParse(values);
+
     if (!result.success) {
       result.error.issues.forEach((issue) => {
         const path = issue.path[0] as keyof LoginFormValues;
@@ -38,75 +42,86 @@ export default function LoginPage() {
       });
       return;
     }
-    console.log("Dữ liệu gửi lên server:", values);
+
+    try {
+      setIsLoading(true);
+
+      const response = await login({
+        email: values.email,
+        password: values.password,
+      });
+
+      const accessToken = response.data.data?.accessToken;
+
+      if (accessToken) {
+        localStorage.setItem("accessToken", accessToken);
+      }
+
+      navigate("/");
+    } catch {
+      setError("password", {
+        message: "Email hoặc mật khẩu không đúng",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    // Toàn bộ màn hình bọc ngoài căn giữa Desktop 1440px
-    <div className="w-full max-w-[1440px] min-h-screen mx-auto bg-white font-['Inter',_sans-serif] flex flex-col items-center justify-center py-10">
-      
-      {/* Khung chứa Form chính rộng 722px */}
-      <div className="flex flex-col items-center w-[722px]">
-        
-        {/* Tiêu đề chính H1 */}
-        <h1 className="text-[36px] font-bold text-black text-center tracking-wide">
+    <div className="w-full min-h-screen mx-auto bg-white font-['Inter',_sans-serif] flex flex-col items-center justify-center px-4 py-10">
+      <div className="flex flex-col items-center w-full max-w-[722px]">
+        <h1 className="text-[28px] sm:text-[36px] font-bold text-black text-center tracking-wide">
           ĐĂNG NHẬP
         </h1>
 
-        {/* Khung Form: Khoảng cách mt-[75px], giãn cách dọc giữa các khối là gap-[47px] */}
-        <form 
-          onSubmit={handleSubmit(onSubmit)} 
-          className="w-full flex flex-col mt-[75px] gap-[47px]"
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="w-full flex flex-col mt-[45px] sm:mt-[75px] gap-[32px] sm:gap-[47px]"
         >
-          
-          {/* CỤM 1: EMAIL HOẶC SỐ ĐIỆN THOẠI */}
           <div className="w-full flex flex-col gap-[12px]">
-            {/* Khoảng cách giữa Label và Ô nhập cố định 12px, cỡ chữ thường text-[20px] */}
-            <label className="text-[20px] font-normal text-black pl-5">
-              Email hoặc số điện thoại
+            <label className="text-[16px] sm:text-[20px] font-normal text-black pl-5">
+              Email
             </label>
+
             <input
-              type="text"
-              placeholder="Nhập email hoặc số điện thoại..."
-              {...register("username")}
-              className="w-[722px] h-[82px] rounded-[29px] bg-transparent border border-black/34 px-[20px] text-[20px] text-black placeholder-[#ADA2A2] placeholder-opacity-100 focus:outline-none focus:border-[#3783EC] transition-all"
+              type="email"
+              placeholder="Nhập email..."
+              {...register("email")}
+              className="w-full h-[64px] sm:h-[82px] rounded-[29px] bg-transparent border border-black/34 px-[20px] text-[16px] sm:text-[20px] text-black placeholder-[#ADA2A2] placeholder-opacity-100 focus:outline-none focus:border-[#3783EC] transition-all"
             />
-            {errors.username && (
-              <span className="text-red-500 text-sm pl-5 mt-1">{errors.username.message}</span>
+
+            {errors.email && (
+              <span className="text-red-500 text-sm pl-5 mt-1">
+                {errors.email.message}
+              </span>
             )}
           </div>
 
-          {/* CỤM 2: MẬT KHẨU (Đã thêm nút con mắt ẩn/hiện) */}
           <div className="w-full flex flex-col gap-[12px]">
-            {/* Khoảng cách giữa Label và Ô nhập cố định 12px, cỡ chữ thường text-[20px] */}
-            <label className="text-[20px] font-normal text-black pl-5">
+            <label className="text-[16px] sm:text-[20px] font-normal text-black pl-5">
               Mật khẩu
             </label>
-            
-            {/* Khung bọc relative giữ chiều cao h-[82px] để căn giữa dọc nút bấm con mắt */}
-            <div className="relative w-[722px] h-[82px] flex items-center">
+
+            <div className="relative w-full h-[64px] sm:h-[82px] flex items-center">
               <input
-                type={showPassword ? "text" : "password"} // Đổi type dựa trên trạng thái biến showPassword
+                type={showPassword ? "text" : "password"}
                 placeholder="Nhập mật khẩu..."
                 {...register("password")}
-                className="w-full h-full rounded-[29px] bg-transparent border border-black/34 pl-[20px] pr-[60px] text-[20px] text-black placeholder-[#ADA2A2] placeholder-opacity-100 focus:outline-none focus:border-[#3783EC] transition-all"
+                className="w-full h-full rounded-[29px] bg-transparent border border-black/34 pl-[20px] pr-[60px] text-[16px] sm:text-[20px] text-black placeholder-[#ADA2A2] placeholder-opacity-100 focus:outline-none focus:border-[#3783EC] transition-all"
               />
-              
-              {/* Nút bấm con mắt nằm sát lề phải lọt lòng khung nhập */}
+
               <button
-                type="button" // Tránh việc bấm vào bị gửi nhầm form gây reload trang
-                onClick={() => setShowPassword(!showPassword)} // Đổi trạng thái khi click
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-[24px] text-black/40 hover:text-black/70 transition-colors cursor-pointer p-1 flex items-center justify-center"
                 title={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
               >
                 {showPassword ? (
-                  /* Icon mở mắt */
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                     <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                   </svg>
                 ) : (
-                  /* Icon nhắm mắt */
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a10.024 10.024 0 014.501-5.176M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                     <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 12m0 0L9.172 7.757M13.414 12H12m4.542-3.458A10.05 10.05 0 0121.542 12c-1.274 4.057-5.064 7-9.542 7a9.963 9.963 0 01-1.205-.073M3 3l18 18" />
@@ -116,39 +131,41 @@ export default function LoginPage() {
             </div>
 
             {errors.password && (
-              <span className="text-red-500 text-sm pl-5 mt-1">{errors.password.message}</span>
+              <span className="text-red-500 text-sm pl-5 mt-1">
+                {errors.password.message}
+              </span>
             )}
           </div>
 
-          {/* CỤM 3: NÚT BẤM ĐĂNG NHẬP*/}
           <div className="w-full flex justify-center">
             <button
               type="submit"
-              className="w-[704px] h-[57px] rounded-[84px] bg-[#3783EC]/58 hover:bg-[#3783EC]/83 active:bg-[#3783EC] text-black font-normal text-[20px] transition-all duration-200 shadow-sm flex items-center justify-center cursor-pointer"
+              disabled={isLoading}
+              className="w-full h-[52px] sm:h-[57px] rounded-[84px] bg-[#3783EC]/58 hover:bg-[#3783EC]/83 active:bg-[#3783EC] disabled:opacity-60 disabled:cursor-not-allowed text-black font-normal text-[16px] sm:text-[20px] transition-all duration-200 shadow-sm flex items-center justify-center cursor-pointer"
             >
-              Đăng nhập
+              {isLoading ? "Đang đăng nhập..." : "Đăng nhập"}
             </button>
           </div>
 
-          {/* CỤM 4: QUÊN MẬT KHẨU  */}
           <div className="w-full flex justify-center">
-            <a 
-              href="/forgot-password" 
-              className="text-[20px] font-normal text-black hover:underline cursor-pointer"
+            <button
+              type="button"
+              onClick={() => navigate("/forgot-password")}
+              className="text-[16px] sm:text-[20px] font-normal text-black hover:underline cursor-pointer"
             >
               Quên mật khẩu?
-            </a>
+            </button>
           </div>
 
-          {/* KHU VỰC ĐĂNG NHẬP MẠNG XÃ HỘI */}
           <div className="w-full flex flex-col items-center gap-4">
-            <p className="text-[20px] font-normal text-black/60">Hoặc đăng nhập bằng</p>
-            
+            <p className="text-[16px] sm:text-[20px] font-normal text-black/60">
+              Hoặc đăng nhập bằng
+            </p>
+
             <div className="flex gap-6 justify-center items-center">
-              {/* Ô Google */}
               <button
                 type="button"
-                className="w-[60px] h-[60px] rounded-full border border-black/20 flex items-center justify-center hover:bg-gray-50 active:scale-95 transition-all shadow-sm cursor-pointer"
+                className="w-[52px] h-[52px] sm:w-[60px] sm:h-[60px] rounded-full border border-black/20 flex items-center justify-center hover:bg-gray-50 active:scale-95 transition-all shadow-sm cursor-pointer"
                 title="Đăng nhập bằng Google"
               >
                 <svg className="w-6 h-6" viewBox="0 0 24 24">
@@ -159,10 +176,9 @@ export default function LoginPage() {
                 </svg>
               </button>
 
-              {/* Ô Facebook */}
               <button
                 type="button"
-                className="w-[60px] h-[60px] rounded-full border border-black/20 flex items-center justify-center hover:bg-gray-50 active:scale-95 transition-all shadow-sm cursor-pointer"
+                className="w-[52px] h-[52px] sm:w-[60px] sm:h-[60px] rounded-full border border-black/20 flex items-center justify-center hover:bg-gray-50 active:scale-95 transition-all shadow-sm cursor-pointer"
                 title="Đăng nhập bằng Facebook"
               >
                 <svg className="w-6 h-6" viewBox="0 0 24 24">
@@ -172,17 +188,15 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* CỤM 5: NÚT ĐĂNG KÝ TÀI KHOẢN MỚI  */}
           <div className="w-full flex justify-center">
             <button
               type="button"
-              onClick={() => window.location.href = "/register"}
-              className="w-[704px] h-[57px] rounded-[84px] bg-transparent border border-black/34 hover:bg-gray-50 text-black font-normal text-[20px] transition-all duration-200 shadow-sm flex items-center justify-center cursor-pointer"
+              onClick={() => navigate("/register")}
+              className="w-full h-[52px] sm:h-[57px] rounded-[84px] bg-transparent border border-black/34 hover:bg-gray-50 text-black font-normal text-[16px] sm:text-[20px] transition-all duration-200 shadow-sm flex items-center justify-center cursor-pointer"
             >
               Đăng ký tài khoản mới
             </button>
           </div>
-
         </form>
       </div>
     </div>
