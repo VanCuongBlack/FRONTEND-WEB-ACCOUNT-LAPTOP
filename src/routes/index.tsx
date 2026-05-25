@@ -11,6 +11,10 @@ import LaptopDetailPage from "@/pages/product/LaptopDetailPage";
 import AccountListPage from "@/pages/product/AccountListPage";
 import AccountDetailPage from "@/pages/product/AccountDetailPage";
 
+import CartPage from "@/pages/cart/CartPage";
+import ProfilePage from "@/pages/profile/ProfilePage";
+import BestSellerPage from "@/pages/product/BestSellerPage";
+
 export default function AppRoutes() {
   return (
     <BrowserRouter>
@@ -31,6 +35,10 @@ export default function AppRoutes() {
         {/* Account số */}
         <Route path="/accounts" element={<AccountListPage />} />
         <Route path="/accounts/:id" element={<AccountDetailPage />} />
+
+        <Route path="/cart" element={<CartPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/best-seller" element={<BestSellerPage />} />
 
         {/* 404 */}
         <Route path="*" element={<div>404 Not Found</div>} />
