@@ -13,9 +13,16 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('accessToken')
+
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`
     }
+
+
+    if (token && config.headers) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
+
     return config
   },
   (error) => Promise.reject(error)
@@ -35,6 +42,7 @@ const processQueue = (error: unknown, token: string | null) => {
 
 api.interceptors.response.use(
   (response) => response,
+
   async (error) => {
     const originalRequest = error.config
 
@@ -82,6 +90,14 @@ api.interceptors.response.use(
       } finally {
         isRefreshing = false
       }
+=======
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('accessToken')
+      localStorage.removeItem('user')
+
+      window.location.href = '/login'
+
     }
 
     return Promise.reject(error)
