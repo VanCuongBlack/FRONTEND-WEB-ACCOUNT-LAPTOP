@@ -5,8 +5,8 @@ import { useNavigate } from "react-router-dom";
 import { login } from "@/services/auth.service";
 
 const loginSchema = z.object({
-  emailOrPhone: z.string().min(1, {
-    message: "Email hoặc số điện thoại không được để trống",
+  email: z.string().min(1, {
+    message: "Email không được để trống",
   }),
   password: z.string().min(6, {
     message: "Mật khẩu phải từ 6 ký tự trở lên",
@@ -27,7 +27,7 @@ export default function LoginPage() {
     formState: { errors },
   } = useForm<LoginFormValues>({
     defaultValues: {
-      emailOrPhone: "",
+      email: "",
       password: "",
     },
   });
@@ -47,7 +47,7 @@ export default function LoginPage() {
       setIsLoading(true);
 
       const response = await login({
-        emailOrPhone: values.emailOrPhone,
+        email: values.email,
         password: values.password,
       });
 
@@ -60,7 +60,7 @@ export default function LoginPage() {
       navigate("/");
     } catch {
       setError("password", {
-        message: "Tài khoản hoặc mật khẩu không đúng",
+        message: "Email hoặc mật khẩu không đúng",
       });
     } finally {
       setIsLoading(false);
@@ -80,19 +80,19 @@ export default function LoginPage() {
         >
           <div className="w-full flex flex-col gap-[12px]">
             <label className="text-[16px] sm:text-[20px] font-normal text-black pl-5">
-              Email hoặc số điện thoại
+              Email
             </label>
 
             <input
-              type="text"
-              placeholder="Nhập email hoặc số điện thoại..."
-              {...register("emailOrPhone")}
+              type="email"
+              placeholder="Nhập email..."
+              {...register("email")}
               className="w-full h-[64px] sm:h-[82px] rounded-[29px] bg-transparent border border-black/34 px-[20px] text-[16px] sm:text-[20px] text-black placeholder-[#ADA2A2] placeholder-opacity-100 focus:outline-none focus:border-[#3783EC] transition-all"
             />
 
-            {errors.emailOrPhone && (
+            {errors.email && (
               <span className="text-red-500 text-sm pl-5 mt-1">
-                {errors.emailOrPhone.message}
+                {errors.email.message}
               </span>
             )}
           </div>

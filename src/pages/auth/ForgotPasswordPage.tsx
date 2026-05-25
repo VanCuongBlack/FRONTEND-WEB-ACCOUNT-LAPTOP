@@ -6,22 +6,14 @@ import { useNavigate } from "react-router-dom";
 import { forgotPassword } from "@/services/auth.service";
 
 const forgotPasswordSchema = z.object({
-  emailOrPhone: z
+  email: z
     .string()
     .min(1, {
-      message: "Email hoặc số điện thoại không được để trống",
+      message: "Email không được để trống",
     })
-    .refine(
-      (value) => {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        const phoneRegex = /^(0|\+84)[0-9]{9}$/;
-
-        return emailRegex.test(value) || phoneRegex.test(value);
-      },
-      {
-        message: "Email hoặc số điện thoại không hợp lệ",
-      }
-    ),
+    .email({
+      message: "Email không hợp lệ",
+    }),
 });
 
 type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;
@@ -37,7 +29,7 @@ export default function ForgotPasswordPage() {
     formState: { errors },
   } = useForm<ForgotPasswordFormValues>({
     defaultValues: {
-      emailOrPhone: "",
+      email: "",
     },
   });
 
@@ -56,12 +48,16 @@ export default function ForgotPasswordPage() {
       setIsLoading(true);
 
       await forgotPassword({
-        emailOrPhone: values.emailOrPhone,
+        email: values.email,
       });
 
-      navigate("/reset-password");
+      navigate("/reset-password", {
+        state: {
+          email: values.email,
+        },
+      });
     } catch {
-      setError("emailOrPhone", {
+      setError("email", {
         message: "Không thể gửi yêu cầu đặt lại mật khẩu",
       });
     } finally {
@@ -93,19 +89,19 @@ export default function ForgotPasswordPage() {
         >
           <div className="w-full flex flex-col gap-3">
             <label className="text-[16px] sm:text-[20px] font-normal text-black">
-              Email hoặc số điện thoại
+              Email
             </label>
 
             <input
-              type="text"
-              placeholder="Email hoặc số điện thoại"
-              {...register("emailOrPhone")}
+              type="email"
+              placeholder="Nhập email"
+              {...register("email")}
               className="w-full h-[64px] sm:h-[82px] rounded-[29px] bg-transparent border border-black/34 px-5 text-[16px] sm:text-[20px] text-black placeholder-[#ADA2A2] placeholder-opacity-100 focus:outline-none focus:border-[#3783EC] transition-all"
             />
 
-            {errors.emailOrPhone && (
+            {errors.email && (
               <span className="text-red-500 text-sm">
-                {errors.emailOrPhone.message}
+                {errors.email.message}
               </span>
             )}
           </div>
