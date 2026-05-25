@@ -2,12 +2,12 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { ChevronLeft } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { resetPassword } from "@/services/auth.service";
 
 const resetPasswordSchema = z
   .object({
-    verificationCode: z
+    otp: z
       .string()
       .min(1, {
         message: "Mã xác nhận không được để trống",
@@ -33,7 +33,15 @@ type ResetPasswordFormValues = z.infer<typeof resetPasswordSchema>;
 
 export default function ResetPasswordPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const email = location.state?.email || "";
+
   const [isLoading, setIsLoading] = useState(false);
+
+  const [showNewPassword, setShowNewPassword] = useState(false);
+
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const {
     register,
@@ -42,7 +50,7 @@ export default function ResetPasswordPage() {
     formState: { errors },
   } = useForm<ResetPasswordFormValues>({
     defaultValues: {
-      verificationCode: "",
+      otp: "",
       newPassword: "",
       confirmPassword: "",
     },
@@ -63,13 +71,14 @@ export default function ResetPasswordPage() {
       setIsLoading(true);
 
       await resetPassword({
-        verificationCode: values.verificationCode,
+        email,
+        otp: values.otp,
         newPassword: values.newPassword,
       });
 
       navigate("/login");
     } catch {
-      setError("verificationCode", {
+      setError("otp", {
         message: "Mã xác nhận không đúng hoặc đã hết hạn",
       });
     } finally {
@@ -103,13 +112,13 @@ export default function ResetPasswordPage() {
               inputMode="numeric"
               maxLength={6}
               placeholder="Mã xác nhận"
-              {...register("verificationCode")}
+              {...register("otp")}
               className="w-full h-[64px] sm:h-[82px] rounded-[29px] bg-transparent border border-black/34 px-5 text-[16px] sm:text-[20px] text-black placeholder-[#ADA2A2] placeholder-opacity-100 focus:outline-none focus:border-[#3783EC] transition-all"
             />
 
-            {errors.verificationCode && (
+            {errors.otp && (
               <span className="text-red-500 text-sm">
-                {errors.verificationCode.message}
+                {errors.otp.message}
               </span>
             )}
           </div>
@@ -119,12 +128,60 @@ export default function ResetPasswordPage() {
               Tạo mật khẩu mới
             </label>
 
-            <input
-              type="password"
-              placeholder="Mật khẩu mới"
-              {...register("newPassword")}
-              className="w-full h-[64px] sm:h-[82px] rounded-[29px] bg-transparent border border-black/34 px-5 text-[16px] sm:text-[20px] text-black placeholder-[#ADA2A2] placeholder-opacity-100 focus:outline-none focus:border-[#3783EC] transition-all"
-            />
+            <div className="relative w-full h-[64px] sm:h-[82px] flex items-center">
+              <input
+                type={showNewPassword ? "text" : "password"}
+                placeholder="Mật khẩu mới"
+                {...register("newPassword")}
+                className="w-full h-full rounded-[29px] bg-transparent border border-black/34 pl-5 pr-[60px] text-[16px] sm:text-[20px] text-black placeholder-[#ADA2A2] placeholder-opacity-100 focus:outline-none focus:border-[#3783EC] transition-all"
+              />
+
+              <button
+                type="button"
+                onClick={() => setShowNewPassword(!showNewPassword)}
+                className="absolute right-[24px] text-black/40 hover:text-black/70 transition-colors cursor-pointer p-1 flex items-center justify-center"
+              >
+                {showNewPassword ? (
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                    />
+                  </svg>
+                ) : (
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a10.024 10.024 0 014.501-5.176M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M17.657 16.657L13.414 12m0 0L9.172 7.757M13.414 12H12m4.542-3.458A10.05 10.05 0 0121.542 12c-1.274 4.057-5.064 7-9.542 7a9.963 9.963 0 01-1.205-.073M3 3l18 18"
+                    />
+                  </svg>
+                )}
+              </button>
+            </div>
 
             {errors.newPassword && (
               <span className="text-red-500 text-sm">
@@ -138,12 +195,62 @@ export default function ResetPasswordPage() {
               Xác nhận mật khẩu mới
             </label>
 
-            <input
-              type="password"
-              placeholder="Nhập lại mật khẩu mới"
-              {...register("confirmPassword")}
-              className="w-full h-[64px] sm:h-[82px] rounded-[29px] bg-transparent border border-black/34 px-5 text-[16px] sm:text-[20px] text-black placeholder-[#ADA2A2] placeholder-opacity-100 focus:outline-none focus:border-[#3783EC] transition-all"
-            />
+            <div className="relative w-full h-[64px] sm:h-[82px] flex items-center">
+              <input
+                type={showConfirmPassword ? "text" : "password"}
+                placeholder="Nhập lại mật khẩu mới"
+                {...register("confirmPassword")}
+                className="w-full h-full rounded-[29px] bg-transparent border border-black/34 pl-5 pr-[60px] text-[16px] sm:text-[20px] text-black placeholder-[#ADA2A2] placeholder-opacity-100 focus:outline-none focus:border-[#3783EC] transition-all"
+              />
+
+              <button
+                type="button"
+                onClick={() =>
+                  setShowConfirmPassword(!showConfirmPassword)
+                }
+                className="absolute right-[24px] text-black/40 hover:text-black/70 transition-colors cursor-pointer p-1 flex items-center justify-center"
+              >
+                {showConfirmPassword ? (
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                    />
+                  </svg>
+                ) : (
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a10.024 10.024 0 014.501-5.176M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M17.657 16.657L13.414 12m0 0L9.172 7.757M13.414 12H12m4.542-3.458A10.05 10.05 0 0121.542 12c-1.274 4.057-5.064 7-9.542 7a9.963 9.963 0 01-1.205-.073M3 3l18 18"
+                    />
+                  </svg>
+                )}
+              </button>
+            </div>
 
             {errors.confirmPassword && (
               <span className="text-red-500 text-sm">
