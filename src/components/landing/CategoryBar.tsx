@@ -49,7 +49,7 @@ const STITCH_CATEGORIES = [
 
 export default function CategoryBar() {
   return (
-    <section className="max-w-6xl mx-auto px-4 sm:px-6 pb-4 sm:pb-6">
+    <section className="max-w-[1200px] mx-auto px-4 sm:px-6 pb-4 sm:pb-6">
       {/* Scrollable on very small screens, centered on larger */}
       <div className="flex items-center justify-around sm:justify-center sm:gap-10 lg:gap-16 overflow-x-auto scrollbar-hide pb-1">
         {STITCH_CATEGORIES.map(cat => (

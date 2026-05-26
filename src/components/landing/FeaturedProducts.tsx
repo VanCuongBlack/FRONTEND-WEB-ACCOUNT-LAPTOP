@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import type { Product } from '@/services/landing.service'
 
 function fmt(n: number) {
@@ -28,9 +29,13 @@ const BADGE_STYLE: Record<string, string> = {
 
 function ProductCard({ product }: { product: Product }) {
   const outOfStock = product.stock === 0
+  const detailUrl = product.category === 'laptop' ? `/laptops/${product.id}` : `/accounts/${product.id}`
 
   return (
-    <div className="relative bg-white rounded-xl border border-gray-200 hover:shadow-md hover:border-blue-200 transition-all duration-200 flex flex-col overflow-hidden cursor-pointer group">
+    <Link
+      to={detailUrl}
+      className="relative bg-white rounded-xl border border-gray-200 hover:shadow-md hover:border-blue-200 transition-all duration-200 flex flex-col overflow-hidden cursor-pointer group"
+    >
 
       {/* Badge */}
       {product.badge && (
@@ -83,18 +88,17 @@ function ProductCard({ product }: { product: Product }) {
           )}
         </div>
 
-        <button
-          disabled={outOfStock}
-          className={`w-full py-1.5 sm:py-2 rounded-lg border text-[11px] sm:text-xs font-medium transition-all duration-150 active:scale-95
+        <div
+          className={`w-full py-1.5 sm:py-2 rounded-lg border text-[11px] sm:text-xs font-medium transition-all duration-150 active:scale-95 text-center
             ${outOfStock
               ? 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
               : 'border-blue-100 bg-blue-50 hover:bg-blue-100 text-blue-600'
             }`}
         >
           {outOfStock ? 'Hết hàng' : 'Mua ngay'}
-        </button>
+        </div>
       </div>
-    </div>
+    </Link>
   )
 }
 
@@ -119,25 +123,32 @@ function SkeletonCard() {
 interface Props {
   products: Product[]
   loading?: boolean
+  title?: string
+  viewMoreUrl?: string
 }
 
-export default function FeaturedProducts({ products, loading = false }: Props) {
+export default function FeaturedProducts({
+  products,
+  loading = false,
+  title = 'Sản phẩm bán chạy',
+  viewMoreUrl = '/best-seller'
+}: Props) {
   const active = products.filter(p => p.isActive)
 
   return (
-    <section id="products" className="max-w-6xl mx-auto px-4 sm:px-6 pb-4 sm:pb-6">
+    <section id="products" className="max-w-[1200px] mx-auto px-4 sm:px-6 pb-4 sm:pb-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-3 sm:mb-4">
-        <div className="flex items-center gap-2">
-          <div className="w-1 h-5 bg-blue-600 rounded-full" />
-          <h2 className="text-sm font-bold text-gray-900">Sản phẩm nổi bật</h2>
-        </div>
-        <a href="#" className="flex items-center gap-1 text-blue-600 text-xs font-medium hover:underline">
+        <Link to={viewMoreUrl} className="flex items-center gap-2 group cursor-pointer">
+          <div className="w-1 h-5 bg-blue-600 rounded-full group-hover:bg-blue-700 transition-colors" />
+          <h2 className="text-sm font-bold text-gray-900 group-hover:text-blue-600 transition-colors">{title}</h2>
+        </Link>
+        <Link to={viewMoreUrl} className="flex items-center gap-1 text-blue-600 text-xs font-medium hover:underline">
           Xem thêm
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-3.5 h-3.5">
             <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
           </svg>
-        </a>
+        </Link>
       </div>
 
       {/* Responsive grid:
@@ -146,7 +157,7 @@ export default function FeaturedProducts({ products, loading = false }: Props) {
             lg+     → 4 cols */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-3">
         {loading
-          ? Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)
+          ? Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)
           : active.map(p => <ProductCard key={p.id} product={p} />)
         }
       </div>

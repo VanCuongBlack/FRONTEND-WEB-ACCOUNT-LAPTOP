@@ -1,4 +1,4 @@
-import api from './api'
+// import api from './api'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -102,37 +102,37 @@ export const mockBanners: Banner[] = [
     id: '1',
     imageUrl: '/hero-1.png',
     imageGradient: 'from-[#0d47a1] via-[#1565c0] to-[#1976d2]',
-    title: 'Quản lý tài khoản thông minh',
-    subtitle: 'Bảo mật tuyệt đối · Đăng nhập một chạm · Quản lý đa nền tảng',
-    ctaText: 'Đăng ký miễn phí',
-    ctaLink: '/register',
+    title: 'Thế giới Tài Khoản Premium',
+    subtitle: 'Netflix, YouTube, Spotify, Adobe bản quyền giá rẻ nhất thị trường · Bảo hành uy tín',
+    ctaText: 'Mua tài khoản',
+    ctaLink: '/accounts',
     isActive: true,
     order: 1,
-    tag: 'Mới ra mắt',
+    tag: 'BÁN CHẠY',
   },
   {
     id: '2',
     imageUrl: '/hero-2.png',
     imageGradient: 'from-[#6a1b9a] via-[#7b1fa2] to-[#8e24aa]',
-    title: 'Xác thực 2 lớp (2FA)',
-    subtitle: 'Bảo vệ tài khoản với OTP · Chống truy cập trái phép · An toàn tuyệt đối',
-    ctaText: 'Tìm hiểu thêm',
-    ctaLink: '/register',
+    title: 'Laptop & Macbook Chính Hãng',
+    subtitle: 'Dell, ThinkPad, HP, Macbook Pro M3 cấu hình khủng — Trả góp 0% · Bảo hành 2 năm',
+    ctaText: 'Xem Laptop',
+    ctaLink: '/laptops',
     isActive: true,
     order: 2,
-    tag: 'Bảo mật',
+    tag: 'CHÍNH HÃNG',
   },
   {
     id: '3',
     imageUrl: '/hero-3.png',
     imageGradient: 'from-[#00695c] via-[#00796b] to-[#00897b]',
-    title: 'Tích hợp Google & Facebook',
-    subtitle: 'Đăng nhập nhanh qua mạng xã hội · Không cần nhớ mật khẩu',
-    ctaText: 'Khám phá ngay',
-    ctaLink: '/register',
+    title: 'Ưu Đãi Đặc Biệt Cho Sinh Viên',
+    subtitle: 'Giảm thêm đến 500k khi mua laptop hoặc nâng cấp tài khoản premium học tập',
+    ctaText: 'Nhận ưu đãi',
+    ctaLink: '/best-seller',
     isActive: true,
     order: 3,
-    tag: 'SSO',
+    tag: 'STUDENT PROMO',
   },
 ]
 
