@@ -1,6 +1,5 @@
 import { z } from 'zod'
 
-// Password rule: >= 8 chars, uppercase, lowercase, number, special char
 const passwordRule = z
   .string()
   .min(8, 'Mật khẩu ít nhất 8 ký tự.')
@@ -16,17 +15,8 @@ export const registerSchema = z
     phone: z
       .string()
       .min(1, 'Số điện thoại không được để trống.')
-      .regex(/^[0-9]{10}$/, 'SĐT phải gồm đúng 10 chữ số.'),
-    password: passwordRule,
-=======
       .regex(/^(0|\+84)(3|5|7|8|9)[0-9]{8}$/, 'SĐT không hợp lệ (VD: 0912345678).'),
-    password: z
-      .string()
-      .min(8, 'Mật khẩu ít nhất 8 ký tự.')
-      .regex(/[A-Z]/, 'Mật khẩu phải có ít nhất 1 chữ hoa.')
-      .regex(/[a-z]/, 'Mật khẩu phải có ít nhất 1 chữ thường.')
-      .regex(/[0-9]/, 'Mật khẩu phải có ít nhất 1 số.')
-      .regex(/[^A-Za-z0-9]/, 'Mật khẩu phải có ít nhất 1 ký tự đặc biệt.'),
+    password: passwordRule,
     confirmPassword: z.string().min(1, 'Vui lòng xác nhận mật khẩu.'),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -44,8 +34,11 @@ export const loginSchema = z.object({
 export type LoginFormValues = z.infer<typeof loginSchema>
 
 export const verifyEmailSchema = z.object({
-  email: z.string().email(),
-  otp: z.string().length(6, 'Mã OTP phải gồm đúng 6 ký tự.'),
+  email: z.string().email('Email không hợp lệ.').optional(),
+  otp: z
+    .string()
+    .min(1, 'Mã OTP không được để trống.')
+    .regex(/^[0-9]{4,6}$/, 'Mã OTP phải gồm 4 đến 6 chữ số.'),
 })
 
 export type VerifyEmailFormValues = z.infer<typeof verifyEmailSchema>
@@ -58,8 +51,11 @@ export type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>
 
 export const resetPasswordSchema = z
   .object({
-    email: z.string().email(),
-    otp: z.string().length(6, 'Mã OTP phải gồm đúng 6 ký tự.'),
+    email: z.string().email('Email không hợp lệ.').optional(),
+    otp: z
+      .string()
+      .min(1, 'Mã OTP không được để trống.')
+      .regex(/^[0-9]{4,6}$/, 'Mã OTP phải gồm 4 đến 6 chữ số.'),
     newPassword: passwordRule,
     confirmNewPassword: z.string().min(1, 'Vui lòng xác nhận mật khẩu mới.'),
   })
@@ -69,5 +65,3 @@ export const resetPasswordSchema = z
   })
 
 export type ResetPasswordFormValues = z.infer<typeof resetPasswordSchema>
-=======
-export type RegisterFormValues = z.infer<typeof registerSchema>
