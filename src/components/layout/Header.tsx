@@ -1,4 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { Menu, X, User, ShoppingCart, Search, Bell } from "lucide-react";
 
 interface HeaderProps {
   pageLabel?: string;
@@ -15,169 +17,233 @@ export default function Header({
   desktopCartRef,
   cartIconClassName = "",
 }: HeaderProps) {
-  return (
-    <header className="w-full bg-white shadow-sm sticky top-0 z-50">
-      <div className="max-w-[1200px] mx-auto px-4 py-4 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-        <div className="flex items-center justify-between">
-          <a href="/" className="flex items-center gap-3 cursor-pointer">
-            <div className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-lg bg-[#3783EC] flex items-center justify-center">
-                <svg
-                  className="w-6 h-6 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-                  />
-                </svg>
-              </div>
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const navigate = useNavigate();
+  const isLoggedIn = !!localStorage.getItem("accessToken");
 
-              <span className="font-extrabold text-[24px] text-[#3783EC]">
-                web_acc
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!query.trim()) return;
+    navigate(`/?search=${encodeURIComponent(query.trim())}`);
+    setMobileOpen(false);
+  };
+
+  return (
+    <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
+        {/* ── Main Row ── */}
+        <div className="h-16 flex items-center justify-between gap-3">
+          {/* Logo & pageLabel */}
+          <div className="flex items-center gap-1 flex-shrink-0">
+            <Link to="/" className="flex items-center gap-2 flex-shrink-0">
+              <div className="w-9 h-9 rounded-lg bg-blue-600 flex items-center justify-center shadow flex-shrink-0">
+                <span className="text-white font-black text-base">W</span>
+              </div>
+              <span className="hidden sm:block text-gray-900 font-bold text-sm lg:text-base whitespace-nowrap">
+                Hệ Thống Laptop &amp; Account
               </span>
-            </div>
+              <span className="block sm:hidden text-gray-900 font-bold text-sm">
+                WebACC
+              </span>
+            </Link>
 
             {pageLabel && (
               <>
-                <div className="hidden sm:block w-[1.5px] h-6 bg-[#3783EC]/30"></div>
-                <span className="hidden sm:block text-[20px] font-semibold text-black">
+                <div className="hidden sm:block w-[1.5px] h-6 bg-gray-300 mx-2"></div>
+                <span className="hidden sm:block text-[15px] font-semibold text-gray-800">
                   {pageLabel}
                 </span>
               </>
             )}
-          </a>
+          </div>
 
-          <div className="flex lg:hidden items-center gap-4">
-            <a href="/notification" className="relative cursor-pointer">
-              <svg
-                className="w-6 h-6 text-gray-700"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-                />
-              </svg>
-            </a>
+          {/* Desktop Search Bar (Permanent & Center-aligned) */}
+          <form
+            onSubmit={handleSearch}
+            className="hidden md:flex flex-1 max-w-[420px] mx-4 items-center"
+          >
+            <div className="w-full flex items-center gap-2 bg-gray-50 border border-gray-300 rounded-xl px-3.5 py-1.5 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-100 transition-all">
+              <Search className="w-4.5 h-4.5 text-gray-400 flex-shrink-0" />
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Tìm kiếm sản phẩm, tài khoản..."
+                className="flex-1 bg-transparent text-sm text-gray-800 placeholder-gray-400 outline-none"
+              />
+              {query && (
+                <button
+                  type="button"
+                  onClick={() => setQuery("")}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+          </form>
 
-            <a href="/cart" ref={mobileCartRef} className="relative cursor-pointer">
-              <svg
-                className={`w-6 h-6 text-gray-700 ${cartIconClassName}`}
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
-                />
-              </svg>
+          {/* Right Actions */}
+          <div className="flex items-center gap-2 flex-shrink-0">
+            {/* Notification Bell */}
+            <Link
+              to="/notification"
+              className="relative p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+              title="Thông báo"
+            >
+              <Bell className="w-5 h-5" />
+              <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
+            </Link>
 
-              <span className="absolute -top-2 -right-2 bg-[#EE4D2D] text-white text-[10px] font-bold min-w-[18px] h-[18px] rounded-full flex items-center justify-center">
+            {/* Shopping Cart (Mobile) */}
+            <Link
+              to="/cart"
+              ref={mobileCartRef}
+              className="relative md:hidden p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+              title="Giỏ hàng"
+            >
+              <ShoppingCart className={`w-5 h-5 ${cartIconClassName}`} />
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold px-1.5 min-w-[18px] h-[18px] rounded-full flex items-center justify-center border border-white leading-none">
                 {cartCount}
               </span>
-            </a>
+            </Link>
 
-            <a href="/profile" className="w-9 h-9 rounded-full overflow-hidden border">
-              <img
-                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100"
-                className="w-full h-full object-cover"
-                alt="Avatar"
-              />
-            </a>
+            {/* Shopping Cart (Desktop) */}
+            <Link
+              to="/cart"
+              ref={desktopCartRef}
+              className="hidden md:relative md:block p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+              title="Giỏ hàng"
+            >
+              <ShoppingCart className={`w-5 h-5 ${cartIconClassName}`} />
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold px-1.5 min-w-[18px] h-[18px] rounded-full flex items-center justify-center border border-white leading-none">
+                {cartCount}
+              </span>
+            </Link>
+
+            {/* User Account State (Desktop) */}
+            <div className="hidden md:flex items-center gap-2 ml-1">
+              {isLoggedIn ? (
+                <Link
+                  to="/profile"
+                  className="w-9 h-9 rounded-full overflow-hidden border-2 border-gray-200 hover:border-blue-500 transition-all flex-shrink-0"
+                >
+                  <img
+                    src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100"
+                    className="w-full h-full object-cover"
+                    alt="Avatar"
+                  />
+                </Link>
+              ) : (
+                <>
+                  <Link
+                    to="/login"
+                    className="text-sm font-medium text-gray-700 hover:text-blue-600 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-all"
+                  >
+                    Đăng nhập
+                  </Link>
+                  <Link
+                    to="/register"
+                    className="text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 px-4 py-1.5 rounded-lg transition-all shadow-sm"
+                  >
+                    Đăng ký
+                  </Link>
+                </>
+              )}
+            </div>
+
+            {/* Mobile Hamburger Button */}
+            <button
+              onClick={() => setMobileOpen((v) => !v)}
+              className="md:hidden p-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+              aria-label="Mở menu"
+            >
+              {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
           </div>
         </div>
 
-        <div className="hidden lg:flex w-full lg:w-[480px]">
-          <input
-            type="text"
-            placeholder="Tìm kiếm sản phẩm..."
-            className="w-full h-[42px] rounded-l border border-[#3783EC] border-r-0 px-4 focus:outline-none"
-          />
+        {/* ── Mobile Dropdown ── */}
+        {mobileOpen && (
+          <div className="md:hidden border-t border-gray-100 pb-4">
+            {/* Search Input (Mobile) */}
+            <form onSubmit={handleSearch} className="pt-3 px-1">
+              <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 transition-all">
+                <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                <input
+                  type="text"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Tìm kiếm sản phẩm, tài khoản..."
+                  className="flex-1 bg-transparent text-sm text-gray-800 placeholder-gray-400 outline-none"
+                />
+              </div>
+            </form>
 
-          <button className="w-[55px] bg-[#3783EC] rounded-r flex items-center justify-center text-white">
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
-          </button>
-        </div>
+            {/* Quick Links */}
+            <div className="pt-3 flex flex-col gap-0.5">
+              <Link
+                to="/"
+                onClick={() => setMobileOpen(false)}
+                className="px-3 py-2.5 text-sm text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors font-medium"
+              >
+                Trang chủ
+              </Link>
+              <Link
+                to="/best-seller"
+                onClick={() => setMobileOpen(false)}
+                className="px-3 py-2.5 text-sm text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors font-medium"
+              >
+                Sản phẩm bán chạy
+              </Link>
+              <Link
+                to="/accounts"
+                onClick={() => setMobileOpen(false)}
+                className="px-3 py-2.5 text-sm text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors font-medium"
+              >
+                Tài khoản Account
+              </Link>
+              <Link
+                to="/laptops"
+                onClick={() => setMobileOpen(false)}
+                className="px-3 py-2.5 text-sm text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors font-medium"
+              >
+                Laptop / PC
+              </Link>
+            </div>
 
-        <div className="hidden lg:flex items-center gap-6">
-          <a
-            href="/notification"
-            className="relative cursor-pointer text-gray-700 hover:text-[#3783EC] transition-colors"
-          >
-            <svg
-              className="w-7 h-7"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-              />
-            </svg>
-          </a>
-
-          <a
-            href="/cart"
-            ref={desktopCartRef}
-            className="relative cursor-pointer text-gray-700 hover:text-[#3783EC] transition-colors"
-          >
-            <svg
-              className={`w-7 h-7 ${cartIconClassName}`}
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
-              />
-            </svg>
-
-            <span className="absolute -top-2 -right-2 bg-[#EE4D2D] text-white text-[11px] font-bold px-1.5 min-w-[20px] h-[20px] rounded-full flex items-center justify-center border-2 border-white">
-              {cartCount}
-            </span>
-          </a>
-
-          <a
-            href="/profile"
-            className="w-10 h-10 rounded-full overflow-hidden border hover:border-[#3783EC]"
-          >
-            <img
-              src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100"
-              className="w-full h-full object-cover"
-              alt="Avatar"
-            />
-          </a>
-        </div>
+            {/* Auth Buttons (Mobile) */}
+            <div className="pt-3 mt-1 border-t border-gray-100 flex gap-2">
+              {isLoggedIn ? (
+                <Link
+                  to="/profile"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex-1 flex items-center justify-center gap-2 py-2 text-sm text-gray-700 bg-gray-50 hover:bg-blue-50 hover:text-blue-600 rounded-lg border border-gray-200"
+                >
+                  <User className="w-4 h-4" /> Cá nhân
+                </Link>
+              ) : (
+                <>
+                  <Link
+                    to="/login"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex-1 py-2 text-sm text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 text-center"
+                  >
+                    Đăng nhập
+                  </Link>
+                  <Link
+                    to="/register"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex-1 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-lg text-center font-semibold"
+                  >
+                    Đăng ký
+                  </Link>
+                </>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </header>
   );

@@ -30,21 +30,22 @@ export default function HeroBanner({ banners }: Props) {
   if (active.length === 0) return null
 
   return (
-    <section className="max-w-6xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
+    <section className="max-w-[1200px] mx-auto px-4 sm:px-6 pt-2 sm:pt-3 pb-3 sm:pb-4">
       <div className="flex flex-col sm:flex-row gap-3">
 
         {/* ── Main banner slider ── */}
         <div className="flex-1 rounded-2xl overflow-hidden relative h-[220px] sm:h-[280px] lg:h-[300px]">
 
-          {/* Track — tất cả slides xếp hàng ngang, trượt bằng translateX */}
-          <div
-            className="flex h-full transition-transform duration-500 ease-in-out"
-            style={{ transform: `translateX(-${cur * 100}%)` }}
-          >
-            {active.map((slide) => (
+          {/* Slides Container using premium absolute fade transition */}
+          <div className="relative w-full h-full">
+            {active.map((slide, idx) => (
               <div
                 key={slide.id}
-                className="flex-shrink-0 w-full h-full relative"
+                className={`absolute inset-0 transition-all duration-700 ease-in-out ${
+                  idx === cur
+                    ? 'opacity-100 translate-x-0 z-10'
+                    : 'opacity-0 z-0 pointer-events-none'
+                }`}
               >
                 {/* Background */}
                 {slide.imageUrl ? (
