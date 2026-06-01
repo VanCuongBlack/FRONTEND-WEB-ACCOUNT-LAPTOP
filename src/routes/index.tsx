@@ -7,9 +7,10 @@ import ForgotPasswordPage from "@/pages/auth/ForgotPasswordPage";
 import ResetPasswordPage from "@/pages/auth/ResetPasswordPage";
 import VerifyEmailPage from "@/pages/auth/VerifyEmailPage";
 import VerifyResetOtpPage from "@/pages/auth/VerifyResetOtpPage";
-
+import HistoryPage from "@/pages/profile/HistoryPage";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
-
+import LaptopOrderDetailPage from "@/pages/profile/LaptopOrderDetailPage";
+import AccountOrderDetailPage from "@/pages/profile/AccountOrderDetailPage";
 import LaptopListPage from "@/pages/product/LaptopListPage";
 import LaptopDetailPage from "@/pages/product/LaptopDetailPage";
 import AccountListPage from "@/pages/product/AccountListPage";
@@ -45,7 +46,9 @@ export default function AppRoutes() {
         {/* Customer */}
         <Route path="/cart" element={<CartPage />} />
         <Route path="/profile" element={<ProfilePage />} />
-
+        <Route path="/profile/history" element={<HistoryPage />} />
+        <Route path="/profile/history/laptop/:id" element={<LaptopOrderDetailPage />} />
+        <Route path="/profile/history/account/:id" element={<AccountOrderDetailPage />} />
         {/* 404 */}
         <Route path="*" element={<div>404 Not Found</div>} />
       </Routes>
