@@ -10,6 +10,7 @@ import {
 import { useLocation, useNavigate } from 'react-router-dom'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
+import AppModal from '@/components/common/AppModal'
 
 type PaymentMethod = 'vnpay' | 'momo' | 'bank' | 'cod'
 
@@ -25,6 +26,40 @@ interface CheckoutItem {
 interface CheckoutLocationState {
   selectedItems?: CheckoutItem[]
 }
+
+interface Address {
+  id: number
+  name: string
+  phone: string
+  city: string
+  district: string
+  ward: string
+  detail: string
+  isDefault: boolean
+}
+
+const initialAddresses: Address[] = [
+  {
+    id: 1,
+    name: 'Kim Ngân',
+    phone: '0736785649',
+    city: 'TP Hồ Chí Minh',
+    district: 'Gò Vấp',
+    ward: 'Phường 7',
+    detail: 'Phan Văn Trị',
+    isDefault: true,
+  },
+  {
+    id: 2,
+    name: 'Kim Ngân',
+    phone: '0736785649',
+    city: 'Cần Thơ',
+    district: 'Ninh Kiều',
+    ward: 'An Hòa',
+    detail: 'Đường Nguyễn Văn Cừ',
+    isDefault: false,
+  },
+]
 
 const paymentMethods = [
   {
@@ -57,6 +92,10 @@ function formatPrice(price: number) {
   return `${price.toLocaleString('vi-VN')}đ`
 }
 
+function formatAddress(address: Address) {
+  return `${address.detail}, ${address.ward}, ${address.district}, ${address.city}`
+}
+
 export default function CheckoutPage() {
   const navigate = useNavigate()
   const location = useLocation()
@@ -69,6 +108,28 @@ export default function CheckoutPage() {
   const [discount, setDiscount] = useState(0)
   const [voucherMessage, setVoucherMessage] = useState('')
 
+  const [addresses, setAddresses] = useState<Address[]>(initialAddresses)
+  const [selectedAddressId, setSelectedAddressId] = useState(
+    initialAddresses.find((item) => item.isDefault)?.id ?? initialAddresses[0].id
+  )
+
+  const [openAddressModal, setOpenAddressModal] = useState(false)
+  const [openAddressFormModal, setOpenAddressFormModal] = useState(false)
+  const [editingAddress, setEditingAddress] = useState<Address | null>(null)
+
+  const [formAddress, setFormAddress] = useState({
+    name: '',
+    phone: '',
+    city: '',
+    district: '',
+    ward: '',
+    detail: '',
+    isDefault: false,
+  })
+
+  const selectedAddress =
+    addresses.find((item) => item.id === selectedAddressId) ?? addresses[0]
+
   const subtotal = useMemo(() => {
     return selectedItems.reduce(
       (total, item) => total + item.price * item.quantity,
@@ -78,6 +139,118 @@ export default function CheckoutPage() {
 
   const shippingFee = 0
   const total = subtotal + shippingFee - discount
+
+  const resetAddressForm = () => {
+    setEditingAddress(null)
+    setFormAddress({
+      name: '',
+      phone: '',
+      city: '',
+      district: '',
+      ward: '',
+      detail: '',
+      isDefault: false,
+    })
+  }
+
+  const openAddAddressForm = () => {
+    resetAddressForm()
+    setOpenAddressFormModal(true)
+  }
+
+  const openEditAddressForm = (address: Address) => {
+    setEditingAddress(address)
+    setFormAddress({
+      name: address.name,
+      phone: address.phone,
+      city: address.city,
+      district: address.district,
+      ward: address.ward,
+      detail: address.detail,
+      isDefault: address.isDefault,
+    })
+    setOpenAddressFormModal(true)
+  }
+
+  const handleSaveAddress = () => {
+    if (
+      !formAddress.name.trim() ||
+      !formAddress.phone.trim() ||
+      !formAddress.city.trim() ||
+      !formAddress.district.trim() ||
+      !formAddress.ward.trim() ||
+      !formAddress.detail.trim()
+    ) {
+      return
+    }
+
+    if (editingAddress) {
+      setAddresses((prev) =>
+        prev.map((item) => {
+          if (formAddress.isDefault && item.id !== editingAddress.id) {
+            return { ...item, isDefault: false }
+          }
+
+          if (item.id === editingAddress.id) {
+            return {
+              ...item,
+              ...formAddress,
+            }
+          }
+
+          return item
+        })
+      )
+
+      if (formAddress.isDefault) {
+        setSelectedAddressId(editingAddress.id)
+      }
+    } else {
+      const newAddress: Address = {
+        id: Date.now(),
+        ...formAddress,
+      }
+
+      setAddresses((prev) => {
+        if (newAddress.isDefault) {
+          return [...prev.map((item) => ({ ...item, isDefault: false })), newAddress]
+        }
+
+        return [...prev, newAddress]
+      })
+
+      setSelectedAddressId(newAddress.id)
+    }
+
+    resetAddressForm()
+    setOpenAddressFormModal(false)
+    setOpenAddressModal(true)
+  }
+
+  const handleDeleteAddress = (id: number) => {
+    if (addresses.length <= 1) return
+
+    setAddresses((prev) => {
+      const next = prev.filter((item) => item.id !== id)
+
+      if (selectedAddressId === id && next.length > 0) {
+        setSelectedAddressId(next[0].id)
+      }
+
+      return next
+    })
+  }
+
+  const handleSetDefaultAddress = (id: number) => {
+    setAddresses((prev) =>
+      prev.map((item) => ({
+        ...item,
+        isDefault: item.id === id,
+      }))
+    )
+
+    setSelectedAddressId(id)
+  }
 
   const handleApplyVoucher = () => {
     const code = voucher.trim().toUpperCase()
@@ -100,7 +273,6 @@ export default function CheckoutPage() {
 
   const handleConfirmPayment = () => {
     if (selectedItems.length === 0) {
-      alert('Không có sản phẩm để thanh toán.')
       navigate('/cart')
       return
     }
@@ -134,16 +306,23 @@ export default function CheckoutPage() {
 
               <div className="flex flex-col gap-4 rounded-xl bg-[#F8FAFC] p-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <p className="font-semibold">Kim Ngân</p>
-                  <p className="mt-1 text-sm text-gray-600">0736785649</p>
+                  <p className="font-semibold">{selectedAddress.name}</p>
                   <p className="mt-1 text-sm text-gray-600">
-                    Phan Văn Trị, Thành phố Hồ Chí Minh
+                    {selectedAddress.phone}
                   </p>
+                  <p className="mt-1 text-sm text-gray-600">
+                    {formatAddress(selectedAddress)}
+                  </p>
+                  {selectedAddress.isDefault && (
+                    <span className="mt-2 inline-block rounded-full bg-[#3783EC]/10 px-3 py-1 text-xs font-semibold text-[#3783EC]">
+                      Mặc định
+                    </span>
+                  )}
                 </div>
 
                 <button
                   type="button"
-                  onClick={() => alert('Mở danh sách địa chỉ')}
+                  onClick={() => setOpenAddressModal(true)}
                   className="h-[40px] rounded-xl border border-gray-300 px-5 text-sm font-medium hover:bg-gray-100"
                 >
                   Thay đổi
@@ -311,6 +490,192 @@ export default function CheckoutPage() {
           </aside>
         </div>
       </main>
+
+      <AppModal
+        open={openAddressModal}
+        title="Chọn địa chỉ nhận hàng"
+        onClose={() => setOpenAddressModal(false)}
+        footer={
+          <button
+            type="button"
+            onClick={openAddAddressForm}
+            className="h-[42px] rounded-xl bg-[#3783EC] px-6 text-sm font-semibold text-white hover:bg-[#206ed6]"
+          >
+            + Thêm địa chỉ mới
+          </button>
+        }
+      >
+        <div className="space-y-3">
+          {addresses.map((item) => {
+            const active = selectedAddressId === item.id
+
+            return (
+              <div
+                key={item.id}
+                className={`rounded-xl border p-4 transition-all ${
+                  active
+                    ? 'border-[#3783EC] bg-[#3783EC]/5'
+                    : 'border-gray-200'
+                }`}
+              >
+                <button
+                  type="button"
+                  onClick={() => setSelectedAddressId(item.id)}
+                  className="w-full text-left"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="font-semibold">{item.name}</p>
+                      <p className="mt-1 text-sm text-gray-500">
+                        {item.phone}
+                      </p>
+                      <p className="mt-1 text-sm text-gray-500">
+                        {formatAddress(item)}
+                      </p>
+                    </div>
+
+                    {active && (
+                      <span className="rounded-full bg-[#3783EC] px-3 py-1 text-xs font-semibold text-white">
+                        Đang chọn
+                      </span>
+                    )}
+                  </div>
+                </button>
+
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {!item.isDefault && (
+                    <button
+                      type="button"
+                      onClick={() => handleSetDefaultAddress(item.id)}
+                      className="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-100"
+                    >
+                      Đặt mặc định
+                    </button>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() => openEditAddressForm(item)}
+                    className="rounded-lg bg-[#2563EB] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#1D4ED8]"
+                  >
+                    Sửa
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteAddress(item.id)}
+                    className="rounded-lg bg-red-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-600"
+                  >
+                    Xóa
+                  </button>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </AppModal>
+
+      <AppModal
+        open={openAddressFormModal}
+        title={editingAddress ? 'Sửa địa chỉ' : 'Thêm địa chỉ mới'}
+        onClose={() => {
+          resetAddressForm()
+          setOpenAddressFormModal(false)
+        }}
+        footer={
+          <>
+            <button
+              type="button"
+              onClick={() => {
+                resetAddressForm()
+                setOpenAddressFormModal(false)
+              }}
+              className="h-[42px] rounded-xl border border-gray-300 px-6 text-sm font-semibold text-gray-700 hover:bg-gray-100"
+            >
+              Hủy
+            </button>
+
+            <button
+              type="button"
+              onClick={handleSaveAddress}
+              className="h-[42px] rounded-xl bg-[#3783EC] px-6 text-sm font-semibold text-white hover:bg-[#206ed6]"
+            >
+              Lưu địa chỉ
+            </button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <input
+            value={formAddress.name}
+            onChange={(e) =>
+              setFormAddress((prev) => ({ ...prev, name: e.target.value }))
+            }
+            placeholder="Họ và tên"
+            className="h-[46px] w-full rounded-xl border border-gray-300 px-4 text-sm outline-none focus:border-[#3783EC]"
+          />
+
+          <input
+            value={formAddress.phone}
+            onChange={(e) =>
+              setFormAddress((prev) => ({ ...prev, phone: e.target.value }))
+            }
+            placeholder="Số điện thoại"
+            className="h-[46px] w-full rounded-xl border border-gray-300 px-4 text-sm outline-none focus:border-[#3783EC]"
+          />
+
+          <input
+            value={formAddress.city}
+            onChange={(e) =>
+              setFormAddress((prev) => ({ ...prev, city: e.target.value }))
+            }
+            placeholder="Tỉnh / Thành phố"
+            className="h-[46px] w-full rounded-xl border border-gray-300 px-4 text-sm outline-none focus:border-[#3783EC]"
+          />
+
+          <input
+            value={formAddress.district}
+            onChange={(e) =>
+              setFormAddress((prev) => ({ ...prev, district: e.target.value }))
+            }
+            placeholder="Quận / Huyện"
+            className="h-[46px] w-full rounded-xl border border-gray-300 px-4 text-sm outline-none focus:border-[#3783EC]"
+          />
+
+          <input
+            value={formAddress.ward}
+            onChange={(e) =>
+              setFormAddress((prev) => ({ ...prev, ward: e.target.value }))
+            }
+            placeholder="Phường / Xã"
+            className="h-[46px] w-full rounded-xl border border-gray-300 px-4 text-sm outline-none focus:border-[#3783EC]"
+          />
+
+          <input
+            value={formAddress.detail}
+            onChange={(e) =>
+              setFormAddress((prev) => ({ ...prev, detail: e.target.value }))
+            }
+            placeholder="Địa chỉ cụ thể"
+            className="h-[46px] w-full rounded-xl border border-gray-300 px-4 text-sm outline-none focus:border-[#3783EC]"
+          />
+
+          <label className="flex cursor-pointer items-center gap-2 text-sm text-gray-600">
+            <input
+              type="checkbox"
+              checked={formAddress.isDefault}
+              onChange={(e) =>
+                setFormAddress((prev) => ({
+                  ...prev,
+                  isDefault: e.target.checked,
+                }))
+              }
+              className="accent-[#3783EC]"
+            />
+            Đặt làm địa chỉ mặc định
+          </label>
+        </div>
+      </AppModal>
 
       <Footer />
     </div>
