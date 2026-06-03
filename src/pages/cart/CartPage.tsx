@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Header from "../../components/layout/Header";
 import Footer from "../../components/layout/Footer";
+import { useNavigate } from "react-router-dom";
 
 interface CartItem {
   id: string;
@@ -15,6 +16,8 @@ interface CartItem {
 }
 
 export default function CartPage() {
+  const navigate = useNavigate()
+
   const [cartItems, setCartItems] = useState<CartItem[]>([
     {
       id: "1",
@@ -372,7 +375,23 @@ export default function CartPage() {
               </span>
             </div>
 
-            <button className="w-full sm:w-auto h-[46px] px-10 bg-[#3783EC] text-white font-bold rounded-xl hover:bg-[#206ed6] transition-colors">
+            <button
+              onClick={() => {
+                const selectedItems = cartItems.filter((item) => item.checked)
+
+                if (selectedItems.length === 0) {
+                  alert('Vui lòng chọn ít nhất 1 sản phẩm')
+                  return
+                }
+
+                navigate('/checkout', {
+                  state: {
+                    selectedItems,
+                  },
+                })
+              }}
+              className="w-full sm:w-auto h-[46px] px-10 bg-[#3783EC] text-white font-bold rounded-xl hover:bg-[#206ed6] transition-colors"
+            >
               MUA HÀNG
             </button>
           </div>

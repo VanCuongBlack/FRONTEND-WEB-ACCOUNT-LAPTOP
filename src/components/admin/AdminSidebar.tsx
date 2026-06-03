@@ -1,11 +1,16 @@
-import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import {
-  LayoutDashboard, Package, Warehouse, ShoppingCart,
-  Users, Shield, LogOut,
+  LayoutDashboard,
+  Package,
+  Warehouse,
+  ShoppingCart,
+  Users,
+  Shield,
+  FileText,
+  BookOpen,
+  TrendingUp,
+  LogOut,
 } from 'lucide-react'
-
-// ─── Nav config ────────────────────────────────────────────────────────────────
 
 export interface AdminNavItem {
   key: string
@@ -15,111 +20,71 @@ export interface AdminNavItem {
 }
 
 export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
-  { key: 'overview',  label: 'Tổng quan',          href: '/admin',           icon: LayoutDashboard },
-  { key: 'products',  label: 'Quản lý sản phẩm',   href: '/admin/products',  icon: Package         },
-  { key: 'inventory', label: 'Quản lý kho',         href: '/admin/inventory', icon: Warehouse       },
-  { key: 'orders',    label: 'Quản lý đơn hàng',   href: '/admin/orders',    icon: ShoppingCart    },
-  { key: 'customers', label: 'Quản lý khách hàng',  href: '/admin/customers', icon: Users           },
-  { key: 'warranty',  label: 'Quản lý bảo hành',   href: '/admin/warranty',  icon: Shield          },
+  { key: 'overview', label: 'Tổng quan', href: '/admin', icon: LayoutDashboard },
+  { key: 'products', label: 'Quản lý sản phẩm', href: '/admin/products', icon: Package },
+  { key: 'inventory', label: 'Quản lý kho', href: '/admin/inventory', icon: Warehouse },
+  { key: 'orders', label: 'Quản lý đơn hàng', href: '/admin/orders', icon: ShoppingCart },
+  { key: 'customers', label: 'Quản lý khách hàng', href: '/admin/customers', icon: Users },
+  { key: 'warranty', label: 'Quản lý bảo hành', href: '/admin/warranty', icon: Shield },
+  { key: 'reports', label: 'Báo cáo', href: '/admin/reports', icon: FileText },
+  { key: 'guide', label: 'Hướng dẫn mua hàng', href: '/admin/shopping-guide', icon: BookOpen },
+  { key: 'bestSeller', label: 'SP bán chạy', href: '/admin/best-seller', icon: TrendingUp },
 ]
 
-// ─── Props ─────────────────────────────────────────────────────────────────────
-
 interface Props {
-  /** Override active key (nếu không truyền, tự detect từ URL) */
   activeKey?: string
 }
-
-// ─── Component ─────────────────────────────────────────────────────────────────
 
 export default function AdminSidebar({ activeKey }: Props) {
   const location = useLocation()
 
-  /** Detect active từ URL nếu không truyền prop */
-  const active = activeKey ?? ADMIN_NAV_ITEMS.find(item =>
-    item.href === location.pathname
-  )?.key ?? 'overview'
+  const active =
+    activeKey ??
+    ADMIN_NAV_ITEMS.find((item) => item.href === location.pathname)?.key ??
+    'overview'
 
-  const [collapsed, setCollapsed] = useState(false)
+  const handleLogout = () => {
+    localStorage.removeItem('accessToken')
+    localStorage.removeItem('refreshToken')
+    localStorage.removeItem('user')
+    window.location.href = '/login'
+  }
 
   return (
-    <aside
-      className={`
-        ${collapsed ? 'w-16' : 'w-52 lg:w-56'}
-        bg-[#1e2130] flex flex-col flex-shrink-0 h-full transition-all duration-200
-      `}
-    >
-      {/* Brand */}
-      <div className="px-4 pt-6 pb-5 border-b border-white/10 flex items-center justify-between gap-2 overflow-hidden">
-        {!collapsed && (
-          <div className="min-w-0">
-            <p className="text-white font-black text-sm tracking-wide truncate">ADMIN PANEL</p>
-            <p className="text-white/40 text-[10px] mt-0.5 truncate">System Control</p>
-          </div>
-        )}
-        {/* Collapse toggle */}
-        <button
-          onClick={() => setCollapsed(v => !v)}
-          className="flex-shrink-0 w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
-          title={collapsed ? 'Mở rộng' : 'Thu gọn'}
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={2} className="w-3.5 h-3.5">
-            {collapsed
-              ? <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-              : <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-            }
-          </svg>
-        </button>
+    <aside className="min-h-screen w-[260px] flex-shrink-0 bg-[#111827] px-5 py-7 text-white">
+      <div className="mb-8 rounded-2xl bg-[#1F2937] px-5 py-4 text-center">
+        <p className="text-[24px] font-black tracking-wide">ADMIN PANEL</p>
       </div>
 
-      {/* Nav items */}
-      <nav className="flex-1 px-2 py-4 space-y-0.5 overflow-y-auto overflow-x-hidden">
+      <nav className="flex flex-col gap-3">
         {ADMIN_NAV_ITEMS.map(({ key, label, href, icon: Icon }) => {
           const isActive = active === key
+
           return (
             <Link
               key={key}
               to={href}
-              title={collapsed ? label : undefined}
-              className={`
-                flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-150
-                ${isActive
-                  ? 'bg-blue-600 text-white font-semibold shadow'
-                  : 'text-white/50 hover:text-white hover:bg-white/10'
-                }
-                ${collapsed ? 'justify-center' : ''}
-              `}
+              className={`flex h-[52px] items-center gap-3 rounded-xl px-5 text-[15px] transition-all ${
+                isActive
+                  ? 'bg-[#2563EB] font-semibold text-white'
+                  : 'bg-[#1F2937] text-gray-200 hover:bg-[#374151]'
+              }`}
             >
-              <Icon className="w-4 h-4 flex-shrink-0" />
-              {!collapsed && <span className="truncate">{label}</span>}
+              <Icon size={18} />
+              <span>{label}</span>
             </Link>
           )
         })}
       </nav>
 
-      {/* Admin user / logout */}
-      <div className="px-2 py-4 border-t border-white/10">
-        <button
-          className={`
-            w-full flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-white/10 transition-colors group
-            ${collapsed ? 'justify-center' : ''}
-          `}
-          title="Đăng xuất"
-        >
-          <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
-            <span className="text-white text-xs font-bold">A</span>
-          </div>
-          {!collapsed && (
-            <>
-              <div className="flex-1 text-left min-w-0">
-                <p className="text-white text-xs font-medium truncate">Admin User</p>
-                <p className="text-white/40 text-[10px] truncate">admin@webacc.vn</p>
-              </div>
-              <LogOut className="w-3.5 h-3.5 text-white/30 group-hover:text-red-400 flex-shrink-0 transition-colors" />
-            </>
-          )}
-        </button>
-      </div>
+      <button
+        type="button"
+        onClick={handleLogout}
+        className="mt-10 flex h-[58px] w-full items-center justify-center gap-2 rounded-2xl bg-red-600 text-[16px] font-bold text-white transition-all hover:bg-red-700"
+      >
+        <LogOut size={20} />
+        ĐĂNG XUẤT
+      </button>
     </aside>
   )
 }
