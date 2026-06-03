@@ -280,7 +280,7 @@ export default function BestSellerPage() {
   };
 
   return (
-    <div className="w-full min-h-screen flex flex-col bg-[#F5F5F5] font-['Inter',sans-serif] text-black">
+    <div className="w-full min-h-screen flex flex-col bg-[#F5F5F5] text-black">
       <style>
         {`
           @keyframes flyToCart {

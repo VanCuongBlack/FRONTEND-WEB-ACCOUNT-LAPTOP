@@ -1,8 +1,150 @@
-
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import Header from "../../components/layout/Header";
 import Footer from "../../components/layout/Footer";
 
 export default function ProfilePage() {
+  const navigate = useNavigate();
+  const [activeStatusKey, setActiveStatusKey] = useState<
+    "pending" | "shipping" | "review" | null
+  >(null);
+
+  const orderStatusCards = [
+    {
+      key: "pending" as const,
+      title: "Chờ xác nhận",
+      orders: [
+        {
+          id: "LAP-20260601",
+          name: "MacBook Air M2 13 inch",
+          price: "27.500.000đ",
+          type: "laptop" as const,
+        },
+        {
+          id: "LAP-20260602",
+          name: "ASUS Vivobook 15 OLED",
+          price: "18.900.000đ",
+          type: "laptop" as const,
+        },
+      ],
+      icon: (
+        <svg
+          className="w-8 h-8 text-[#3783EC]"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M12 8v4l3 3"
+          />
+          <circle
+            cx="12"
+            cy="12"
+            r="9"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      ),
+    },
+    {
+      key: "shipping" as const,
+      title: "Đang giao hàng",
+      orders: [
+        {
+          id: "ACC-20260513",
+          name: "Dell XPS 13 9310 (Cũ 99%)",
+          price: "12.000.000đ",
+          type: "laptop" as const,
+        },
+        {
+          id: "LAP-20260604",
+          name: "Lenovo ThinkPad X1 Carbon Gen 9",
+          price: "22.500.000đ",
+          type: "laptop" as const,
+        },
+      ],
+      icon: (
+        <svg
+          className="w-8 h-8 text-[#3783EC]"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M9 17H6a2 2 0 01-2-2V7a2 2 0 012-2h9a2 2 0 012 2v2"
+          />
+
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M15 9h3l3 3v3h-2"
+          />
+
+          <circle cx="7.5" cy="17.5" r="1.5" />
+          <circle cx="17.5" cy="17.5" r="1.5" />
+        </svg>
+      ),
+    },
+    {
+      key: "review" as const,
+      title: "Đánh giá",
+      orders: [
+        {
+          id: "LAP-20260605",
+          name: "Lenovo Legion 5",
+          price: "31.990.000đ",
+          type: "laptop" as const,
+        },
+        {
+          id: "ACC-20260514",
+          name: "Tài khoản Microsoft 365 Family",
+          price: "499.000đ",
+          type: "account" as const,
+        },
+      ],
+      icon: (
+        <svg
+          className="w-8 h-8 text-[#3783EC]"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.959a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.367 2.447a1 1 0 00-.364 1.118l1.287 3.958c.3.922-.755 1.688-1.54 1.118l-3.366-2.447a1 1 0 00-1.176 0l-3.366 2.447c-.785.57-1.84-.196-1.54-1.118l1.287-3.958a1 1 0 00-.364-1.118L2.98 9.386c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.369-3.959z"
+          />
+        </svg>
+      ),
+    },
+  ];
+
+  const activeStatusCard = orderStatusCards.find(
+    (item) => item.key === activeStatusKey
+  );
+
+  const handleOpenOrderDetail = (order: {
+    id: string;
+    type: "laptop" | "account";
+  }) => {
+    setActiveStatusKey(null);
+
+    if (order.type === "laptop") {
+      navigate(`/profile/history/laptop/${order.id}`);
+      return;
+    }
+
+    navigate(`/profile/history/account/${order.id}`);
+  };
+
   const supportRequests = [
     {
       id: 1,
@@ -19,7 +161,7 @@ export default function ProfilePage() {
   ];
 
   return (
-    <div className="w-full min-h-screen flex flex-col bg-[#F5F5F5] text-black font-['Inter',_sans-serif]">
+    <div className="w-full min-h-screen flex flex-col bg-[#F5F5F5] text-black">
       <Header pageLabel="Hồ Sơ" cartCount={2} />
 
       {/* ================= BODY ================= */}
@@ -44,28 +186,25 @@ export default function ProfilePage() {
                 Thành viên từ 2026
               </p>
 
-              <button className="mt-4 h-[40px] px-5 rounded-lg border border-[#3783EC] text-[#3783EC] hover:bg-[#3783EC] hover:text-white transition-all text-[14px] font-medium">
-                Sửa hồ sơ
-              </button>
               <div className="mt-4 flex flex-wrap gap-3">
-              <button className="h-[40px] px-5 rounded-lg border border-[#3783EC] text-[#3783EC] hover:bg-[#3783EC] hover:text-white transition-all text-[14px] font-medium">
-                Sửa hồ sơ
-              </button>
+                <button className="h-[40px] px-5 rounded-lg border border-[#3783EC] text-[#3783EC] hover:bg-[#3783EC] hover:text-white transition-all text-[14px] font-medium">
+                  Sửa hồ sơ
+                </button>
 
-              <button
-                onClick={() => {
-                  localStorage.removeItem("accessToken");
-                  localStorage.removeItem("user");
+                <button
+                  onClick={() => {
+                    localStorage.removeItem("accessToken");
+                    localStorage.removeItem("user");
 
-                  alert("Đăng xuất thành công");
+                    alert("Đăng xuất thành công");
 
-                  window.location.href = "/login";
-                }}
-                className="h-[40px] px-5 rounded-lg border border-red-500 text-red-500 hover:bg-red-500 hover:text-white transition-all text-[14px] font-medium"
-              >
-                Đăng xuất
-              </button>
-            </div>
+                    window.location.href = "/login";
+                  }}
+                  className="h-[40px] px-5 rounded-lg border border-red-500 text-red-500 hover:bg-red-500 hover:text-white transition-all text-[14px] font-medium"
+                >
+                  Đăng xuất
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -77,101 +216,34 @@ export default function ProfilePage() {
               Đơn hàng của tôi
             </h3>
 
-            <a
-              href="#"
+            <Link
+              to="/profile/history"
               className="text-[#3783EC] text-[14px] hover:underline"
             >
               Xem lịch sử mua hàng →
-            </a>
+            </Link>
           </div>
 
-          <div className="grid grid-cols-3 gap-3 sm:gap-4">
-            {[
-              {
-                title: "Chờ xác nhận",
-                icon: (
-                  <svg
-                    className="w-8 h-8 text-[#3783EC]"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M12 8v4l3 3"
-                    />
-                    <circle
-                      cx="12"
-                      cy="12"
-                      r="9"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                ),
-              },
-
-              {
-                title: "Đang giao hàng",
-                icon: (
-                  <svg
-                    className="w-8 h-8 text-[#3783EC]"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M9 17H6a2 2 0 01-2-2V7a2 2 0 012-2h9a2 2 0 012 2v2"
-                    />
-
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M15 9h3l3 3v3h-2"
-                    />
-
-                    <circle cx="7.5" cy="17.5" r="1.5" />
-                    <circle cx="17.5" cy="17.5" r="1.5" />
-                  </svg>
-                ),
-              },
-
-              {
-                title: "Đánh giá",
-                icon: (
-                  <svg
-                    className="w-8 h-8 text-[#3783EC]"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.959a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.367 2.447a1 1 0 00-.364 1.118l1.287 3.958c.3.922-.755 1.688-1.54 1.118l-3.366-2.447a1 1 0 00-1.176 0l-3.366 2.447c-.785.57-1.84-.196-1.54-1.118l1.287-3.958a1 1 0 00-.364-1.118L2.98 9.386c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.369-3.959z"
-                    />
-                  </svg>
-                ),
-              },
-            ].map((item) => (
-              <div
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+            {orderStatusCards.map((item) => (
+              <button
                 key={item.title}
-                className="bg-white rounded-2xl shadow-sm p-3 sm:p-6 flex flex-col items-center justify-center hover:shadow-md transition-all cursor-pointer"
+                type="button"
+                onClick={() => setActiveStatusKey(item.key)}
+                className="bg-white rounded-2xl shadow-sm p-4 sm:p-6 flex flex-col items-center hover:shadow-md transition-all cursor-pointer text-center"
               >
-                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-[#3783EC]/10 flex items-center justify-center">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-[#3783EC]/10 flex items-center justify-center">
                   {item.icon}
                 </div>
 
-                <span className="mt-3 sm:mt-4 text-[13px] sm:text-[15px] text-center font-semibold text-gray-800 leading-tight">
+                <span className="mt-3 sm:mt-4 text-[14px] sm:text-[15px] font-semibold text-gray-800 leading-tight">
                   {item.title}
                 </span>
-              </div>
+
+                <p className="mt-2 text-[12px] sm:text-[13px] text-gray-500 leading-snug">
+                  {item.orders.length} đơn hàng
+                </p>
+              </button>
             ))}
           </div>
         </section>
@@ -211,6 +283,56 @@ export default function ProfilePage() {
             ))}
           </div>
         </section>
+
+        {activeStatusCard && (
+          <div
+            className="fixed inset-0 z-50 bg-black/40 px-4 py-6 flex items-center justify-center"
+            onClick={() => setActiveStatusKey(null)}
+          >
+            <div
+              className="w-full max-w-[520px] bg-white rounded-2xl border border-gray-200 shadow-xl p-4 sm:p-6"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <div className="flex items-center justify-between gap-4">
+                <h4 className="text-[18px] sm:text-[20px] font-bold text-gray-900">
+                  {activeStatusCard.title}
+                </h4>
+                <button
+                  type="button"
+                  onClick={() => setActiveStatusKey(null)}
+                  className="h-9 px-3 rounded-lg border border-gray-200 text-[13px] font-medium text-gray-600 hover:bg-gray-100"
+                >
+                  Đóng
+                </button>
+              </div>
+
+              <p className="mt-1 text-[13px] text-gray-500">
+                Danh sách đơn hàng trong trạng thái này
+              </p>
+
+              <div className="mt-4 space-y-3 max-h-[320px] overflow-y-auto pr-1">
+                {activeStatusCard.orders.map((order) => (
+                  <button
+                    key={order.id}
+                    type="button"
+                    onClick={() => handleOpenOrderDetail(order)}
+                    className="w-full text-left rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 hover:border-[#3783EC] hover:bg-[#3783EC]/5 transition-all"
+                  >
+                    <p className="text-[12px] text-gray-500 font-mono">
+                      Mã đơn: #{order.id}
+                    </p>
+                    <p className="mt-1 text-[14px] font-semibold text-gray-800">
+                      {order.name}
+                    </p>
+                    <p className="mt-1 text-[13px] text-[#3783EC] font-semibold">
+                      {order.price}
+                    </p>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </main>
       <Footer />
     </div>

@@ -113,7 +113,7 @@ export default function CartPage() {
   ).length;
 
   return (
-    <div className="w-full min-h-screen flex flex-col bg-[#F5F5F5] font-['Inter',sans-serif]">
+    <div className="w-full min-h-screen flex flex-col bg-[#F5F5F5]">
       <Header pageLabel="Giỏ Hàng" cartCount={cartItems.length} />
 
       {/* ================= BODY ================= */}
