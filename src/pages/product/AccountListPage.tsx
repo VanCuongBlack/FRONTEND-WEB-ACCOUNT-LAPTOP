@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { ChevronLeft } from 'lucide-react'
+import { ChevronLeft, Search } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
@@ -7,7 +7,7 @@ import ProductCard from '@/components/product/ProductCard'
 import ProductFilter from '@/components/product/ProductFilter'
 import { accountProducts } from '@/services/product.service'
 
-type AccountTab = '' | 'ChatGPT' | 'Canva' | 'Netflix'
+type AccountTab = '' | 'ChatGPT' | 'Canva' | 'Netflix' | 'Adobe' | 'Spotify'
 
 export default function AccountListPage() {
   const navigate = useNavigate()
@@ -21,7 +21,11 @@ export default function AccountListPage() {
     list: string[],
     setter: (value: string[]) => void
   ) => {
-    setter(list.includes(value) ? list.filter((item) => item !== value) : [...list, value])
+    setter(
+      list.includes(value)
+        ? list.filter((item) => item !== value)
+        : [...list, value]
+    )
   }
 
   const handleTabClick = (tab: AccountTab) => {
@@ -30,13 +34,23 @@ export default function AccountListPage() {
   }
 
   const tabClass = (tab: AccountTab) =>
-    activeTab === tab ? 'font-bold text-black' : 'text-gray-600 hover:text-black'
+    activeTab === tab
+      ? 'font-bold text-black'
+      : 'text-gray-600 hover:text-black'
 
   const filteredProducts = useMemo(() => {
     return accountProducts.filter((item) => {
-      const matchSearch = item.name.toLowerCase().includes(search.toLowerCase())
+      const keyword = search.toLowerCase().trim()
+
+      const matchSearch =
+        !keyword ||
+        item.name.toLowerCase().includes(keyword) ||
+        item.platform.toLowerCase().includes(keyword) ||
+        item.duration.toLowerCase().includes(keyword)
+
       const matchPlatform =
-        selectedPlatforms.length === 0 || selectedPlatforms.includes(item.platform)
+        selectedPlatforms.length === 0 ||
+        selectedPlatforms.includes(item.platform)
 
       const matchPrice =
         selectedPrices.length === 0 ||
@@ -68,19 +82,51 @@ export default function AccountListPage() {
         <nav className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-white px-8 py-4 text-sm shadow-sm">
           <button onClick={() => navigate('/')}>Trang chủ</button>
 
-          <button onClick={() => handleTabClick('ChatGPT')} className={tabClass('ChatGPT')}>
+          <button
+            type="button"
+            onClick={() => handleTabClick('ChatGPT')}
+            className={tabClass('ChatGPT')}
+          >
             ChatGPT
           </button>
 
-          <button onClick={() => handleTabClick('Canva')} className={tabClass('Canva')}>
+          <button
+            type="button"
+            onClick={() => handleTabClick('Canva')}
+            className={tabClass('Canva')}
+          >
             Canva
           </button>
 
-          <button onClick={() => handleTabClick('Netflix')} className={tabClass('Netflix')}>
+          <button
+            type="button"
+            onClick={() => handleTabClick('Netflix')}
+            className={tabClass('Netflix')}
+          >
             Netflix
           </button>
 
-          <button onClick={() => alert('Hotline: 1900 xxxx')} className="text-[#00A651]">
+          <button
+            type="button"
+            onClick={() => handleTabClick('Adobe')}
+            className={tabClass('Adobe')}
+          >
+            Adobe
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleTabClick('Spotify')}
+            className={tabClass('Spotify')}
+          >
+            Spotify
+          </button>
+
+          <button
+            type="button"
+            onClick={() => alert('Hotline: 1900 xxxx')}
+            className="text-[#00A651]"
+          >
             ☎ Hotline: 1900 xxxx
           </button>
         </nav>
@@ -95,12 +141,44 @@ export default function AccountListPage() {
           </p>
         </section>
 
+        <div className="mt-6 rounded-2xl bg-white p-4 shadow-sm">
+          <div className="flex h-[48px] items-center gap-3 rounded-xl border border-gray-300 px-4 focus-within:border-[#3783EC]">
+            <Search size={18} className="text-gray-400" />
+
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value)
+                setActiveTab('')
+              }}
+              placeholder="Tìm kiếm account..."
+              className="h-full flex-1 bg-transparent text-sm outline-none"
+            />
+
+            {search && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearch('')
+                  setActiveTab('')
+                }}
+                className="text-xs font-medium text-gray-400 hover:text-red-500"
+              >
+                Xóa
+              </button>
+            )}
+          </div>
+        </div>
+
         <div className="mt-8 flex flex-col gap-8 lg:flex-row">
           <ProductFilter
             type="account"
             selectedPrices={selectedPrices}
             selectedCategories={selectedPlatforms}
-            onTogglePrice={(value) => toggleValue(value, selectedPrices, setSelectedPrices)}
+            onTogglePrice={(value) =>
+              toggleValue(value, selectedPrices, setSelectedPrices)
+            }
             onToggleCategory={(value) =>
               toggleValue(value, selectedPlatforms, setSelectedPlatforms)
             }
@@ -113,6 +191,12 @@ export default function AccountListPage() {
           />
 
           <section className="flex-1">
+            <div className="mb-4 flex items-center justify-between">
+              <p className="text-sm text-gray-500">
+                Tìm thấy {filteredProducts.length} account
+              </p>
+            </div>
+
             <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {filteredProducts.length > 0 ? (
                 filteredProducts.map((item) => (
@@ -126,7 +210,9 @@ export default function AccountListPage() {
                   />
                 ))
               ) : (
-                <p className="text-gray-500">Không tìm thấy sản phẩm phù hợp.</p>
+                <div className="rounded-2xl bg-white p-8 text-center text-gray-500 shadow-sm">
+                  Không tìm thấy account phù hợp.
+                </div>
               )}
             </div>
           </section>
