@@ -19,6 +19,9 @@ import BestSellerPage from "@/pages/product/BestSellerPage";
 
 import CartPage from "@/pages/cart/CartPage";
 import ProfilePage from "@/pages/profile/ProfilePage";
+import CheckoutPage from "@/pages/checkout/CheckoutPage";
+import OrderSuccessPage from "@/pages/checkout/OrderSuccessPage";
+import ProductManagementPage from '@/pages/admin/ProductManagementPage'
 
 export default function AppRoutes() {
   return (
@@ -49,6 +52,10 @@ export default function AppRoutes() {
         <Route path="/profile/history" element={<HistoryPage />} />
         <Route path="/profile/history/laptop/:id" element={<LaptopOrderDetailPage />} />
         <Route path="/profile/history/account/:id" element={<AccountOrderDetailPage />} />
+        <Route path="/order-success" element={<OrderSuccessPage />} />
+        <Route path="/admin/products" element={<ProductManagementPage />} />
+
+        <Route path="/checkout" element={<CheckoutPage />} />
         {/* 404 */}
         <Route path="*" element={<div>404 Not Found</div>} />
       </Routes>
