@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { ChevronLeft } from 'lucide-react'
+import { ChevronLeft, Search } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
@@ -21,7 +21,11 @@ export default function LaptopListPage() {
     list: string[],
     setter: (value: string[]) => void
   ) => {
-    setter(list.includes(value) ? list.filter((item) => item !== value) : [...list, value])
+    setter(
+      list.includes(value)
+        ? list.filter((item) => item !== value)
+        : [...list, value]
+    )
   }
 
   const handleTabClick = (tab: LaptopTab) => {
@@ -34,10 +38,37 @@ export default function LaptopListPage() {
       ? 'font-bold text-black'
       : 'text-gray-600 hover:text-black'
 
+  const pageTitle =
+    activeTab === 'Gaming'
+      ? 'Laptop Gaming'
+      : activeTab === 'Văn phòng'
+        ? 'Laptop Văn Phòng'
+        : activeTab === 'MacBook'
+          ? 'MacBook'
+          : 'Laptop / PC cũ'
+
+  const pageDescription =
+    activeTab === 'Gaming'
+      ? 'Khám phá các dòng laptop gaming hiệu năng cao.'
+      : activeTab === 'Văn phòng'
+        ? 'Laptop văn phòng mỏng nhẹ, ổn định, phù hợp học tập và làm việc.'
+        : activeTab === 'MacBook'
+          ? 'Các dòng MacBook phù hợp học tập, thiết kế và làm việc chuyên nghiệp.'
+          : 'Tìm kiếm laptop và PC cũ chất lượng, giá tốt.'
+
   const filteredProducts = useMemo(() => {
     return laptopProducts.filter((item) => {
-      const matchSearch = item.name.toLowerCase().includes(search.toLowerCase())
-      const matchBrand = selectedBrands.length === 0 || selectedBrands.includes(item.brand)
+      const keyword = search.toLowerCase().trim()
+
+      const matchSearch =
+        !keyword ||
+        item.name.toLowerCase().includes(keyword) ||
+        item.brand.toLowerCase().includes(keyword) ||
+        item.cpu.toLowerCase().includes(keyword) ||
+        item.gpu.toLowerCase().includes(keyword)
+
+      const matchBrand =
+        selectedBrands.length === 0 || selectedBrands.includes(item.brand)
 
       const matchPrice =
         selectedPrices.length === 0 ||
@@ -67,9 +98,12 @@ export default function LaptopListPage() {
         </button>
 
         <nav className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-white px-8 py-4 text-sm shadow-sm">
-          <button onClick={() => navigate('/')}>Trang chủ</button>
+          <button type="button" onClick={() => navigate('/')}>
+            Trang chủ
+          </button>
 
           <button
+            type="button"
             onClick={() => handleTabClick('Gaming')}
             className={tabClass('Gaming')}
           >
@@ -77,6 +111,7 @@ export default function LaptopListPage() {
           </button>
 
           <button
+            type="button"
             onClick={() => handleTabClick('Văn phòng')}
             className={tabClass('Văn phòng')}
           >
@@ -84,6 +119,7 @@ export default function LaptopListPage() {
           </button>
 
           <button
+            type="button"
             onClick={() => handleTabClick('MacBook')}
             className={tabClass('MacBook')}
           >
@@ -91,6 +127,7 @@ export default function LaptopListPage() {
           </button>
 
           <button
+            type="button"
             onClick={() => alert('Hotline: 1900 xxxx')}
             className="text-[#00A651]"
           >
@@ -100,27 +137,55 @@ export default function LaptopListPage() {
 
         <section className="mt-6">
           <h1 className="text-[30px] font-bold text-black">
-            {activeTab === 'Gaming'
-              ? 'Laptop Gaming'
-              : activeTab === 'Văn phòng'
-                ? 'Laptop Văn Phòng'
-                : activeTab === 'MacBook'
-                  ? 'MacBook'
-                  : 'Laptop / PC cũ'}
+            {pageTitle}
           </h1>
 
           <p className="mt-2 text-sm text-gray-500">
-            Khám phá các dòng laptop gaming hiệu năng cao
+            {pageDescription}
           </p>
         </section>
+
+        <div className="mt-6 rounded-2xl bg-white p-4 shadow-sm">
+          <div className="flex h-[48px] items-center gap-3 rounded-xl border border-gray-300 px-4 focus-within:border-[#3783EC]">
+            <Search size={18} className="text-gray-400" />
+
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value)
+                setActiveTab('')
+              }}
+              placeholder="Tìm kiếm laptop, PC, MacBook..."
+              className="h-full flex-1 bg-transparent text-sm outline-none"
+            />
+
+            {search && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearch('')
+                  setActiveTab('')
+                }}
+                className="text-xs font-medium text-gray-400 hover:text-red-500"
+              >
+                Xóa
+              </button>
+            )}
+          </div>
+        </div>
 
         <div className="mt-8 flex flex-col gap-8 lg:flex-row">
           <ProductFilter
             type="laptop"
             selectedPrices={selectedPrices}
             selectedCategories={selectedBrands}
-            onTogglePrice={(value) => toggleValue(value, selectedPrices, setSelectedPrices)}
-            onToggleCategory={(value) => toggleValue(value, selectedBrands, setSelectedBrands)}
+            onTogglePrice={(value) =>
+              toggleValue(value, selectedPrices, setSelectedPrices)
+            }
+            onToggleCategory={(value) =>
+              toggleValue(value, selectedBrands, setSelectedBrands)
+            }
             onClearFilter={() => {
               setSearch('')
               setActiveTab('Gaming')
@@ -130,6 +195,12 @@ export default function LaptopListPage() {
           />
 
           <section className="flex-1">
+            <div className="mb-4 flex items-center justify-between">
+              <p className="text-sm text-gray-500">
+                Tìm thấy {filteredProducts.length} sản phẩm
+              </p>
+            </div>
+
             <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {filteredProducts.length > 0 ? (
                 filteredProducts.map((item) => (
@@ -143,7 +214,9 @@ export default function LaptopListPage() {
                   />
                 ))
               ) : (
-                <p className="text-gray-500">Không tìm thấy sản phẩm phù hợp.</p>
+                <div className="rounded-2xl bg-white p-8 text-center text-gray-500 shadow-sm">
+                  Không tìm thấy sản phẩm phù hợp.
+                </div>
               )}
             </div>
           </section>

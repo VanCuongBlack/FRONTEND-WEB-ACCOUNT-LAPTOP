@@ -7,11 +7,16 @@ import ForgotPasswordPage from "@/pages/auth/ForgotPasswordPage";
 import ResetPasswordPage from "@/pages/auth/ResetPasswordPage";
 import VerifyEmailPage from "@/pages/auth/VerifyEmailPage";
 import VerifyResetOtpPage from "@/pages/auth/VerifyResetOtpPage";
-
+import HistoryPage from "@/pages/profile/HistoryPage";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
+
 import OrderManagementPage from "@/pages/admin/OrderManagementPage";
 import WarrantyManagementPage from "@/pages/admin/WarrantyManagementPage";
 import InventoryManagementPage from "@/pages/admin/InventoryManagementPage";
+
+
+import LaptopOrderDetailPage from "@/pages/profile/LaptopOrderDetailPage";
+import AccountOrderDetailPage from "@/pages/profile/AccountOrderDetailPage";
 
 import LaptopListPage from "@/pages/product/LaptopListPage";
 import LaptopDetailPage from "@/pages/product/LaptopDetailPage";
@@ -21,6 +26,10 @@ import BestSellerPage from "@/pages/product/BestSellerPage";
 
 import CartPage from "@/pages/cart/CartPage";
 import ProfilePage from "@/pages/profile/ProfilePage";
+import CheckoutPage from "@/pages/checkout/CheckoutPage";
+import OrderSuccessPage from "@/pages/checkout/OrderSuccessPage";
+import ProductManagementPage from '@/pages/admin/ProductManagementPage'
+import CustomerManagementPage from "@/pages/admin/CustomerManagementPage";
 
 export default function AppRoutes() {
   return (
@@ -51,7 +60,14 @@ export default function AppRoutes() {
         {/* Customer */}
         <Route path="/cart" element={<CartPage />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/profile/history" element={<HistoryPage />} />
+        <Route path="/profile/history/laptop/:id" element={<LaptopOrderDetailPage />} />
+        <Route path="/profile/history/account/:id" element={<AccountOrderDetailPage />} />
+        <Route path="/order-success" element={<OrderSuccessPage />} />
+        <Route path="/admin/products" element={<ProductManagementPage />} />
+        <Route path="/admin/customers" element={<CustomerManagementPage />}/>
 
+        <Route path="/checkout" element={<CheckoutPage />} />
         {/* 404 */}
         <Route path="*" element={<div>404 Not Found</div>} />
       </Routes>
