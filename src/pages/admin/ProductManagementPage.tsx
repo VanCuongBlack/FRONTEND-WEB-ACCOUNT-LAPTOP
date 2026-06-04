@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
-import AdminSidebar from '@/components/admin/AdminSidebar'
+import AdminLayout from '@/layouts/AdminLayout'
 import AppModal from '@/components/common/AppModal'
+import { Search, Plus, Edit3, Trash2 } from 'lucide-react'
 
 type ProductType = 'laptop' | 'account'
 
@@ -211,162 +212,183 @@ export default function ProductManagementPage() {
     setOpenDeleteModal(false)
   }
 
-  const tabClass = (tab: ProductType) =>
-    activeTab === tab
-      ? 'bg-[#2563EB] text-white'
-      : 'bg-[#E5E7EB] text-gray-700 hover:bg-[#D1D5DB]'
-
   return (
-    <div className="flex min-h-screen bg-[#F5F5F5] font-['Inter',sans-serif] text-black">
-      <AdminSidebar />
+    <AdminLayout title="Quản lý sản phẩm" notificationCount={3}>
+      <div className="space-y-6 max-w-[1600px] mx-auto font-sans text-slate-800">
 
-      <main className="flex-1 p-8">
-        <section className="mx-auto max-w-[1160px] rounded-3xl bg-white p-7 shadow-sm">
-          <header className="mb-7 flex items-center justify-between rounded-2xl bg-[#F3F4F6] px-7 py-5">
-            <h1 className="text-[28px] font-bold">Quản lý sản phẩm</h1>
-            <span className="text-sm text-gray-600">👤 Admin</span>
-          </header>
+        {/* Title & Actions Section */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900">Quản lý sản phẩm</h1>
+            <p className="text-sm text-slate-500 mt-1">Xem, thêm, sửa, xóa các sản phẩm Laptop/PC và Account số trên hệ thống.</p>
+          </div>
+        </div>
 
-          <div className="mb-7 flex flex-wrap gap-3">
+        {/* Controls Section */}
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-sm flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          {/* Tabs */}
+          <div className="flex flex-wrap gap-1 bg-slate-100 p-1 rounded-xl w-fit">
             <button
               type="button"
               onClick={() => {
                 setActiveTab('laptop')
                 setKeyword('')
               }}
-              className={`h-[44px] rounded-xl px-8 text-sm font-semibold transition-all ${tabClass(
-                'laptop'
-              )}`}
+              className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                activeTab === 'laptop'
+                  ? 'bg-white text-slate-900 shadow-sm'
+                  : 'text-slate-500 hover:text-slate-800'
+              }`}
             >
               Laptop / PC
             </button>
-
             <button
               type="button"
               onClick={() => {
                 setActiveTab('account')
                 setKeyword('')
               }}
-              className={`h-[44px] rounded-xl px-8 text-sm font-semibold transition-all ${tabClass(
-                'account'
-              )}`}
+              className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                activeTab === 'account'
+                  ? 'bg-white text-slate-900 shadow-sm'
+                  : 'text-slate-500 hover:text-slate-800'
+              }`}
             >
               Account số
             </button>
           </div>
 
-          <div className="mb-7 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <input
-              value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
-              placeholder={
-                activeTab === 'laptop'
-                  ? '🔍 Tìm kiếm laptop / PC...'
-                  : '🔍 Tìm kiếm account số...'
-              }
-              className="h-[46px] w-full rounded-xl bg-[#F3F4F6] px-5 text-sm outline-none focus:ring-2 focus:ring-[#2563EB]/20 md:w-[360px]"
-            />
-
+          <div className="flex items-center gap-3 w-full md:w-auto">
+            {/* Search */}
+            <div className="relative flex-1 md:w-64">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <input
+                type="text"
+                value={keyword}
+                onChange={(e) => setKeyword(e.target.value)}
+                placeholder={
+                  activeTab === 'laptop'
+                    ? 'Tìm kiếm laptop / PC...'
+                    : 'Tìm kiếm account số...'
+                }
+                className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-xl text-xs bg-slate-50/50 focus:outline-none focus:border-blue-500 focus:bg-white transition-colors"
+              />
+            </div>
+            {/* Add Product Button */}
             <button
               type="button"
               onClick={handleOpenAddProduct}
-              className="h-[46px] rounded-xl bg-[#2563EB] px-8 text-sm font-semibold text-white hover:bg-[#1D4ED8]"
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-xl text-xs font-bold text-white shadow-sm transition-colors flex items-center gap-1.5"
             >
-              + Thêm sản phẩm
+              <Plus className="w-4 h-4" />
+              Thêm sản phẩm
+            </button>
+          </div>
+        </div>
+
+        {/* Categories Section */}
+        <section className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-sm font-bold text-slate-800 flex items-center gap-2">
+              Danh mục {activeTab === 'laptop' ? 'Laptop / PC' : 'Account số'}
+            </h2>
+
+            <button
+              type="button"
+              onClick={() => setOpenCategoryModal(true)}
+              className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 rounded-xl text-xs font-bold text-white shadow-sm transition-colors flex items-center gap-1.5"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Thêm danh mục
             </button>
           </div>
 
-          <section className="mb-7 rounded-3xl bg-[#F9FAFB] p-6">
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-xl font-bold">
-                CRUD Danh mục{' '}
-                {activeTab === 'laptop' ? 'Laptop / PC' : 'Account số'}
-              </h2>
-
-              <button
-                type="button"
-                onClick={() => setOpenCategoryModal(true)}
-                className="h-[46px] rounded-xl bg-[#10B981] px-8 text-sm font-semibold text-white hover:bg-[#059669]"
+          <div className="flex flex-wrap gap-2.5">
+            {currentCategories.map((item) => (
+              <span
+                key={item}
+                className="inline-flex px-3 py-1.5 rounded-xl bg-slate-100 border border-slate-200/60 text-xs font-semibold text-slate-600"
               >
-                + Thêm danh mục
-              </button>
-            </div>
-
-            <div className="flex flex-wrap gap-4">
-              {currentCategories.map((item) => (
-                <button
-                  key={item}
-                  type="button"
-                  className="h-[38px] min-w-[140px] rounded-xl bg-[#E5E7EB] px-5 text-sm text-gray-700"
-                >
-                  {item}
-                </button>
-              ))}
-            </div>
-          </section>
-
-          <section className="rounded-3xl bg-[#F9FAFB] p-6">
-            <h2 className="mb-5 text-xl font-bold">
-              CRUD Sản phẩm{' '}
-              {activeTab === 'laptop' ? 'Laptop / PC' : 'Account số'}
-            </h2>
-
-            <div className="overflow-x-auto">
-              <div className="min-w-[960px] overflow-hidden rounded-2xl bg-white">
-                <div className="grid grid-cols-[120px_1fr_160px_160px_180px] bg-[#E5E7EB] px-6 py-4 text-sm font-bold">
-                  <span>Hình ảnh</span>
-                  <span>Tên sản phẩm</span>
-                  <span>Danh mục</span>
-                  <span>Giá</span>
-                  <span>Thao tác</span>
-                </div>
-
-                {filteredProducts.map((item) => (
-                  <div
-                    key={item.id}
-                    className="grid grid-cols-[120px_1fr_160px_160px_180px] items-center border-b border-gray-100 px-6 py-5 text-sm"
-                  >
-                    <div className="flex h-[48px] w-[56px] items-center justify-center rounded-lg bg-[#D1D5DB] text-xs text-gray-600">
-                      IMG
-                    </div>
-
-                    <span>{item.name}</span>
-
-                    <span className="text-gray-600">{item.category}</span>
-
-                    <span className="font-semibold text-[#10B981]">
-                      {formatPrice(item.price)}
-                    </span>
-
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        onClick={() => handleOpenEditProduct(item)}
-                        className="rounded-lg bg-[#2563EB] px-4 py-2 text-white hover:bg-[#1D4ED8]"
-                      >
-                        Sửa
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => handleOpenDeleteProduct(item.id)}
-                        className="rounded-lg bg-red-500 px-4 py-2 text-white hover:bg-red-600"
-                      >
-                        Xóa
-                      </button>
-                    </div>
-                  </div>
-                ))}
-
-                {filteredProducts.length === 0 && (
-                  <div className="py-10 text-center text-sm text-gray-500">
-                    Không tìm thấy sản phẩm.
-                  </div>
-                )}
-              </div>
-            </div>
-          </section>
+                {item}
+              </span>
+            ))}
+          </div>
         </section>
+
+        {/* Products Table Section */}
+        <section className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+          <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+            <h2 className="text-sm font-bold text-slate-800">
+              Danh sách sản phẩm {activeTab === 'laptop' ? 'Laptop / PC' : 'Account số'}
+            </h2>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-slate-50/75 border-b border-slate-100">
+                  <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider w-32">Hình ảnh</th>
+                  <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Tên sản phẩm</th>
+                  <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Danh mục</th>
+                  <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Giá</th>
+                  <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {filteredProducts.map((item) => (
+                  <tr key={item.id} className="hover:bg-slate-50/50 transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="flex h-10 w-12 items-center justify-center rounded-lg bg-slate-100 text-[10px] font-bold text-slate-400 border border-slate-200/60">
+                        IMG
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-800">
+                      {item.name}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                      {item.category}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-emerald-600">
+                      {formatPrice(item.price)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleOpenEditProduct(item)}
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                          title="Sửa sản phẩm"
+                        >
+                          <Edit3 className="w-4 h-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleOpenDeleteProduct(item.id)}
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                          title="Xóa sản phẩm"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {filteredProducts.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-10 text-center text-sm text-slate-400 font-medium">
+                      Không tìm thấy sản phẩm nào phù hợp.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        {/* Footer Section */}
+        <p className="text-center text-xs text-slate-400 py-4 border-t border-slate-100">
+          © 2024 Admin Panel. Hệ thống Quản lý Sản phẩm Laptop & Account Số.
+        </p>
 
         <AppModal
           open={openCategoryModal}
@@ -499,7 +521,8 @@ export default function ProductManagementPage() {
             phỏng ở FE.
           </p>
         </AppModal>
-      </main>
-    </div>
+
+      </div>
+    </AdminLayout>
   )
 }

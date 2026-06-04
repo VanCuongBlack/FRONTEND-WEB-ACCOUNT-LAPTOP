@@ -13,6 +13,7 @@ import AdminDashboard from "@/pages/admin/AdminDashboard";
 import OrderManagementPage from "@/pages/admin/OrderManagementPage";
 import WarrantyManagementPage from "@/pages/admin/WarrantyManagementPage";
 import InventoryManagementPage from "@/pages/admin/InventoryManagementPage";
+import WarrantyPolicyPage from "@/pages/WarrantyPolicyPage";
 
 
 import LaptopOrderDetailPage from "@/pages/profile/LaptopOrderDetailPage";
@@ -58,6 +59,7 @@ export default function AppRoutes() {
         <Route path="/best-seller" element={<BestSellerPage />} />
 
         {/* Customer */}
+        <Route path="/warranty-policy" element={<WarrantyPolicyPage />} />
         <Route path="/cart" element={<CartPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/profile/history" element={<HistoryPage />} />
@@ -65,7 +67,7 @@ export default function AppRoutes() {
         <Route path="/profile/history/account/:id" element={<AccountOrderDetailPage />} />
         <Route path="/order-success" element={<OrderSuccessPage />} />
         <Route path="/admin/products" element={<ProductManagementPage />} />
-        <Route path="/admin/customers" element={<CustomerManagementPage />}/>
+        <Route path="/admin/customers" element={<CustomerManagementPage />} />
 
         <Route path="/checkout" element={<CheckoutPage />} />
         {/* 404 */}
