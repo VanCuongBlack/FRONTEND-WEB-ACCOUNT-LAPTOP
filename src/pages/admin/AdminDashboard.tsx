@@ -101,22 +101,22 @@ async function fetchChartData(_range: string): Promise<ChartPoint[]> {
 function fmtCurrency(n: number): string {
   if (n === 0) return '0'
   if (n >= 1_000_000_000) return (n / 1_000_000_000).toFixed(1).replace('.0', '') + 'B'
-  if (n >= 1_000_000)     return (n / 1_000_000).toFixed(1).replace('.0', '') + 'M'
-  if (n >= 1_000)         return (n / 1_000).toFixed(1).replace('.0', '') + 'K'
+  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace('.0', '') + 'M'
+  if (n >= 1_000) return (n / 1_000).toFixed(1).replace('.0', '') + 'K'
   return n.toLocaleString('vi-VN')
 }
 
 function fmtNumber(n: number): string {
   if (n === 0) return '0'
   if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M'
-  if (n >= 1_000)     return (n / 1_000).toFixed(1).replace('.0', '') + 'K'
+  if (n >= 1_000) return (n / 1_000).toFixed(1).replace('.0', '') + 'K'
   return n.toLocaleString('vi-VN')
 }
 
 const STATUS_STYLE: Record<ActivityLog['status'], { label: string; cls: string }> = {
-  success:   { label: 'Thành công', cls: 'bg-green-100 text-green-700' },
-  pending:   { label: 'Chờ xử lý',  cls: 'bg-blue-100 text-blue-700'  },
-  cancelled: { label: 'Đã hủy',     cls: 'bg-red-100 text-red-600'    },
+  success: { label: 'Thành công', cls: 'bg-green-100 text-green-700' },
+  pending: { label: 'Chờ xử lý', cls: 'bg-blue-100 text-blue-700' },
+  cancelled: { label: 'Đã hủy', cls: 'bg-red-100 text-red-600' },
 }
 
 // ─── SVG Line Chart ────────────────────────────────────────────────────────────
@@ -194,11 +194,11 @@ function StatSkeleton() {
 // ─── Page Component ────────────────────────────────────────────────────────────
 
 export default function AdminDashboard() {
-  const [chartRange, setChartRange]     = useState('7 ngày qua')
-  const [stats, setStats]               = useState<DashboardStats>(DEFAULT_STATS)
-  const [orders, setOrders]             = useState<RecentOrder[]>([])
-  const [activities, setActivities]     = useState<ActivityLog[]>([])
-  const [chartData, setChartData]       = useState<ChartPoint[]>(DEFAULT_CHART)
+  const [chartRange, setChartRange] = useState('7 ngày qua')
+  const [stats, setStats] = useState<DashboardStats>(DEFAULT_STATS)
+  const [orders, setOrders] = useState<RecentOrder[]>([])
+  const [activities, setActivities] = useState<ActivityLog[]>([])
+  const [chartData, setChartData] = useState<ChartPoint[]>(DEFAULT_CHART)
   const [loadingStats, setLoadingStats] = useState(true)
 
   useEffect(() => {
@@ -257,22 +257,22 @@ export default function AdminDashboard() {
           {loadingStats
             ? Array.from({ length: 4 }).map((_, i) => <StatSkeleton key={i} />)
             : STAT_CARDS.map(card => (
-                <div key={card.label} className={`${card.bg} rounded-2xl p-4 lg:p-5`}>
-                  <div className="flex items-start justify-between mb-3">
-                    <p className="text-gray-500 text-xs font-medium">{card.label}</p>
-                    <div className={`${card.iconBg} w-9 h-9 rounded-xl flex items-center justify-center text-lg`}>
-                      {card.icon}
-                    </div>
+              <div key={card.label} className={`${card.bg} rounded-2xl p-4 lg:p-5`}>
+                <div className="flex items-start justify-between mb-3">
+                  <p className="text-gray-500 text-xs font-medium">{card.label}</p>
+                  <div className={`${card.iconBg} w-9 h-9 rounded-xl flex items-center justify-center text-lg`}>
+                    {card.icon}
                   </div>
-                  <p className={`text-2xl lg:text-3xl font-black ${card.valueColor} mb-1`}>
-                    {card.value}
-                  </p>
-                  <p className={`text-[11px] ${card.subColor} font-medium flex items-center gap-1`}>
-                    <TrendingUp className="w-3 h-3" />
-                    {card.sub}
-                  </p>
                 </div>
-              ))
+                <p className={`text-2xl lg:text-3xl font-black ${card.valueColor} mb-1`}>
+                  {card.value}
+                </p>
+                <p className={`text-[11px] ${card.subColor} font-medium flex items-center gap-1`}>
+                  <TrendingUp className="w-3 h-3" />
+                  {card.sub}
+                </p>
+              </div>
+            ))
           }
         </div>
 

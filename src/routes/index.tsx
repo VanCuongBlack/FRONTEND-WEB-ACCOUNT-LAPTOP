@@ -9,8 +9,15 @@ import VerifyEmailPage from "@/pages/auth/VerifyEmailPage";
 import VerifyResetOtpPage from "@/pages/auth/VerifyResetOtpPage";
 import HistoryPage from "@/pages/profile/HistoryPage";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
+
+import OrderManagementPage from "@/pages/admin/OrderManagementPage";
+import WarrantyManagementPage from "@/pages/admin/WarrantyManagementPage";
+import InventoryManagementPage from "@/pages/admin/InventoryManagementPage";
+
+
 import LaptopOrderDetailPage from "@/pages/profile/LaptopOrderDetailPage";
 import AccountOrderDetailPage from "@/pages/profile/AccountOrderDetailPage";
+
 import LaptopListPage from "@/pages/product/LaptopListPage";
 import LaptopDetailPage from "@/pages/product/LaptopDetailPage";
 import AccountListPage from "@/pages/product/AccountListPage";
@@ -39,6 +46,9 @@ export default function AppRoutes() {
 
         {/* Admin */}
         <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/admin/orders" element={<OrderManagementPage />} />
+        <Route path="/admin/warranty" element={<WarrantyManagementPage />} />
+        <Route path="/admin/inventory" element={<InventoryManagementPage />} />
 
         {/* Product */}
         <Route path="/laptops" element={<LaptopListPage />} />
