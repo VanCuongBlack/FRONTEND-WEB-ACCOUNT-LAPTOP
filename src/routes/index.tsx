@@ -32,6 +32,7 @@ import CheckoutPage from "@/pages/checkout/CheckoutPage";
 import OrderSuccessPage from "@/pages/checkout/OrderSuccessPage";
 import ProductManagementPage from '@/pages/admin/ProductManagementPage'
 import CustomerManagementPage from "@/pages/admin/CustomerManagementPage";
+import NotificationPage from '@/pages/notification/NotificationPage'
 
 export default function AppRoutes() {
   return (
@@ -70,6 +71,8 @@ export default function AppRoutes() {
         <Route path="/order-success" element={<OrderSuccessPage />} />
         <Route path="/admin/products" element={<ProductManagementPage />} />
         <Route path="/admin/customers" element={<CustomerManagementPage />} />
+
+        <Route path="/notification" element={<NotificationPage />} />
 
         <Route path="/checkout" element={<CheckoutPage />} />
         {/* 404 */}
