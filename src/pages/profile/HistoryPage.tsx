@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom'; // Dùng để chuyển hướng mượt mà sang trang Profile
 import { ChevronLeft, Search, Laptop, Key, Eye, X, ExternalLink } from 'lucide-react';
+import { getStoredUserProfile } from '@/utils/profileStorage';
 
 interface Order {
   id: string;
@@ -27,6 +28,7 @@ interface Order {
 
 export default function HistoryPage() {
   const navigate = useNavigate();
+  const profile = getStoredUserProfile();
   const [orders] = useState<Order[]>([
     {
       id: "ACC-20260513",
@@ -108,7 +110,7 @@ export default function HistoryPage() {
             aria-label="Về trang cá nhân"
           >
             <img
-              src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100"
+              src={profile.avatarUrl}
               alt="Avatar"
               className="w-11 h-11 object-cover"
             />

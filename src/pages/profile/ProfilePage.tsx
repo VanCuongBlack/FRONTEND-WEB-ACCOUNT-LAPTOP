@@ -2,9 +2,11 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Header from "../../components/layout/Header";
 import Footer from "../../components/layout/Footer";
+import { getStoredUserProfile } from "@/utils/profileStorage";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
+  const profile = getStoredUserProfile();
   const [activeStatusKey, setActiveStatusKey] = useState<
     "pending" | "shipping" | "review" | null
   >(null);
@@ -171,7 +173,7 @@ export default function ProfilePage() {
           <div className="flex flex-col sm:flex-row sm:items-center gap-5">
             <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-[#3783EC]/10 shadow-sm">
               <img
-                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80"
+                src={profile.avatarUrl}
                 alt="Avatar"
                 className="w-full h-full object-cover"
               />
@@ -179,15 +181,19 @@ export default function ProfilePage() {
 
             <div className="flex-1">
               <h2 className="text-[24px] font-bold text-gray-900">
-                Kim Ngân
+                {profile.fullName}
               </h2>
 
               <p className="text-[14px] text-gray-500 mt-1">
-                Thành viên từ 2026
+                Thành viên từ {profile.memberSince}
               </p>
 
               <div className="mt-4 flex flex-wrap gap-3">
-                <button className="h-[40px] px-5 rounded-lg border border-[#3783EC] text-[#3783EC] hover:bg-[#3783EC] hover:text-white transition-all text-[14px] font-medium">
+                <button
+                  type="button"
+                  onClick={() => navigate("/profile/edit")}
+                  className="h-[40px] px-5 rounded-lg border border-[#3783EC] text-[#3783EC] hover:bg-[#3783EC] hover:text-white transition-all text-[14px] font-medium"
+                >
                   Sửa hồ sơ
                 </button>
 

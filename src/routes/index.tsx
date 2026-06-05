@@ -26,6 +26,7 @@ import BestSellerPage from "@/pages/product/BestSellerPage";
 
 import CartPage from "@/pages/cart/CartPage";
 import ProfilePage from "@/pages/profile/ProfilePage";
+import EditProfilePage from "../pages/profile/EditProfilePage";
 import CheckoutPage from "@/pages/checkout/CheckoutPage";
 import OrderSuccessPage from "@/pages/checkout/OrderSuccessPage";
 import ProductManagementPage from '@/pages/admin/ProductManagementPage'
@@ -60,6 +61,7 @@ export default function AppRoutes() {
         {/* Customer */}
         <Route path="/cart" element={<CartPage />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/profile/edit" element={<EditProfilePage />} />
         <Route path="/profile/history" element={<HistoryPage />} />
         <Route path="/profile/history/laptop/:id" element={<LaptopOrderDetailPage />} />
         <Route path="/profile/history/account/:id" element={<AccountOrderDetailPage />} />

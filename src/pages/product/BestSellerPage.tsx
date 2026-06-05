@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import Header from "../../components/layout/Header";
 import Footer from "../../components/layout/Footer";
+import { useNavigate } from "react-router-dom";
 
 interface Product {
   id: number;
@@ -117,6 +118,7 @@ const bestSellers: Product[] = [
 ];
 
 export default function BestSellerPage() {
+  const navigate = useNavigate();
   const [cartCount, setCartCount] = useState(2);
   const [addedProductIds, setAddedProductIds] = useState<number[]>([]);
   const [flyingItems, setFlyingItems] = useState<FlyingItem[]>([]);
@@ -277,6 +279,29 @@ export default function BestSellerPage() {
 
   const formatPrice = (price: number) => {
     return `${price.toLocaleString("vi-VN")}đ`;
+  };
+
+  const handleBuyNow = (
+    e: React.MouseEvent<HTMLButtonElement>,
+    item: Product
+  ) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    navigate("/checkout", {
+      state: {
+        selectedItems: [
+          {
+            id: String(item.id),
+            name: item.name,
+            description: item.specs,
+            price: item.price,
+            quantity: 1,
+            image: item.image,
+          },
+        ],
+      },
+    });
   };
 
   return (
@@ -601,7 +626,7 @@ export default function BestSellerPage() {
                     </div>
 
                     <button
-                      onClick={(e) => e.preventDefault()}
+                      onClick={(e) => handleBuyNow(e, item)}
                       className="w-full mt-4 h-[42px] rounded-xl bg-[#3783EC] text-white font-semibold hover:bg-[#206ed6] transition-colors"
                     >
                       Mua ngay
