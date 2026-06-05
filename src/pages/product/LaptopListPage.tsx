@@ -84,7 +84,7 @@ export default function LaptopListPage() {
   }, [search, selectedPrices, selectedBrands])
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#F5F5F5] font-['Inter',sans-serif] text-black">
+    <div className="flex min-h-screen flex-col bg-[#F5F5F5] font-sans text-black">
       <Header />
 
       <main className="mx-auto w-full max-w-[1200px] flex-1 px-4 py-6">
