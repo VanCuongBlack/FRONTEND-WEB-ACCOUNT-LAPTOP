@@ -250,7 +250,13 @@ export default function AdminDashboard() {
 
   return (
     <AdminLayout title="Tổng quan hệ thống" notificationCount={1}>
-      <div className="space-y-5">
+      <div className="space-y-6 max-w-[1600px] mx-auto font-sans text-slate-800">
+
+        {/* Title Section */}
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Tổng quan hệ thống</h1>
+          <p className="text-sm text-slate-500 mt-1">Theo dõi hoạt động kinh doanh, doanh thu và đơn hàng của hệ thống.</p>
+        </div>
 
         {/* ── Stat cards ── */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
