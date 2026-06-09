@@ -341,7 +341,7 @@ export default function WarrantyManagementPage() {
                     File đính kèm: <span className="font-semibold text-slate-600">{currentTicket.attachmentsCount} file</span>
                   </p>
                   
-                  {/* RED CIRCLE AREA: VIEW TECHNICAL DETAILS BUTTON */}
+                  {/* VIEW TECHNICAL DETAILS BUTTON */}
                   <div className="mt-4 flex items-center justify-start">
                     <button
                       onClick={() => setIsDetailModalOpen(true)}
@@ -353,7 +353,7 @@ export default function WarrantyManagementPage() {
                   </div>
                 </div>
 
-                {/* Assigned Tech Card (Only for Laptop/PC type) */}
+                {/* Assigned Tech Card */}
                 {currentTicket.type === 'laptop' ? (
                   <div className="bg-blue-50/30 rounded-xl p-4 border border-blue-100 flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -389,7 +389,7 @@ export default function WarrantyManagementPage() {
                   </div>
                 )}
 
-                {/* BLUE CIRCLE AREA: STAFF RESPONSE SECTION (PHẢN HỒI CHO NGƯỜI DÙNG) */}
+                {/* STAFF RESPONSE SECTION */}
                 <div className="bg-slate-50 rounded-xl p-4 border border-slate-200 mt-4">
                   <div className="flex items-center justify-between mb-2">
                     <label className="text-xs font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5">
@@ -456,7 +456,7 @@ export default function WarrantyManagementPage() {
 
         </div>
 
-        {/* ─── Bottom Section (Components list) - Only show if Laptop/PC and has components ─── */}
+        {/* Bottom Section (Components list) */}
         {currentTicket.type === 'laptop' && currentTicket.components.length > 0 && (
           <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm">
             <div className="flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
@@ -488,7 +488,7 @@ export default function WarrantyManagementPage() {
           </div>
         )}
 
-        {/* ─── PURPLE CIRCLE AREA: YÊU CẦU TỪ KHÁCH HÀNG (TABS: LAPTOP/PC VS ACC) ─── */}
+        {/* YÊU CẦU TỪ KHÁCH HÀNG (TABS) */}
         <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-sm">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-slate-100 pb-4 mb-4 gap-3">
             <div>
@@ -533,10 +533,7 @@ export default function WarrantyManagementPage() {
               return (
                 <div
                   key={ticket.id}
-                  onClick={() => {
-                    setSelectedTicketId(ticket.id)
-                    // Auto scroll a bit to the main panel on mobile if clicked
-                  }}
+                  onClick={() => setSelectedTicketId(ticket.id)}
                   className={`p-5 rounded-xl border transition-all cursor-pointer flex flex-col gap-3 group relative ${
                     isSelected
                       ? 'border-purple-500 bg-purple-50/20 shadow-md ring-1 ring-purple-500/20'
@@ -587,7 +584,7 @@ export default function WarrantyManagementPage() {
 
       </div>
 
-      {/* ─── RED CIRCLE AREA: DETAIL MODAL (TECHNICAL INFORMATION & MEDIA) ─── */}
+      {/* DETAIL MODAL (TECHNICAL INFORMATION & MEDIA) */}
       {isDetailModalOpen && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto flex flex-col p-6 animate-in fade-in zoom-in duration-200">
@@ -639,7 +636,7 @@ export default function WarrantyManagementPage() {
                 </div>
               </div>
 
-              {/* Technical Specifications (Mock details based on type) */}
+              {/* Technical Specifications */}
               <div>
                 <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Thông số cấu hình / Kỹ thuật</h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
@@ -704,7 +701,6 @@ export default function WarrantyManagementPage() {
                           alt={`Lỗi đính kèm ${i + 1}`}
                           className="w-full h-full object-cover transition-transform group-hover:scale-105"
                           onError={(e) => {
-                            // Fallback if image doesn't exist
                             e.currentTarget.src = 'https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=600'
                           }}
                         />
@@ -759,4 +755,3 @@ export default function WarrantyManagementPage() {
     </StaffLayout>
   )
 }
-
