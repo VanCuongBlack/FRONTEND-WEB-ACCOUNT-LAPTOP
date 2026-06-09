@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Menu, X, User, ShoppingCart, Search, Bell } from "lucide-react";
+import { getStoredUserProfile } from "@/utils/profileStorage";
 
 interface HeaderProps {
   pageLabel?: string;
@@ -20,7 +21,11 @@ export default function Header({
   const [mobileOpen, setMobileOpen] = useState(false);
   const [query, setQuery] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
   const isLoggedIn = !!localStorage.getItem("accessToken");
+  const isProfileSection = location.pathname.startsWith("/profile");
+  const shouldShowUserAvatar = isLoggedIn || isProfileSection;
+  const userAvatarUrl = getStoredUserProfile().avatarUrl;
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -124,13 +129,13 @@ export default function Header({
 
             {/* User Account State (Desktop) */}
             <div className="hidden md:flex items-center gap-2 ml-1">
-              {isLoggedIn ? (
+              {shouldShowUserAvatar ? (
                 <Link
                   to="/profile"
                   className="w-9 h-9 rounded-full overflow-hidden border-2 border-gray-200 hover:border-blue-500 transition-all flex-shrink-0"
                 >
                   <img
-                    src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100"
+                    src={userAvatarUrl}
                     className="w-full h-full object-cover"
                     alt="Avatar"
                   />
@@ -215,7 +220,7 @@ export default function Header({
 
             {/* Auth Buttons (Mobile) */}
             <div className="pt-3 mt-1 border-t border-gray-100 flex gap-2">
-              {isLoggedIn ? (
+              {shouldShowUserAvatar ? (
                 <Link
                   to="/profile"
                   onClick={() => setMobileOpen(false)}

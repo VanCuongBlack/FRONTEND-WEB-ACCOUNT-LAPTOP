@@ -68,16 +68,31 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="w-full min-h-screen mx-auto bg-white font-['Inter',_sans-serif] flex flex-col items-center justify-center px-4 py-10">
-      <div className="flex flex-col items-center w-full max-w-[722px]">
-        <h1 className="text-[28px] sm:text-[36px] font-bold text-black text-center tracking-wide">
-          ĐĂNG NHẬP
-        </h1>
+    <div className="relative w-full min-h-screen overflow-hidden bg-white">
+      <img
+        src="/login.png"
+        alt="Minh hoạ đăng nhập"
+        className="absolute inset-0 hidden w-full h-full object-cover object-left lg:block"
+      />
 
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className="w-full flex flex-col mt-[45px] sm:mt-[75px] gap-[32px] sm:gap-[47px]"
-        >
+      <div className="relative z-10 flex flex-col items-center justify-center px-4 py-8 sm:px-8 lg:min-h-screen lg:flex-row lg:justify-end lg:pl-12 lg:pr-56">
+        <div className="w-full max-w-[540px] lg:hidden mb-5">
+          <img
+            src="/login.png"
+            alt="Minh hoạ đăng nhập"
+            className="w-full h-auto rounded-[15px] object-contain"
+          />
+        </div>
+
+        <div className="w-full max-w-[540px] rounded-[15px] border border-black/12 bg-white/95 shadow-xl backdrop-blur-[2px] p-5 sm:p-6">
+            <h1 className="text-[26px] sm:text-[32px] font-bold text-black text-center tracking-wide">
+              ĐĂNG NHẬP
+            </h1>
+
+            <form
+              onSubmit={handleSubmit(onSubmit)}
+              className="w-full flex flex-col mt-[24px] sm:mt-[30px] gap-[24px] sm:gap-[28px]"
+            >
           <div className="w-full flex flex-col gap-[12px]">
             <label className="text-[16px] sm:text-[20px] font-normal text-black pl-5">
               Email
@@ -188,16 +203,17 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <div className="w-full flex justify-center">
-            <button
-              type="button"
-              onClick={() => navigate("/register")}
-              className="w-full h-[52px] sm:h-[57px] rounded-[84px] bg-transparent border border-black/34 hover:bg-gray-50 text-black font-normal text-[16px] sm:text-[20px] transition-all duration-200 shadow-sm flex items-center justify-center cursor-pointer"
-            >
-              Đăng ký tài khoản mới
-            </button>
-          </div>
-        </form>
+              <div className="w-full flex justify-center">
+                <button
+                  type="button"
+                  onClick={() => navigate("/register")}
+                  className="w-full h-[52px] sm:h-[57px] rounded-[84px] bg-transparent border border-black/34 hover:bg-gray-50 text-black font-normal text-[16px] sm:text-[20px] transition-all duration-200 shadow-sm flex items-center justify-center cursor-pointer"
+                >
+                  Đăng ký tài khoản mới
+                </button>
+              </div>
+            </form>
+        </div>
       </div>
     </div>
   );

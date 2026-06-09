@@ -40,59 +40,67 @@ interface ChartPoint { label: string; value: number }
 // ─── Defaults (hiển thị 0 khi chưa có API) ────────────────────────────────────
 
 const DEFAULT_STATS: DashboardStats = {
-  revenue: 0, orders: 0, products: 0, customers: 0,
-  revenueChange: 0, ordersChange: 0, newProducts: 0, newCustomers: 0,
+  revenue: 1852400000,
+  orders: 1420,
+  products: 850,
+  customers: 3200,
+  revenueChange: 12.5,
+  ordersChange: 8.2,
+  newProducts: 14,
+  newCustomers: 145,
 }
 
-const DEFAULT_CHART: ChartPoint[] = Array.from({ length: 7 }, (_, i) => ({
-  label: `T${i + 1}`, value: 0,
-}))
+const DEFAULT_CHART: ChartPoint[] = [
+  { label: 'T2', value: 12000000 },
+  { label: 'T3', value: 15000000 },
+  { label: 'T4', value: 18000000 },
+  { label: 'T5', value: 14000000 },
+  { label: 'T6', value: 22000000 },
+  { label: 'T7', value: 35000000 },
+  { label: 'CN', value: 28000000 },
+]
 
 // ─── API fetch functions ────────────────────────────────────────────────────────
 // import api from '@/services/api'
 
 async function fetchDashboardStats(): Promise<DashboardStats> {
-  // ── REAL API ──────────────────────────────────────────────────────────────
-  // const res = await api.get('/admin/dashboard/stats')
-  // const d = res.data.data
-  // return {
-  //   revenue:       d.revenue,
-  //   orders:        d.totalOrders,
-  //   products:      d.totalProducts,
-  //   customers:     d.totalCustomers,
-  //   revenueChange: d.revenueChangePercent,
-  //   ordersChange:  d.ordersChangePercent,
-  //   newProducts:   d.newProductsToday,
-  //   newCustomers:  d.newCustomersThisWeek,
-  // }
   return DEFAULT_STATS
 }
 
 async function fetchRecentOrders(): Promise<RecentOrder[]> {
-  // ── REAL API ──────────────────────────────────────────────────────────────
-  // const res = await api.get('/admin/orders?limit=5&sort=newest')
-  // return res.data.data.map((o: any) => ({
-  //   id: o.orderCode, name: o.productName,
-  //   time: o.createdAtRelative, amount: o.totalAmount, type: o.category,
-  // }))
-  return []
+  return [
+    { id: 'LAP-87012', name: 'Laptop Dell Gaming G15 5530', time: '10 phút trước', amount: 24990000, type: 'laptop' },
+    { id: 'ACC-90124', name: 'Tài khoản Netflix Premium 12 Tháng', time: '25 phút trước', amount: 540000, type: 'account' },
+    { id: 'LAP-85190', name: 'MacBook Pro M3 Max 14-inch', time: '1 giờ trước', amount: 69990000, type: 'laptop' },
+    { id: 'ACC-88219', name: 'YouTube Premium 1 Năm', time: '2 giờ trước', amount: 390000, type: 'account' },
+    { id: 'ACC-87301', name: 'Spotify Premium 1 Tháng', time: '4 giờ trước', amount: 190000, type: 'account' },
+  ]
 }
 
 async function fetchActivityLogs(): Promise<ActivityLog[]> {
-  // ── REAL API ──────────────────────────────────────────────────────────────
-  // const res = await api.get('/admin/activity-logs?limit=10')
-  // return res.data.data.map((log: any) => ({
-  //   initials: log.userInitials, bg: log.avatarColor, name: log.userName,
-  //   action: log.action, time: log.timeRelative, status: log.status,
-  // }))
-  return []
+  return [
+    { initials: 'NH', bg: 'bg-blue-600', name: 'Nguyễn Văn Hưng', action: 'Cập nhật cấu hình Banner trang chủ', time: '5 phút trước', status: 'success' },
+    { initials: 'TA', bg: 'bg-emerald-600', name: 'Trần Văn A', action: 'Xác nhận tiếp nhận Ticket bảo hành #TK-87012', time: '12 phút trước', status: 'success' },
+    { initials: 'LB', bg: 'bg-purple-600', name: 'Lê Thị B', action: 'Đăng ký tài khoản khách hàng mới', time: '1 giờ trước', status: 'success' },
+    { initials: 'HT', bg: 'bg-slate-600', name: 'Hệ thống', action: 'Tự động sao lưu dữ liệu cơ sở dữ liệu', time: '3 giờ trước', status: 'success' },
+    { initials: 'KH', bg: 'bg-rose-600', name: 'Khách hàng', action: 'Hủy yêu cầu bảo hành #TK-85112', time: '5 giờ trước', status: 'cancelled' },
+  ]
 }
 
-async function fetchChartData(_range: string): Promise<ChartPoint[]> {
-  // ── REAL API ──────────────────────────────────────────────────────────────
-  // const days = _range === '7 ngày qua' ? 7 : _range === '30 ngày qua' ? 30 : 90
-  // const res = await api.get(`/admin/dashboard/revenue-chart?days=${days}`)
-  // return res.data.data.map((pt: any) => ({ label: pt.date, value: pt.revenue }))
+async function fetchChartData(range: string): Promise<ChartPoint[]> {
+  if (range === '30 ngày qua') {
+    return Array.from({ length: 30 }, (_, i) => ({
+      label: `${i + 1}`,
+      value: Math.floor(Math.random() * 40000000) + 10000000,
+    }))
+  }
+  if (range === '3 tháng qua') {
+    return [
+      { label: 'Tháng 4', value: 450000000 },
+      { label: 'Tháng 5', value: 680000000 },
+      { label: 'Tháng 6', value: 720000000 },
+    ]
+  }
   return DEFAULT_CHART
 }
 
