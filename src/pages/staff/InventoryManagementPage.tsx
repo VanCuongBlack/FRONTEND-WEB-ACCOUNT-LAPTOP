@@ -4,7 +4,7 @@ import {
   ChevronLeft, ChevronRight, Laptop, MousePointer, Cpu,
   AlertTriangle, Database, Truck, FileText, X
 } from 'lucide-react'
-import AdminLayout from '@/layouts/AdminLayout'
+import StaffLayout from '@/layouts/StaffLayout'
 
 // ─── Interfaces & Mock Data ───────────────────────────────────────────────────
 
@@ -167,7 +167,7 @@ export default function InventoryManagementPage() {
   }, [items])
 
   return (
-    <AdminLayout title="Quản lý kho" notificationCount={3}>
+    <StaffLayout title="Quản lý kho" notificationCount={3}>
       <div className="space-y-6 max-w-[1600px] mx-auto font-sans text-slate-800 relative">
         
         {/* Title & Actions Section */}
@@ -594,6 +594,6 @@ export default function InventoryManagementPage() {
         )}
 
       </div>
-    </AdminLayout>
+    </StaffLayout>
   )
 }

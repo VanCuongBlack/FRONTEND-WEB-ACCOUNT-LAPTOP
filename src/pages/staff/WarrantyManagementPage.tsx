@@ -3,7 +3,7 @@ import {
   MapPin, Users, Wrench, ShieldAlert, Edit2, CheckCircle2,
   Trash2, Plus, Users2, FileText, ChevronRight, Check
 } from 'lucide-react'
-import AdminLayout from '@/layouts/AdminLayout'
+import StaffLayout from '@/layouts/StaffLayout'
 
 // ─── Interfaces & Mock Data ───────────────────────────────────────────────────
 
@@ -69,7 +69,7 @@ export default function WarrantyManagementPage() {
   }
 
   return (
-    <AdminLayout title="Quản lý bảo hành" notificationCount={3}>
+    <StaffLayout title="Quản lý bảo hành" notificationCount={3}>
       <div className="space-y-6 max-w-[1600px] mx-auto font-sans text-slate-800">
         
         {/* Title Section */}
@@ -303,6 +303,6 @@ export default function WarrantyManagementPage() {
         </div>
 
       </div>
-    </AdminLayout>
+    </StaffLayout>
   )
 }
