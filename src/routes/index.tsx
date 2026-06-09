@@ -29,6 +29,7 @@ import NotificationPage from '@/pages/notification/NotificationPage'
 import WarrantyPolicyPage from '@/pages/WarrantyPolicyPage'
 
 import AdminDashboard from '@/pages/admin/AdminDashboard'
+import SystemSettingsPage from '@/pages/admin/SystemSettingsPage'
 
 import StaffDashboard from '@/pages/staff/StaffDashboard'
 import ProductManagementPage from '@/pages/staff/ProductManagementPage'
@@ -84,7 +85,7 @@ export default function AppRoutes() {
         <Route path="/admin/reports" element={<div>Báo cáo</div>} />
         <Route path="/admin/employees" element={<div>Quản lý nhân viên</div>} />
         <Route path="/admin/roles" element={<div>Phân quyền</div>} />
-        <Route path="/admin/settings" element={<div>Quản lý hệ thống</div>} />
+        <Route path="/admin/settings" element={<SystemSettingsPage />} />
 
         {/* Staff / Nhân viên */}
         <Route path="/staff" element={<StaffDashboard />} />
