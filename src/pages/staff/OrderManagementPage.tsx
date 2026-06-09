@@ -4,7 +4,7 @@ import {
   CheckCircle, MoreHorizontal, ChevronLeft, ChevronRight,
   TrendingUp, AlertCircle
 } from 'lucide-react'
-import AdminLayout from '@/layouts/AdminLayout'
+import StaffLayout from '@/layouts/StaffLayout'
 
 // ─── Interfaces ───────────────────────────────────────────────────────────────
 
@@ -88,7 +88,7 @@ export default function OrderManagementPage() {
   }, [orders])
 
   return (
-    <AdminLayout title="Quản lý đơn hàng" notificationCount={3}>
+    <StaffLayout title="Quản lý đơn hàng" notificationCount={3}>
       <div className="space-y-6 max-w-[1600px] mx-auto font-sans text-slate-800">
         
         {/* Title Section */}
@@ -354,6 +354,6 @@ export default function OrderManagementPage() {
         </div>
 
       </div>
-    </AdminLayout>
+    </StaffLayout>
   )
 }

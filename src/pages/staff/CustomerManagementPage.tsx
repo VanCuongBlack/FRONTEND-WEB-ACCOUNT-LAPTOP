@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import AdminLayout from '@/layouts/AdminLayout'
+import StaffLayout from '@/layouts/StaffLayout'
 import AppModal from '@/components/common/AppModal'
 import { Search, Download, Users, Eye, History, Lock, Unlock } from 'lucide-react'
 
@@ -110,7 +110,7 @@ export default function CustomerManagementPage() {
   }
 
   return (
-    <AdminLayout title="Quản lý khách hàng" notificationCount={3}>
+    <StaffLayout title="Quản lý khách hàng" notificationCount={3}>
       <div className="space-y-6 max-w-[1600px] mx-auto font-sans text-slate-800">
 
         {/* Title Section */}
@@ -414,6 +414,6 @@ export default function CustomerManagementPage() {
         </AppModal>
 
       </div>
-    </AdminLayout>
+    </StaffLayout>
   )
 }
