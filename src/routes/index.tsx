@@ -30,6 +30,8 @@ import WarrantyPolicyPage from '@/pages/WarrantyPolicyPage'
 
 import AdminDashboard from '@/pages/admin/AdminDashboard'
 import SystemSettingsPage from '@/pages/admin/SystemSettingsPage'
+import EmployeeManagementPage from '@/pages/admin/EmployeeManagementPage'
+import ReportsPage from '@/pages/admin/ReportsPage'
 
 import StaffDashboard from '@/pages/staff/StaffDashboard'
 import ProductManagementPage from '@/pages/staff/ProductManagementPage'
@@ -82,9 +84,8 @@ export default function AppRoutes() {
 
         {/* Admin / Chủ cửa hàng */}
         <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/admin/reports" element={<div>Báo cáo</div>} />
-        <Route path="/admin/employees" element={<div>Quản lý nhân viên</div>} />
-        <Route path="/admin/roles" element={<div>Phân quyền</div>} />
+        <Route path="/admin/employees" element={<EmployeeManagementPage />} />
+        <Route path="/admin/reports" element={<ReportsPage />} />
         <Route path="/admin/settings" element={<SystemSettingsPage />} />
 
         {/* Staff / Nhân viên */}
