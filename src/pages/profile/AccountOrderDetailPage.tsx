@@ -232,7 +232,14 @@ export default function AccountOrderDetailPage() {
             </div>
 
             <div className="mt-6 flex flex-col sm:flex-row gap-3">
-              <button className="flex-1 px-4 py-3 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-sm font-medium">
+              <button
+                onClick={() =>
+                  navigate(`/profile/history/support/account/${order.id}`, {
+                    state: { productName: order.productName },
+                  })
+                }
+                className="flex-1 px-4 py-3 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-sm font-medium"
+              >
                 Gửi yêu cầu hỗ trợ
               </button>
               <button className="flex-1 px-4 py-3 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-sm font-medium">

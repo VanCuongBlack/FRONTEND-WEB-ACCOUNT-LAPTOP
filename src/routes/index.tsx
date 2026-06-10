@@ -24,9 +24,12 @@ import EditProfilePage from '@/pages/profile/EditProfilePage'
 import HistoryPage from '@/pages/profile/HistoryPage'
 import LaptopOrderDetailPage from '@/pages/profile/LaptopOrderDetailPage'
 import AccountOrderDetailPage from '@/pages/profile/AccountOrderDetailPage'
+import SupportRequestPage from '@/pages/profile/SupportRequestPage'
+import SupportRequestDetailPage from '@/pages/profile/SupportRequestDetailPage'
 
 import NotificationPage from '@/pages/notification/NotificationPage'
 import WarrantyPolicyPage from '@/pages/WarrantyPolicyPage'
+import PurchaseGuidePage from '@/pages/PurchaseGuidePage'
 
 import AdminDashboard from '@/pages/admin/AdminDashboard'
 import SystemSettingsPage from '@/pages/admin/SystemSettingsPage'
@@ -47,6 +50,7 @@ export default function AppRoutes() {
         {/* Public */}
         <Route path="/" element={<LandingPage />} />
         <Route path="/warranty-policy" element={<WarrantyPolicyPage />} />
+        <Route path="/purchase-guide" element={<PurchaseGuidePage />} />
         <Route path="/notification" element={<NotificationPage />} />
 
         {/* Auth */}
@@ -80,6 +84,14 @@ export default function AppRoutes() {
         <Route
           path="/profile/history/account/:id"
           element={<AccountOrderDetailPage />}
+        />
+        <Route
+          path="/profile/history/support/:type/:id"
+          element={<SupportRequestPage />}
+        />
+        <Route
+          path="/profile/support/:ticketId"
+          element={<SupportRequestDetailPage />}
         />
 
         {/* Admin / Chủ cửa hàng */}
