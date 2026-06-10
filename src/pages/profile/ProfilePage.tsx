@@ -3,6 +3,10 @@ import { Link, useNavigate } from "react-router-dom";
 import Header from "../../components/layout/Header";
 import Footer from "../../components/layout/Footer";
 import { getStoredUserProfile } from "@/utils/profileStorage";
+import {
+  getStoredSupportRequests,
+  type SupportRequestStatus,
+} from "@/utils/supportRequestStorage";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
@@ -147,20 +151,19 @@ export default function ProfilePage() {
     navigate(`/profile/history/account/${order.id}`);
   };
 
-  const supportRequests = [
-    {
-      id: 1,
-      title: "Lỗi đăng nhập Account Netflix",
-      date: "12/05/2026",
-      status: "Đang xử lý",
-    },
-    {
-      id: 2,
-      title: "Không thể kích hoạt Microsoft 365",
-      date: "10/05/2026",
-      status: "Đã phản hồi",
-    },
-  ];
+  const supportRequests = getStoredSupportRequests();
+
+  const statusMap: Record<
+    SupportRequestStatus,
+    { label: string; dotColor: string }
+  > = {
+    pending: { label: "Chờ tiếp nhận", dotColor: "bg-amber-400" },
+    in_progress: { label: "Đang xử lý", dotColor: "bg-blue-500" },
+    responded: { label: "Đã phản hồi", dotColor: "bg-emerald-500" },
+  };
+
+  const formatDate = (isoDate: string) =>
+    new Date(isoDate).toLocaleDateString("vi-VN");
 
   return (
     <div className="w-full min-h-screen flex flex-col bg-[#F5F5F5] text-black">
@@ -261,32 +264,47 @@ export default function ProfilePage() {
           </h3>
 
           <div className="flex flex-col gap-4">
-            {supportRequests.map((req) => (
-              <div
-                key={req.id}
-                className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col md:flex-row md:items-center md:justify-between gap-4"
-              >
-                <div>
-                  <p className="font-semibold text-[15px] text-gray-800">
-                    {req.title}
-                  </p>
+            {supportRequests.map((req) => {
+              const requestStatus = statusMap[req.status];
 
-                  <div className="flex flex-wrap items-center gap-2 text-[13px] text-gray-500 mt-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-yellow-400"></span>
+              return (
+                <div
+                  key={req.id}
+                  className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+                >
+                  <div>
+                    <p className="font-semibold text-[15px] text-gray-800">
+                      {req.productName} • #{req.id}
+                    </p>
 
-                    <span>{req.status}</span>
+                    <p className="text-[13px] text-gray-600 mt-2 line-clamp-2">
+                      {req.description || "Khách hàng chưa bổ sung mô tả chi tiết."}
+                    </p>
 
-                    <span>•</span>
-
-                    <span>{req.date}</span>
+                    <div className="flex flex-wrap items-center gap-2 text-[13px] text-gray-500 mt-2">
+                      <span className={`w-2.5 h-2.5 rounded-full ${requestStatus.dotColor}`}></span>
+                      <span>{requestStatus.label}</span>
+                      <span>•</span>
+                      <span>{formatDate(req.createdAt)}</span>
+                    </div>
                   </div>
-                </div>
 
-                <button className="h-[42px] px-5 rounded-xl bg-[#3783EC]/10 text-[#3783EC] font-medium text-[14px] hover:bg-[#3783EC] hover:text-white transition-all">
-                  Chi tiết yêu cầu
-                </button>
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/profile/support/${req.id}`)}
+                    className="h-[42px] px-5 rounded-xl bg-[#3783EC]/10 text-[#3783EC] font-medium text-[14px] hover:bg-[#3783EC] hover:text-white transition-all"
+                  >
+                    Chi tiết yêu cầu
+                  </button>
+                </div>
+              );
+            })}
+
+            {supportRequests.length === 0 && (
+              <div className="bg-white border border-dashed border-gray-200 rounded-2xl p-5 text-[14px] text-gray-500">
+                Chưa có yêu cầu hỗ trợ nào.
               </div>
-            ))}
+            )}
           </div>
         </section>
 
