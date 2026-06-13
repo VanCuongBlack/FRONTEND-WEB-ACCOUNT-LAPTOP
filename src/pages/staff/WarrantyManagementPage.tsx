@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import {
   MapPin, Users, Wrench, ShieldAlert, Edit2, CheckCircle2,
   Trash2, Plus, Users2, FileText, ChevronRight, Check,
-  Eye, Send, X, Laptop, Key, ShieldCheck, Play
+  Eye, Send, X, Laptop, Key, ShieldCheck
 } from 'lucide-react'
 import StaffLayout from '@/layouts/StaffLayout'
 import {
@@ -286,11 +286,12 @@ export default function WarrantyManagementPage() {
     }
   }, [selectedTicketId, currentTicket])
 
+  // Media loading logic (keeps lazy-loading optimized, checking only open details)
   useEffect(() => {
     let isMounted = true
 
     const loadMedia = async () => {
-      if (!currentTicket) {
+      if (!isDetailModalOpen || !currentTicket) {
         if (isMounted) {
           setMediaByName((prev) => {
             revokeMediaObjectUrls(prev)
@@ -318,7 +319,7 @@ export default function WarrantyManagementPage() {
       isMounted = false
       revokeMediaObjectUrls(mediaByName)
     }
-  }, [currentTicket?.id])
+  }, [isDetailModalOpen, currentTicket?.id])
 
   const handleChangeTech = () => {
     const newName = prompt('Nhập tên kỹ thuật viên mới:', currentTicket.techName)
@@ -793,7 +794,7 @@ export default function WarrantyManagementPage() {
               </h2>
               <span className="px-2 py-0.5 bg-slate-100 text-slate-500 rounded text-[10px] font-bold">
                 {currentTicket.components.length} sản phẩm được chọn
-              </span>
+              </h2>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -909,7 +910,7 @@ export default function WarrantyManagementPage() {
           </div>
 
           <div className="mt-5 bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm">
-            <h2 className="text-sm font-bold text-slate-800 mb-3">Yêu cầu từ khách hàng</h2>
+            <h2 className="text-sm font-bold text-slate-800 mb-3">Tất cả yêu cầu</h2>
 
             <div className="space-y-3 max-h-[280px] overflow-y-auto pr-1">
               {tickets.map((ticket) => (
@@ -994,50 +995,50 @@ export default function WarrantyManagementPage() {
                       Loại sản phẩm:{' '}
                       <span className="font-semibold">{currentTicket.type === 'account' ? 'Account' : 'Laptop/PC'}</span>
                     </p>
+                    <p>
+                      Tên sản phẩm: <span className="font-semibold">{currentTicket.device}</span>
+                    </p>
+                    {currentTicket.type === 'laptop' && currentTicket.techName && (
                       <p>
-                        Tên sản phẩm: <span className="font-semibold">{currentTicket.device}</span>
+                        Kỹ thuật viên chỉ định: <span className="font-semibold">{currentTicket.techName}</span>
                       </p>
-                      {currentTicket.type === 'laptop' && currentTicket.techName && (
-                        <p>
-                          Kỹ thuật viên chỉ định: <span className="font-semibold">{currentTicket.techName}</span>
-                        </p>
-                      )}
+                    )}
                     <p>Mô tả chi tiết:</p>
                     <p className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-base leading-relaxed text-slate-700">
                       {currentTicket.description || 'Khách hàng chưa bổ sung mô tả chi tiết.'}
                     </p>
                     <p>Hình ảnh/ video sản phẩm lỗi:</p>
-                      <div className="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
-                        {currentTicket.attachments.length > 0 ? (
-                          currentTicket.attachments.map((attachment, index) => {
+                    <div className="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
+                      {currentTicket.attachments.length > 0 ? (
+                        currentTicket.attachments.map((attachment, index) => {
                           const previewSource = resolveAttachmentPreviewSource(attachment, mediaByName)
 
                           if (!previewSource) {
-                              return (
-                                <div key={`${currentTicket.id}-${attachment.name}-${index}`} className="rounded-xl border border-slate-200 bg-white p-3">
-                                  <p className="text-xs font-semibold text-slate-600">
-                                    File #{index + 1}: {attachment.name}
-                                  </p>
-                                  <p className="mt-1 text-xs text-slate-500">
-                                    Không thể hiển thị trực tiếp file cũ này. Vui lòng yêu cầu khách hàng tải lại file để xem preview.
-                                  </p>
-                                </div>
-                              )
-                            }
-
                             return (
-                              <div key={`${currentTicket.id}-${attachment.name}-${index}`} className="overflow-hidden rounded-xl border border-slate-200 bg-white">
-                                <div className="border-b border-slate-100 px-3 py-2 text-xs font-medium text-slate-500">
-                                  {attachment.name}
-                                </div>
-                                {attachment.isVideo ? (
-                                  <video src={previewSource} controls className="h-auto max-h-[220px] w-full bg-black" />
-                                ) : (
-                                  <img src={previewSource} alt={attachment.name} className="h-auto max-h-[220px] w-full object-contain bg-white" />
-                                )}
+                              <div key={`${currentTicket.id}-${attachment.name}-${index}`} className="rounded-xl border border-slate-200 bg-white p-3">
+                                <p className="text-xs font-semibold text-slate-600">
+                                  File #{index + 1}: {attachment.name}
+                                </p>
+                                <p className="mt-1 text-xs text-slate-500">
+                                  Không thể hiển thị trực tiếp file cũ này. Vui lòng yêu cầu khách hàng tải lại file để xem preview.
+                                </p>
                               </div>
                             )
-                          })
+                          }
+
+                          return (
+                            <div key={`${currentTicket.id}-${attachment.name}-${index}`} className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+                              <div className="border-b border-slate-100 px-3 py-2 text-xs font-medium text-slate-500">
+                                {attachment.name}
+                              </div>
+                              {attachment.isVideo ? (
+                                <video src={previewSource} controls className="h-auto max-h-[220px] w-full bg-black" />
+                              ) : (
+                                <img src={previewSource} alt={attachment.name} className="h-auto max-h-[220px] w-full object-contain bg-white" />
+                              )}
+                            </div>
+                          )
+                        })
                       ) : (
                         <p>Không có file đính kèm.</p>
                       )}
@@ -1057,11 +1058,6 @@ export default function WarrantyManagementPage() {
                         <div>
                           <p className="text-base font-semibold text-slate-900">{currentTicket.techName || 'Nhân viên hỗ trợ'}</p>
                           <p className="text-xs text-slate-600">Phản hồi đã được gửi cho khách hàng.</p>
-                          {currentTicket.type === 'laptop' && currentTicket.techName && (
-                            <p className="text-xs text-slate-600">
-                              Kỹ thuật viên chỉ định: <span className="font-semibold text-slate-700">{currentTicket.techName}</span>
-                            </p>
-                          )}
                         </div>
                       </div>
                       <p className="mt-4 whitespace-pre-line rounded-xl border border-emerald-100 bg-white p-3 text-sm leading-relaxed text-slate-700">
@@ -1072,7 +1068,7 @@ export default function WarrantyManagementPage() {
                     <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 p-4">
                       <p className="text-sm font-semibold text-amber-800">Nhân viên chưa phản hồi yêu cầu này.</p>
                       <p className="mt-2 text-sm text-amber-700">
-                        Vui lòng chờ thêm, bộ phận hỗ trợ sẽ phản hồi trong thời gian sớm nhất.
+                        Vui lòng nhập hướng dẫn xử lý ở bảng điều khiển bên ngoài để phản hồi khách hàng.
                       </p>
                     </div>
                   )}
