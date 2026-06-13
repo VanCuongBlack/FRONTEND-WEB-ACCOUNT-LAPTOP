@@ -1,9 +1,11 @@
+import { Link } from 'react-router-dom'
+
 // Category icons with responsive sizing
 const STITCH_CATEGORIES = [
   {
     id: 'sinhvien',
     label: 'Sinh Viên',
-    href: '#sinhvien',
+    to: '/best-seller',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="w-5 h-5 sm:w-6 sm:h-6">
         <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l9-5-9-5-9 5 9 5z" />
@@ -14,7 +16,7 @@ const STITCH_CATEGORIES = [
   {
     id: 'macbook',
     label: 'Macbook',
-    href: '#macbook',
+    to: '/laptops?tab=MacBook&search=MacBook',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="w-5 h-5 sm:w-6 sm:h-6">
         <rect x="2" y="4" width="20" height="13" rx="2" strokeLinecap="round" />
@@ -26,7 +28,7 @@ const STITCH_CATEGORIES = [
   {
     id: 'toolai',
     label: 'Tool AI',
-    href: '#toolai',
+    to: '/accounts?tab=ChatGPT&search=ChatGPT',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="w-5 h-5 sm:w-6 sm:h-6">
         <circle cx="12" cy="8" r="3" />
@@ -38,7 +40,7 @@ const STITCH_CATEGORIES = [
   {
     id: 'cloudvps',
     label: 'Cloud & VPS',
-    href: '#cloudvps',
+    to: '/accounts?search=Cloud',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="w-5 h-5 sm:w-6 sm:h-6">
         <path strokeLinecap="round" strokeLinejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
@@ -53,9 +55,9 @@ export default function CategoryBar() {
       {/* Scrollable on very small screens, centered on larger */}
       <div className="flex items-center justify-around sm:justify-center sm:gap-10 lg:gap-16 overflow-x-auto scrollbar-hide pb-1">
         {STITCH_CATEGORIES.map(cat => (
-          <a
+          <Link
             key={cat.id}
-            href={cat.href}
+            to={cat.to}
             className="flex flex-col items-center gap-1.5 sm:gap-2 group cursor-pointer flex-shrink-0 px-2"
           >
             {/* Circle icon */}
@@ -65,7 +67,7 @@ export default function CategoryBar() {
             <span className="text-[11px] sm:text-xs text-gray-700 font-medium group-hover:text-blue-600 transition-colors whitespace-nowrap">
               {cat.label}
             </span>
-          </a>
+          </Link>
         ))}
       </div>
     </section>

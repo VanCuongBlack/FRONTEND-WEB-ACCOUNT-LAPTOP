@@ -139,16 +139,25 @@ export default function FeaturedProducts({
     <section id="products" className="max-w-[1200px] mx-auto px-4 sm:px-6 pb-4 sm:pb-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-3 sm:mb-4">
-        <Link to={viewMoreUrl} className="flex items-center gap-2 group cursor-pointer">
-          <div className="w-1 h-5 bg-blue-600 rounded-full group-hover:bg-blue-700 transition-colors" />
-          <h2 className="text-sm font-bold text-gray-900 group-hover:text-blue-600 transition-colors">{title}</h2>
-        </Link>
-        <Link to={viewMoreUrl} className="flex items-center gap-1 text-blue-600 text-xs font-medium hover:underline">
-          Xem thêm
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-3.5 h-3.5">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-          </svg>
-        </Link>
+        {viewMoreUrl ? (
+          <Link to={viewMoreUrl} className="flex items-center gap-2 group cursor-pointer">
+            <div className="w-1 h-5 bg-blue-600 rounded-full group-hover:bg-blue-700 transition-colors" />
+            <h2 className="text-sm font-bold text-gray-900 group-hover:text-blue-600 transition-colors">{title}</h2>
+          </Link>
+        ) : (
+          <div className="flex items-center gap-2">
+            <div className="w-1 h-5 bg-blue-600 rounded-full" />
+            <h2 className="text-sm font-bold text-gray-900">{title}</h2>
+          </div>
+        )}
+        {viewMoreUrl && (
+          <Link to={viewMoreUrl} className="flex items-center gap-1 text-blue-600 text-xs font-medium hover:underline">
+            Xem thêm
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-3.5 h-3.5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            </svg>
+          </Link>
+        )}
       </div>
 
       {/* Responsive grid:

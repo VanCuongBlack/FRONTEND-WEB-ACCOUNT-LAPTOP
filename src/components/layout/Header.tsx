@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { Menu, X, User, ShoppingCart, Search, Bell } from "lucide-react";
 import { getStoredUserProfile } from "@/utils/profileStorage";
 
@@ -19,13 +19,19 @@ export default function Header({
   cartIconClassName = "",
 }: HeaderProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [query, setQuery] = useState("");
+  const [searchParams] = useSearchParams();
+  const searchParamVal = searchParams.get("search") || "";
+  const [query, setQuery] = useState(searchParamVal);
   const navigate = useNavigate();
   const location = useLocation();
   const isLoggedIn = !!localStorage.getItem("accessToken");
   const isProfileSection = location.pathname.startsWith("/profile");
   const shouldShowUserAvatar = isLoggedIn || isProfileSection;
   const userAvatarUrl = getStoredUserProfile().avatarUrl;
+
+  useEffect(() => {
+    setQuery(searchParamVal);
+  }, [searchParamVal]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,7 +86,10 @@ export default function Header({
               {query && (
                 <button
                   type="button"
-                  onClick={() => setQuery("")}
+                  onClick={() => {
+                    setQuery("");
+                    navigate("/");
+                  }}
                   className="text-gray-400 hover:text-gray-600"
                 >
                   <X className="w-3.5 h-3.5" />

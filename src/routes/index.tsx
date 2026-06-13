@@ -24,12 +24,17 @@ import EditProfilePage from '@/pages/profile/EditProfilePage'
 import HistoryPage from '@/pages/profile/HistoryPage'
 import LaptopOrderDetailPage from '@/pages/profile/LaptopOrderDetailPage'
 import AccountOrderDetailPage from '@/pages/profile/AccountOrderDetailPage'
+import SupportRequestPage from '@/pages/profile/SupportRequestPage'
+import SupportRequestDetailPage from '@/pages/profile/SupportRequestDetailPage'
 
 import NotificationPage from '@/pages/notification/NotificationPage'
 import WarrantyPolicyPage from '@/pages/WarrantyPolicyPage'
+import PurchaseGuidePage from '@/pages/PurchaseGuidePage'
 
 import AdminDashboard from '@/pages/admin/AdminDashboard'
 import SystemSettingsPage from '@/pages/admin/SystemSettingsPage'
+import EmployeeManagementPage from '@/pages/admin/EmployeeManagementPage'
+import ReportsPage from '@/pages/admin/ReportsPage'
 
 import StaffDashboard from '@/pages/staff/StaffDashboard'
 import ProductManagementPage from '@/pages/staff/ProductManagementPage'
@@ -45,6 +50,7 @@ export default function AppRoutes() {
         {/* Public */}
         <Route path="/" element={<LandingPage />} />
         <Route path="/warranty-policy" element={<WarrantyPolicyPage />} />
+        <Route path="/purchase-guide" element={<PurchaseGuidePage />} />
         <Route path="/notification" element={<NotificationPage />} />
 
         {/* Auth */}
@@ -79,12 +85,19 @@ export default function AppRoutes() {
           path="/profile/history/account/:id"
           element={<AccountOrderDetailPage />}
         />
+        <Route
+          path="/profile/history/support/:type/:id"
+          element={<SupportRequestPage />}
+        />
+        <Route
+          path="/profile/support/:ticketId"
+          element={<SupportRequestDetailPage />}
+        />
 
         {/* Admin / Chủ cửa hàng */}
         <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/admin/reports" element={<div>Báo cáo</div>} />
-        <Route path="/admin/employees" element={<div>Quản lý nhân viên</div>} />
-        <Route path="/admin/roles" element={<div>Phân quyền</div>} />
+        <Route path="/admin/employees" element={<EmployeeManagementPage />} />
+        <Route path="/admin/reports" element={<ReportsPage />} />
         <Route path="/admin/settings" element={<SystemSettingsPage />} />
 
         {/* Staff / Nhân viên */}

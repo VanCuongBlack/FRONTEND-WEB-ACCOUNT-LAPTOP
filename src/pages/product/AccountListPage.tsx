@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { ChevronLeft, Search } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import ProductCard from '@/components/product/ProductCard'
@@ -11,10 +11,25 @@ type AccountTab = '' | 'ChatGPT' | 'Canva' | 'Netflix' | 'Adobe' | 'Spotify'
 
 export default function AccountListPage() {
   const navigate = useNavigate()
-  const [search, setSearch] = useState('')
-  const [activeTab, setActiveTab] = useState<AccountTab>('ChatGPT')
+  const [searchParams] = useSearchParams()
+  const initialTab = (searchParams.get('tab') as AccountTab) || 'ChatGPT'
+  const initialSearch = searchParams.get('search') || ''
+
+  const [search, setSearch] = useState(initialSearch)
+  const [activeTab, setActiveTab] = useState<AccountTab>(initialTab)
   const [selectedPrices, setSelectedPrices] = useState<string[]>([])
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([])
+
+  useEffect(() => {
+    const tab = searchParams.get('tab') as AccountTab
+    const q = searchParams.get('search')
+    if (tab) {
+      setActiveTab(tab)
+    }
+    if (q !== null) {
+      setSearch(q)
+    }
+  }, [searchParams])
 
   const toggleValue = (
     value: string,

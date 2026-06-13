@@ -244,12 +244,16 @@ export default function LaptopOrderDetailPage() {
             >
               Quay lại danh sách
             </button>
-            <a 
-              href={`tel:${orderDetail.warranty.supportHotline}`}
+            <button
+              onClick={() =>
+                navigate(`/profile/history/support/laptop/${orderDetail.id}`, {
+                  state: { productName: orderDetail.productName },
+                })
+              }
               className="px-4 py-2.5 rounded-xl bg-[#3786EC] text-white font-semibold hover:bg-[#3786EC]/90 transition-all text-center shadow-xs w-full sm:w-auto block"
             >
               Yêu cầu hỗ trợ kỹ thuật
-            </a>
+            </button>
           </div>
         </div>
 
