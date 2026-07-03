@@ -1,12 +1,12 @@
 import { Link, useLocation } from 'react-router-dom'
 import {
-  LayoutDashboard,
   FileText,
-  Users,
-  Shield,
-  Settings,
+  LayoutDashboard,
   LogOut,
+  Settings,
+  Users,
 } from 'lucide-react'
+import { useAuthStore } from '@/store/authStore'
 
 export interface AdminNavItem {
   key: string
@@ -15,7 +15,7 @@ export interface AdminNavItem {
   icon: React.ElementType
 }
 
-export const ADMIN_NAV_ITEMS = [
+export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
   {
     key: 'overview',
     label: 'Tổng quan',
@@ -35,43 +35,42 @@ export const ADMIN_NAV_ITEMS = [
     icon: Users,
   },
   {
+    key: 'customers',
+    label: 'Quản lý khách hàng',
+    href: '/admin/customers',
+    icon: Users,
+  },
+  {
     key: 'settings',
     label: 'Quản lý hệ thống',
     href: '/admin/settings',
     icon: Settings,
   },
 ]
+
 interface Props {
   activeKey?: string
 }
 
 export default function AdminSidebar({ activeKey }: Props) {
   const location = useLocation()
+  const logout = useAuthStore((state) => state.logout)
 
   const active =
     activeKey ??
     ADMIN_NAV_ITEMS.find((item) => item.href === location.pathname)?.key ??
     'overview'
 
-  const handleLogout = () => {
-    localStorage.removeItem('accessToken')
-    localStorage.removeItem('refreshToken')
-    localStorage.removeItem('user')
-    window.location.href = '/login'
-  }
-
   return (
-    <aside className="h-screen w-[230px] flex-shrink-0 bg-[#111827] px-4 py-6 text-white flex flex-col justify-between border-r border-gray-800">
-      <div className="flex flex-col flex-1 min-h-0">
-        {/* Logo */}
+    <aside className="flex h-screen w-[230px] flex-shrink-0 flex-col justify-between border-r border-gray-800 bg-[#111827] px-4 py-6 text-white">
+      <div className="flex min-h-0 flex-1 flex-col">
         <div className="mb-6 rounded-xl bg-[#1F2937] py-3 text-center shadow-inner">
           <p className="text-lg font-black tracking-widest text-blue-400">
             ADMIN PANEL
           </p>
         </div>
 
-        {/* Menu */}
-        <nav className="flex flex-col gap-2 flex-1 overflow-y-auto pr-1">
+        <nav className="flex flex-1 flex-col gap-2 overflow-y-auto pr-1">
           {ADMIN_NAV_ITEMS.map(({ key, label, href, icon: Icon }) => {
             const isActive = active === key
 
@@ -93,15 +92,14 @@ export default function AdminSidebar({ activeKey }: Props) {
         </nav>
       </div>
 
-      {/* Logout */}
-      <div className="pt-4 border-t border-gray-800 mt-4">
+      <div className="mt-4 border-t border-gray-800 pt-4">
         <button
           type="button"
-          onClick={handleLogout}
+          onClick={logout}
           className="flex h-[42px] w-full items-center justify-center gap-2 rounded-lg bg-red-600 text-[14px] font-bold text-white transition-all hover:bg-red-700 active:scale-[0.98]"
         >
           <LogOut size={16} />
-          <span>ĐĂNG XUẤT</span>
+          <span>Đăng xuất</span>
         </button>
       </div>
     </aside>

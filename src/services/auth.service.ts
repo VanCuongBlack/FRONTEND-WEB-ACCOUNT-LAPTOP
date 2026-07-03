@@ -5,8 +5,6 @@ export interface RegisterPayload {
   email: string
   phone: string
   password: string
-  address?: string
-  position?: string
 }
 
 export interface LoginPayload {
@@ -34,13 +32,14 @@ export interface VerifyResetOtpPayload {
 
 export interface ResetPasswordPayload {
   email: string
-  otp: string
   newPassword: string
 }
 
 export interface RefreshTokenPayload {
   refreshToken: string
 }
+
+export type UserRole = 'customer' | 'staff' | 'admin' | string | { _id?: string; name?: string }
 
 export interface UserData {
   _id: string
@@ -49,15 +48,25 @@ export interface UserData {
   phone: string
   address?: string
   position?: string
+  avatar?: string
   isActive: boolean
   isVerified: boolean
-  role: string
+  role: UserRole
   createdAt: string
   updatedAt: string
 }
 
 export interface AuthResponseData {
   user: UserData
+  accessToken: string
+  refreshToken: string
+}
+
+export interface RegisterResponseData {
+  user: UserData
+}
+
+export interface TokenResponseData {
   accessToken: string
   refreshToken: string
 }
@@ -72,7 +81,7 @@ export interface ApiResponse<T = unknown> {
 }
 
 export const register = (data: RegisterPayload) => {
-  return api.post<ApiResponse<AuthResponseData>>('/auth/register', data)
+  return api.post<ApiResponse<RegisterResponseData>>('/auth/register', data)
 }
 
 export const login = (data: LoginPayload) => {
@@ -80,10 +89,7 @@ export const login = (data: LoginPayload) => {
 }
 
 export const refreshToken = (data: RefreshTokenPayload) => {
-  return api.post<ApiResponse<Pick<AuthResponseData, 'accessToken' | 'refreshToken'>>>(
-    '/auth/refresh-token',
-    data
-  )
+  return api.post<ApiResponse<TokenResponseData>>('/auth/refresh-token', data)
 }
 
 export const verifyEmail = (data: VerifyEmailPayload) => {

@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import StaffSidebar from '@/components/staff/StaffSidebar'
 import AdminTopbar from '@/components/admin/AdminTopbar'
+import { useAuthStore } from '@/store/authStore'
 
 interface Props {
   title: string
@@ -14,9 +15,16 @@ export default function StaffLayout({
   title,
   children,
   notificationCount = 0,
-  staffName = 'Staff',
+  staffName,
   topbarRight,
 }: Props) {
+  const user = useAuthStore((state) => state.user)
+  const displayName =
+    staffName ||
+    user?.fullname ||
+    user?.email ||
+    'Nhân viên'
+
   return (
     <div className="flex h-screen bg-gray-100 overflow-hidden font-sans">
       <StaffSidebar />
@@ -25,7 +33,7 @@ export default function StaffLayout({
         <AdminTopbar
           title={title}
           notificationCount={notificationCount}
-          adminName={staffName}
+          adminName={displayName}
           rightSlot={topbarRight}
         />
 

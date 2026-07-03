@@ -1,47 +1,29 @@
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import * as z from "zod";
-import { ChevronLeft } from "lucide-react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { resetPassword } from "@/services/auth.service";
+import { useEffect, useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { ChevronLeft, Eye, EyeOff, Lock } from 'lucide-react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { resetPassword } from '@/services/auth.service'
+import { resetPasswordSchema } from '@/utils/validators'
+import { toast } from 'sonner'
 
-const resetPasswordSchema = z
-  .object({
-    otp: z
-      .string()
-      .min(1, {
-        message: "Mã xác nhận không được để trống",
-      })
-      .regex(/^[0-9]{4,6}$/, {
-        message: "Mã xác nhận phải gồm 4 đến 6 chữ số",
-      }),
-
-    newPassword: z.string().min(6, {
-      message: "Mật khẩu phải từ 6 ký tự trở lên",
-    }),
-
-    confirmPassword: z.string().min(1, {
-      message: "Vui lòng xác nhận mật khẩu",
-    }),
-  })
-  .refine((data) => data.newPassword === data.confirmPassword, {
-    message: "Mật khẩu xác nhận không khớp",
-    path: ["confirmPassword"],
-  });
-
-type ResetPasswordFormValues = z.infer<typeof resetPasswordSchema>;
+type ResetPasswordFormValues = {
+  newPassword: string
+  confirmNewPassword: string
+}
 
 export default function ResetPasswordPage() {
-  const navigate = useNavigate();
-  const location = useLocation();
+  const navigate = useNavigate()
+  const location = useLocation()
+  const email = location.state?.email || ''
+  const [isLoading, setIsLoading] = useState(false)
+  const [showNewPassword, setShowNewPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
-  const email = location.state?.email || "";
-
-  const [isLoading, setIsLoading] = useState(false);
-
-  const [showNewPassword, setShowNewPassword] = useState(false);
-
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  useEffect(() => {
+    if (!email) {
+      navigate('/forgot-password', { replace: true })
+    }
+  }, [email, navigate])
 
   const {
     register,
@@ -50,224 +32,157 @@ export default function ResetPasswordPage() {
     formState: { errors },
   } = useForm<ResetPasswordFormValues>({
     defaultValues: {
-      otp: "",
-      newPassword: "",
-      confirmPassword: "",
+      newPassword: '',
+      confirmNewPassword: '',
     },
-  });
+  })
 
   const onSubmit = async (values: ResetPasswordFormValues) => {
-    const result = resetPasswordSchema.safeParse(values);
+    const result = resetPasswordSchema.safeParse({
+      email,
+      newPassword: values.newPassword,
+      confirmNewPassword: values.confirmNewPassword,
+    })
 
     if (!result.success) {
       result.error.issues.forEach((issue) => {
-        const path = issue.path[0] as keyof ResetPasswordFormValues;
-        setError(path, { message: issue.message });
-      });
-      return;
+        const path = issue.path[0]
+        if (path === 'newPassword' || path === 'confirmNewPassword') {
+          setError(path, { message: issue.message })
+        }
+      })
+      return
     }
 
     try {
-      setIsLoading(true);
-
-      await resetPassword({
+      setIsLoading(true)
+      const res = await resetPassword({
         email,
-        otp: values.otp,
         newPassword: values.newPassword,
-      });
-
-      navigate("/login");
+      })
+      if (res.data?.success === false) {
+        setError('newPassword', {
+          message: res.data.message || 'Không thể đặt lại mật khẩu.',
+        })
+        return
+      }
+      toast.success('Đặt lại mật khẩu thành công.')
+      navigate('/login')
     } catch {
-      setError("otp", {
-        message: "Mã xác nhận không đúng hoặc đã hết hạn",
-      });
+      setError('newPassword', {
+        message: 'Không thể đặt lại mật khẩu. Vui lòng xác thực OTP lại.',
+      })
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
+
+  const inputCls =
+    'h-full flex-1 bg-transparent text-sm font-semibold text-white outline-none placeholder:text-[#8d86b6]'
 
   return (
-    <div className="w-full min-h-screen mx-auto bg-white font-['Inter',_sans-serif] px-4 py-10 sm:px-6">
-      <div className="w-full max-w-[900px] mx-auto pt-[40px] sm:pt-[90px]">
-        <button
-          type="button"
-          onClick={() => navigate("/forgot-password")}
-          className="flex items-center justify-center text-black cursor-pointer"
-          aria-label="Quay lại"
+    <div className="min-h-screen bg-[#09051f] text-white">
+      <header className="mx-auto flex h-20 w-full max-w-[1840px] items-center justify-between px-4 sm:px-6">
+        <Link to="/" className="flex items-baseline gap-1">
+          <span className="text-3xl font-black">PCAcc</span>
+          <span className="text-sm font-black">.com</span>
+        </Link>
+        <Link
+          to="/login"
+          className="rounded-2xl bg-white/10 px-4 py-2 text-sm font-black text-[#d9d4f2] hover:bg-white/15"
         >
-          <ChevronLeft size={24} strokeWidth={2} />
-        </button>
+          Đăng nhập
+        </Link>
+      </header>
 
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className="w-full max-w-[722px] mx-auto mt-[35px] sm:mt-[45px] flex flex-col gap-[32px] sm:gap-[47px]"
-        >
-          <div className="flex flex-col gap-3">
-            <label className="text-[16px] sm:text-[20px] font-normal text-black">
-              Nhập mã xác nhận
-            </label>
-
-            <input
-              type="text"
-              inputMode="numeric"
-              maxLength={6}
-              placeholder="Mã xác nhận"
-              {...register("otp")}
-              className="w-full h-[64px] sm:h-[82px] rounded-[29px] bg-transparent border border-black/34 px-5 text-[16px] sm:text-[20px] text-black placeholder-[#ADA2A2] placeholder-opacity-100 focus:outline-none focus:border-[#3783EC] transition-all"
-            />
-
-            {errors.otp && (
-              <span className="text-red-500 text-sm">
-                {errors.otp.message}
-              </span>
-            )}
-          </div>
-
-          <div className="flex flex-col gap-3">
-            <label className="text-[16px] sm:text-[20px] font-normal text-black">
-              Tạo mật khẩu mới
-            </label>
-
-            <div className="relative w-full h-[64px] sm:h-[82px] flex items-center">
-              <input
-                type={showNewPassword ? "text" : "password"}
-                placeholder="Mật khẩu mới"
-                {...register("newPassword")}
-                className="w-full h-full rounded-[29px] bg-transparent border border-black/34 pl-5 pr-[60px] text-[16px] sm:text-[20px] text-black placeholder-[#ADA2A2] placeholder-opacity-100 focus:outline-none focus:border-[#3783EC] transition-all"
-              />
-
-              <button
-                type="button"
-                onClick={() => setShowNewPassword(!showNewPassword)}
-                className="absolute right-[24px] text-black/40 hover:text-black/70 transition-colors cursor-pointer p-1 flex items-center justify-center"
-              >
-                {showNewPassword ? (
-                  <svg
-                    className="w-6 h-6"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                    />
-                  </svg>
-                ) : (
-                  <svg
-                    className="w-6 h-6"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a10.024 10.024 0 014.501-5.176M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M17.657 16.657L13.414 12m0 0L9.172 7.757M13.414 12H12m4.542-3.458A10.05 10.05 0 0121.542 12c-1.274 4.057-5.064 7-9.542 7a9.963 9.963 0 01-1.205-.073M3 3l18 18"
-                    />
-                  </svg>
-                )}
-              </button>
-            </div>
-
-            {errors.newPassword && (
-              <span className="text-red-500 text-sm">
-                {errors.newPassword.message}
-              </span>
-            )}
-          </div>
-
-          <div className="flex flex-col gap-3">
-            <label className="text-[16px] sm:text-[20px] font-normal text-black">
-              Xác nhận mật khẩu mới
-            </label>
-
-            <div className="relative w-full h-[64px] sm:h-[82px] flex items-center">
-              <input
-                type={showConfirmPassword ? "text" : "password"}
-                placeholder="Nhập lại mật khẩu mới"
-                {...register("confirmPassword")}
-                className="w-full h-full rounded-[29px] bg-transparent border border-black/34 pl-5 pr-[60px] text-[16px] sm:text-[20px] text-black placeholder-[#ADA2A2] placeholder-opacity-100 focus:outline-none focus:border-[#3783EC] transition-all"
-              />
-
-              <button
-                type="button"
-                onClick={() =>
-                  setShowConfirmPassword(!showConfirmPassword)
-                }
-                className="absolute right-[24px] text-black/40 hover:text-black/70 transition-colors cursor-pointer p-1 flex items-center justify-center"
-              >
-                {showConfirmPassword ? (
-                  <svg
-                    className="w-6 h-6"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                    />
-                  </svg>
-                ) : (
-                  <svg
-                    className="w-6 h-6"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a10.024 10.024 0 014.501-5.176M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M17.657 16.657L13.414 12m0 0L9.172 7.757M13.414 12H12m4.542-3.458A10.05 10.05 0 0121.542 12c-1.274 4.057-5.064 7-9.542 7a9.963 9.963 0 01-1.205-.073M3 3l18 18"
-                    />
-                  </svg>
-                )}
-              </button>
-            </div>
-
-            {errors.confirmPassword && (
-              <span className="text-red-500 text-sm">
-                {errors.confirmPassword.message}
-              </span>
-            )}
-          </div>
-
+      <main className="mx-auto flex min-h-[calc(100vh-80px)] w-full max-w-[1840px] items-center justify-center px-4 pb-10 sm:px-6">
+        <section className="w-full max-w-[560px] rounded-[26px] border border-[#3d63ff]/20 bg-[#211b42] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.35)] sm:p-8">
           <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full h-[52px] sm:h-[57px] rounded-[84px] bg-[#3783EC]/58 hover:bg-[#3783EC]/83 active:bg-[#3783EC]/83 disabled:opacity-60 disabled:cursor-not-allowed text-black text-[16px] sm:text-[20px] font-normal transition-all cursor-pointer"
+            type="button"
+            onClick={() => navigate('/forgot-password')}
+            className="mb-6 inline-flex items-center gap-2 text-sm font-bold text-[#b9b4d7] hover:text-white"
           >
-            {isLoading ? "Đang lưu..." : "Lưu thay đổi"}
+            <ChevronLeft className="h-4 w-4" />
+            Quay lại
           </button>
-        </form>
-      </div>
+
+          <p className="text-sm font-black uppercase text-[#79a7ff]">Bảo mật</p>
+          <h1 className="mt-2 text-3xl font-black text-white">Tạo mật khẩu mới</h1>
+          <p className="mt-2 text-sm leading-6 text-[#b9b4d7]">
+            OTP đã được xác thực. Nhập mật khẩu mới cho tài khoản {email}.
+          </p>
+
+          <form onSubmit={handleSubmit(onSubmit)} className="mt-7 flex flex-col gap-5">
+            <div className="flex flex-col gap-2">
+              <div
+                className={`flex h-12 items-center gap-3 rounded-2xl border bg-[#171233] px-4 ${
+                  errors.newPassword
+                    ? 'border-[#ff7b8f]'
+                    : 'border-[#3d63ff]/25 focus-within:border-[#79a7ff]'
+                }`}
+              >
+                <Lock className="h-5 w-5 text-[#79a7ff]" />
+                <input
+                  type={showNewPassword ? 'text' : 'password'}
+                  placeholder="Mật khẩu mới"
+                  {...register('newPassword')}
+                  className={inputCls}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPassword((value) => !value)}
+                  className="text-[#8d86b6] hover:text-white"
+                >
+                  {showNewPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                </button>
+              </div>
+              {errors.newPassword && (
+                <span className="pl-2 text-xs font-semibold text-[#ff7b8f]">
+                  {errors.newPassword.message}
+                </span>
+              )}
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <div
+                className={`flex h-12 items-center gap-3 rounded-2xl border bg-[#171233] px-4 ${
+                  errors.confirmNewPassword
+                    ? 'border-[#ff7b8f]'
+                    : 'border-[#3d63ff]/25 focus-within:border-[#79a7ff]'
+                }`}
+              >
+                <Lock className="h-5 w-5 text-[#79a7ff]" />
+                <input
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  placeholder="Nhập lại mật khẩu mới"
+                  {...register('confirmNewPassword')}
+                  className={inputCls}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword((value) => !value)}
+                  className="text-[#8d86b6] hover:text-white"
+                >
+                  {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                </button>
+              </div>
+              {errors.confirmNewPassword && (
+                <span className="pl-2 text-xs font-semibold text-[#ff7b8f]">
+                  {errors.confirmNewPassword.message}
+                </span>
+              )}
+            </div>
+
+            <button
+              type="submit"
+              disabled={isLoading || !email}
+              className="flex h-12 w-full items-center justify-center rounded-2xl bg-[#1677ff] text-sm font-black text-white transition-colors hover:bg-[#0f66df] disabled:cursor-not-allowed disabled:bg-[#625b84]"
+            >
+              {isLoading ? 'Đang lưu...' : 'Lưu thay đổi'}
+            </button>
+          </form>
+        </section>
+      </main>
     </div>
-  );
+  )
 }
