@@ -14,6 +14,28 @@ function formatPrice(price?: number) {
   return `${(price ?? 0).toLocaleString('vi-VN')}đ`
 }
 
+function formatMethod(method?: string) {
+  if (method === 'cod') return 'Thanh toán khi nhận hàng'
+  if (method === 'bank_transfer') return 'Chuyển khoản ngân hàng'
+  return method ?? '-'
+}
+
+function formatStatus(status?: string) {
+  const labels: Record<string, string> = {
+    pending: 'Đang chờ',
+    paid: 'Đã thanh toán',
+    failed: 'Thất bại',
+    expired: 'Hết hạn',
+    refunded: 'Đã hoàn tiền',
+  }
+
+  return status ? labels[status] ?? status : '-'
+}
+
+function isMongoObjectId(value: string) {
+  return /^[a-f\d]{24}$/i.test(value)
+}
+
 export default function OrderManagementPage() {
   const [orderId, setOrderId] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -33,10 +55,16 @@ export default function OrderManagementPage() {
       return
     }
 
+    if (!isMongoObjectId(normalizedOrderId)) {
+      setError('BE hiện chỉ nhận Mongo _id của đơn hàng gồm 24 ký tự. Mã DH... là nội dung chuyển khoản, không dùng để xác nhận COD.')
+      return
+    }
+
     setIsLoading(true)
     setError('')
     setMessage('')
     setPaymentInfo(null)
+
     try {
       const res = await getPaymentByOrder(normalizedOrderId)
       const payment = res.data.data
@@ -63,12 +91,18 @@ export default function OrderManagementPage() {
       return
     }
 
+    if (!isMongoObjectId(normalizedOrderId)) {
+      setError('BE hiện chỉ nhận Mongo _id của đơn hàng gồm 24 ký tự. Mã DH... là nội dung chuyển khoản, không dùng để xác nhận COD.')
+      return
+    }
+
     setIsLoading(true)
     setError('')
     setMessage('')
+
     try {
       await confirmCOD(normalizedOrderId)
-      setMessage('Đã xác nhận COD thành công.')
+      setMessage('Đã xác nhận COD thành công. BE đã chuyển thanh toán sang paid và đơn sang completed.')
       await handleLoadPayment()
     } catch (err: any) {
       setError(err?.response?.data?.message || err?.message || 'Không thể xác nhận COD.')
@@ -85,25 +119,25 @@ export default function OrderManagementPage() {
             Quản lý đơn hàng
           </h1>
           <p className="mt-1 text-sm text-slate-500">
-            Kiểm tra thanh toán theo mã đơn và xác nhận các đơn COD khi cần đối soát.
+            Xử lý đơn COD theo quy trình: khách tạo đơn, nhân viên gọi xác nhận, sau đó xác nhận thủ công.
           </p>
         </div>
 
         <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
           <InfoCard
             icon={<ClipboardList className="h-8 w-8 text-blue-600" />}
-            label="Danh sách đơn của khách"
-            value="/order/my-orders"
+            label="Bước 1"
+            value="Khách tạo đơn COD"
           />
           <InfoCard
             icon={<FileText className="h-8 w-8 text-emerald-600" />}
-            label="Chi tiết đơn"
-            value="/order/:orderId"
+            label="Bước 2"
+            value="Nhân viên gọi xác nhận"
           />
           <InfoCard
             icon={<CreditCard className="h-8 w-8 text-violet-600" />}
-            label="Xác nhận COD"
-            value="/payment/cod/confirm/:orderId"
+            label="Bước 3"
+            value="Bấm xác nhận COD"
           />
         </div>
 
@@ -111,14 +145,17 @@ export default function OrderManagementPage() {
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end">
             <label className="flex-1">
               <span className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-slate-500">
-                orderId
+                Order ID
               </span>
               <input
                 value={orderId}
                 onChange={(event) => setOrderId(event.target.value)}
-                placeholder="Dán _id đơn hàng cần kiểm tra hoặc xác nhận COD"
+                placeholder="Dán Mongo _id của đơn hàng, ví dụ 6a461b49327337931e809297"
                 className="h-11 w-full rounded-xl border border-slate-200 px-4 text-sm outline-none focus:border-blue-500"
               />
+              <span className="mt-1.5 block text-xs text-slate-500">
+                Không nhập mã DH... vì đó là nội dung chuyển khoản do payment tạo ra.
+              </span>
             </label>
 
             <button
@@ -146,11 +183,11 @@ export default function OrderManagementPage() {
             <div className="mt-5 grid grid-cols-1 gap-3 rounded-2xl bg-slate-50 p-4 text-sm md:grid-cols-3">
               <p>
                 <span className="block text-slate-500">Phương thức</span>
-                <strong>{paymentInfo.method ?? '-'}</strong>
+                <strong>{formatMethod(paymentInfo.method)}</strong>
               </p>
               <p>
                 <span className="block text-slate-500">Trạng thái</span>
-                <strong>{paymentInfo.status ?? '-'}</strong>
+                <strong>{formatStatus(paymentInfo.status)}</strong>
               </p>
               <p>
                 <span className="block text-slate-500">Số tiền</span>
@@ -176,10 +213,10 @@ export default function OrderManagementPage() {
             <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
             <div>
               <h2 className="font-bold text-amber-900">
-                Chưa thể làm bảng quản lý đơn đầy đủ ở FE
+                Lưu ý khi xác nhận COD
               </h2>
               <p className="mt-2 text-sm leading-6 text-amber-800">
-                Hiện màn hình này xử lý theo từng mã đơn. Danh sách tổng hợp và các thao tác giao hàng/hoàn đơn sẽ hiển thị khi hệ thống có dữ liệu quản trị tương ứng.
+                Chỉ bấm xác nhận sau khi nhân viên đã gọi khách và xác nhận đơn hợp lệ. API BE chỉ cho admin/staff xác nhận COD, sau đó tự cập nhật thanh toán, trạng thái đơn và item đã bán.
               </p>
             </div>
           </div>
@@ -202,7 +239,7 @@ function InfoCard({
     <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
       {icon}
       <p className="mt-4 text-sm font-semibold text-slate-500">{label}</p>
-      <p className="mt-1 break-all text-lg font-bold text-slate-900">{value}</p>
+      <p className="mt-1 break-words text-lg font-bold text-slate-900">{value}</p>
     </div>
   )
 }
