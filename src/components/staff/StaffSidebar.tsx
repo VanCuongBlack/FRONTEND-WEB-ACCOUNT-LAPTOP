@@ -1,13 +1,14 @@
 import { Link, useLocation } from 'react-router-dom'
 import {
-  Package,
-  Warehouse,
-  ShoppingCart,
-  Users,
-  Shield,
   Headphones,
   LogOut,
+  Package,
+  Shield,
+  ShoppingCart,
+  Users,
+  Warehouse,
 } from 'lucide-react'
+import { useAuthStore } from '@/store/authStore'
 
 export interface StaffNavItem {
   key: string
@@ -29,32 +30,38 @@ interface Props {
   activeKey?: string
 }
 
+function getRoleName(role: unknown) {
+  if (typeof role === 'string') return role
+  if (role && typeof role === 'object' && 'name' in role) {
+    const roleName = (role as { name?: unknown }).name
+    return typeof roleName === 'string' ? roleName : null
+  }
+  return null
+}
+
 export default function StaffSidebar({ activeKey }: Props) {
   const location = useLocation()
+  const user = useAuthStore((state) => state.user)
+  const logout = useAuthStore((state) => state.logout)
+  const role = getRoleName(user?.role)
+  const navItems = STAFF_NAV_ITEMS.filter((item) => item.key !== 'customers' || role === 'admin')
 
   const active =
     activeKey ??
-    STAFF_NAV_ITEMS.find((item) => item.href === location.pathname)?.key ??
+    navItems.find((item) => item.href === location.pathname)?.key ??
     'products'
 
-  const handleLogout = () => {
-    localStorage.removeItem('accessToken')
-    localStorage.removeItem('refreshToken')
-    localStorage.removeItem('user')
-    window.location.href = '/login'
-  }
-
   return (
-    <aside className="h-screen w-[230px] flex-shrink-0 bg-[#111827] px-4 py-6 text-white flex flex-col justify-between border-r border-gray-800">
-      <div className="flex flex-col flex-1 min-h-0">
+    <aside className="flex h-screen w-[230px] flex-shrink-0 flex-col justify-between border-r border-gray-800 bg-[#111827] px-4 py-6 text-white">
+      <div className="flex min-h-0 flex-1 flex-col">
         <div className="mb-6 rounded-xl bg-[#1F2937] py-3 text-center shadow-inner">
           <p className="text-lg font-black tracking-widest text-green-400">
             STAFF PANEL
           </p>
         </div>
 
-        <nav className="flex flex-col gap-2 flex-1 overflow-y-auto pr-1 select-none scrollbar-none">
-          {STAFF_NAV_ITEMS.map(({ key, label, href, icon: Icon }) => {
+        <nav className="scrollbar-none flex flex-1 select-none flex-col gap-2 overflow-y-auto pr-1">
+          {navItems.map(({ key, label, href, icon: Icon }) => {
             const isActive = active === key
 
             return (
@@ -75,14 +82,14 @@ export default function StaffSidebar({ activeKey }: Props) {
         </nav>
       </div>
 
-      <div className="pt-4 border-t border-gray-800 mt-4">
+      <div className="mt-4 border-t border-gray-800 pt-4">
         <button
           type="button"
-          onClick={handleLogout}
-          className="flex h-[42px] w-full items-center justify-center gap-2 rounded-lg bg-red-600 text-[14px] font-bold text-white transition-all hover:bg-red-700 active:scale-[0.98] shadow-sm"
+          onClick={logout}
+          className="flex h-[42px] w-full items-center justify-center gap-2 rounded-lg bg-red-600 text-[14px] font-bold text-white shadow-sm transition-all hover:bg-red-700 active:scale-[0.98]"
         >
           <LogOut size={16} />
-          <span>ĐĂNG XUẤT</span>
+          <span>Đăng xuất</span>
         </button>
       </div>
     </aside>

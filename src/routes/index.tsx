@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import ProtectedRoute from '@/components/common/ProtectedRoute'
 
-import LandingPage from '@/pages/LandingPage'
+import LandingPage from '@/pages/public/LandingPage'
 
 import LoginPage from '@/pages/auth/LoginPage'
 import RegisterPage from '@/pages/auth/RegisterPage'
@@ -28,8 +29,8 @@ import SupportRequestPage from '@/pages/profile/SupportRequestPage'
 import SupportRequestDetailPage from '@/pages/profile/SupportRequestDetailPage'
 
 import NotificationPage from '@/pages/notification/NotificationPage'
-import WarrantyPolicyPage from '@/pages/WarrantyPolicyPage'
-import PurchaseGuidePage from '@/pages/PurchaseGuidePage'
+import WarrantyPolicyPage from '@/pages/public/WarrantyPolicyPage'
+import PurchaseGuidePage from '@/pages/public/PurchaseGuidePage'
 
 import AdminDashboard from '@/pages/admin/AdminDashboard'
 import SystemSettingsPage from '@/pages/admin/SystemSettingsPage'
@@ -47,13 +48,10 @@ export default function AppRoutes() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Public */}
         <Route path="/" element={<LandingPage />} />
         <Route path="/warranty-policy" element={<WarrantyPolicyPage />} />
         <Route path="/purchase-guide" element={<PurchaseGuidePage />} />
-        <Route path="/notification" element={<NotificationPage />} />
 
-        {/* Auth */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/verify-email" element={<VerifyEmailPage />} />
@@ -61,55 +59,40 @@ export default function AppRoutes() {
         <Route path="/verify-reset-otp" element={<VerifyResetOtpPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
 
-        {/* Product */}
         <Route path="/laptops" element={<LaptopListPage />} />
         <Route path="/laptops/:id" element={<LaptopDetailPage />} />
         <Route path="/accounts" element={<AccountListPage />} />
         <Route path="/accounts/:id" element={<AccountDetailPage />} />
         <Route path="/best-seller" element={<BestSellerPage />} />
 
-        {/* Cart / Checkout */}
-        <Route path="/cart" element={<CartPage />} />
-        <Route path="/checkout" element={<CheckoutPage />} />
-        <Route path="/order-success" element={<OrderSuccessPage />} />
+        <Route path="/cart" element={<ProtectedRoute requiredRoles={['customer']}><CartPage /></ProtectedRoute>} />
+        <Route path="/checkout" element={<ProtectedRoute requiredRoles={['customer']}><CheckoutPage /></ProtectedRoute>} />
+        <Route path="/order-success" element={<ProtectedRoute requiredRoles={['customer']}><OrderSuccessPage /></ProtectedRoute>} />
+        <Route path="/notification" element={<ProtectedRoute requiredRoles={['customer']}><NotificationPage /></ProtectedRoute>} />
 
-        {/* Customer */}
-        <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/profile/edit" element={<EditProfilePage />} />
-        <Route path="/profile/history" element={<HistoryPage />} />
-        <Route
-          path="/profile/history/laptop/:id"
-          element={<LaptopOrderDetailPage />}
-        />
-        <Route
-          path="/profile/history/account/:id"
-          element={<AccountOrderDetailPage />}
-        />
-        <Route
-          path="/profile/history/support/:type/:id"
-          element={<SupportRequestPage />}
-        />
-        <Route
-          path="/profile/support/:ticketId"
-          element={<SupportRequestDetailPage />}
-        />
+        <Route path="/profile" element={<ProtectedRoute requiredRoles={['customer']}><ProfilePage /></ProtectedRoute>} />
+        <Route path="/profile/edit" element={<ProtectedRoute requiredRoles={['customer']}><EditProfilePage /></ProtectedRoute>} />
+        <Route path="/profile/history" element={<ProtectedRoute requiredRoles={['customer']}><HistoryPage /></ProtectedRoute>} />
+        <Route path="/profile/history/:id" element={<ProtectedRoute requiredRoles={['customer']}><LaptopOrderDetailPage /></ProtectedRoute>} />
+        <Route path="/profile/history/laptop/:id" element={<ProtectedRoute requiredRoles={['customer']}><LaptopOrderDetailPage /></ProtectedRoute>} />
+        <Route path="/profile/history/account/:id" element={<ProtectedRoute requiredRoles={['customer']}><AccountOrderDetailPage /></ProtectedRoute>} />
+        <Route path="/profile/history/support/:type/:id" element={<ProtectedRoute requiredRoles={['customer']}><SupportRequestPage /></ProtectedRoute>} />
+        <Route path="/profile/support/:ticketId" element={<ProtectedRoute requiredRoles={['customer']}><SupportRequestDetailPage /></ProtectedRoute>} />
 
-        {/* Admin / Chủ cửa hàng */}
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/admin/employees" element={<EmployeeManagementPage />} />
-        <Route path="/admin/reports" element={<ReportsPage />} />
-        <Route path="/admin/settings" element={<SystemSettingsPage />} />
+        <Route path="/admin" element={<ProtectedRoute requiredRoles={['admin']}><AdminDashboard /></ProtectedRoute>} />
+        <Route path="/admin/employees" element={<ProtectedRoute requiredRoles={['admin']}><EmployeeManagementPage /></ProtectedRoute>} />
+        <Route path="/admin/customers" element={<ProtectedRoute requiredRoles={['admin']}><CustomerManagementPage /></ProtectedRoute>} />
+        <Route path="/admin/reports" element={<ProtectedRoute requiredRoles={['admin']}><ReportsPage /></ProtectedRoute>} />
+        <Route path="/admin/settings" element={<ProtectedRoute requiredRoles={['admin']}><SystemSettingsPage /></ProtectedRoute>} />
 
-        {/* Staff / Nhân viên */}
-        <Route path="/staff" element={<StaffDashboard />} />
-        <Route path="/staff/products" element={<ProductManagementPage />} />
-        <Route path="/staff/inventory" element={<InventoryManagementPage />} />
-        <Route path="/staff/orders" element={<OrderManagementPage />} />
-        <Route path="/staff/customers" element={<CustomerManagementPage />} />
-        <Route path="/staff/warranty" element={<WarrantyManagementPage />} />
-        <Route path="/staff/tickets" element={<div>Hỗ trợ khách hàng</div>} />
+        <Route path="/staff" element={<ProtectedRoute requiredRoles={['staff', 'admin']}><StaffDashboard /></ProtectedRoute>} />
+        <Route path="/staff/products" element={<ProtectedRoute requiredRoles={['staff', 'admin']}><ProductManagementPage /></ProtectedRoute>} />
+        <Route path="/staff/inventory" element={<ProtectedRoute requiredRoles={['staff', 'admin']}><InventoryManagementPage /></ProtectedRoute>} />
+        <Route path="/staff/orders" element={<ProtectedRoute requiredRoles={['staff', 'admin']}><OrderManagementPage /></ProtectedRoute>} />
+        <Route path="/staff/customers" element={<ProtectedRoute requiredRoles={['admin']}><CustomerManagementPage /></ProtectedRoute>} />
+        <Route path="/staff/warranty" element={<ProtectedRoute requiredRoles={['staff', 'admin']}><WarrantyManagementPage /></ProtectedRoute>} />
+        <Route path="/staff/tickets" element={<ProtectedRoute requiredRoles={['staff', 'admin']}><WarrantyManagementPage /></ProtectedRoute>} />
 
-        {/* 404 */}
         <Route path="*" element={<div>404 Not Found</div>} />
       </Routes>
     </BrowserRouter>

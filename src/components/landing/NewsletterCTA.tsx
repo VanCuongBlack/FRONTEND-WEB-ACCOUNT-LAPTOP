@@ -1,6 +1,6 @@
 export default function NewsletterCTA() {
   return (
-    <section className="max-w-[1200px] mx-auto px-4 sm:px-6 pb-4 sm:pb-6">
+    <section className="max-w-[1840px] mx-auto px-4 sm:px-6 pb-4 sm:pb-6">
       <div className="rounded-2xl bg-blue-50 border border-blue-100 px-6 py-8 sm:px-8 sm:py-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 sm:gap-6">
 
         {/* Text */}

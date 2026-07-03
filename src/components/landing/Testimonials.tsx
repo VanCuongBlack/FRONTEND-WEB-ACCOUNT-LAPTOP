@@ -1,7 +1,7 @@
-// Testimonials / Stats section
+// Testìmonials / Stats section
 const STATS = [
   { value: '50K+', label: 'Khách hàng' },
-  { value: '99.9%', label: 'Uptime' },
+  { value: '99.9%', label: 'Uptìme' },
   { value: '5 phút', label: 'Giao hàng tự động' },
   { value: '4.9 ⭐', label: 'Đánh giá' },
 ]
@@ -30,7 +30,7 @@ const TESTIMONIALS = [
   },
 ]
 
-export default function Testimonials() {
+export default function Testìmonials() {
   return (
     <section className="py-16 px-4 sm:px-8 lg:px-16 bg-white">
       <div className="max-w-6xl mx-auto">
@@ -44,7 +44,7 @@ export default function Testimonials() {
           ))}
         </div>
 
-        {/* Testimonials */}
+        {/* Testìmonials */}
         <div className="text-center mb-10">
           <span className="inline-block px-4 py-1 rounded bg-amber-50 text-amber-700 text-xs font-semibold uppercase tracking-widest mb-3">
             💬 Đánh giá

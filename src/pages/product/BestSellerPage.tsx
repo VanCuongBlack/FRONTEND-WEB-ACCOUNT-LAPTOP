@@ -1,335 +1,252 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import Header from "../../components/layout/Header";
-import Footer from "../../components/layout/Footer";
-import { useNavigate } from "react-router-dom";
-
-interface Product {
-  id: number;
-  name: string;
-  specs: string;
-  brand: string;
-  category: string;
-  accountType?: string;
-  duration?: string;
-  price: number;
-  image: string;
-}
+import { useEffect, useMemo, useRef, useState } from 'react'
+import type React from 'react'
+import { useNavigate } from 'react-router-dom'
+import Header from '@/components/layout/Header'
+import Footer from '@/components/layout/Footer'
+import {
+  getProducts,
+  getDisplayPrice,
+  getProductImage,
+  formatPrice,
+  getProductById,
+  normalizeProductDetail,
+  type Product,
+} from '@/services/product.service'
+import { useCart } from '@/hooks/useCart'
+import { useAuthStore } from '@/store/authStore'
+import { toast } from 'sonner'
 
 interface FlyingItem {
-  key: number;
-  image: string;
-  startX: number;
-  startY: number;
-  deltaX: number;
-  deltaY: number;
+  key: number
+  image: string
+  startX: number
+  startY: number
+  deltaX: number
+  deltaY: number
 }
 
-const bestSellers: Product[] = [
-  {
-    id: 1,
-    name: "Dell XPS 13",
-    specs: "Core i7 • 16GB • 512GB SSD",
-    brand: "Dell",
-    category: "Laptop",
-    price: 25990000,
-    image:
-      "https://images.unsplash.com/photo-1593642632823-8f785ba67e45?w=600",
-  },
-  {
-    id: 2,
-    name: "MacBook Air M2",
-    specs: "Apple M2 • 8GB • 256GB",
-    brand: "Apple",
-    category: "Laptop",
-    price: 27500000,
-    image:
-      "https://images.unsplash.com/photo-1517336714739-489689fd1ca8?w=600",
-  },
-  {
-    id: 3,
-    name: "Lenovo Legion 5",
-    specs: "Ryzen 7 • RTX 4060 • 16GB",
-    brand: "Lenovo",
-    category: "Laptop",
-    price: 31990000,
-    image:
-      "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=600",
-  },
-  {
-    id: 4,
-    name: "ASUS ROG Zephyrus",
-    specs: "Core i9 • RTX 4070 • 32GB",
-    brand: "ASUS",
-    category: "Laptop",
-    price: 45990000,
-    image:
-      "https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?w=600",
-  },
-
-  // ACCOUNT
-  {
-    id: 5,
-    name: "Netflix Premium",
-    specs: "4K • 4 Thiết bị • 1 Năm",
-    brand: "Netflix",
-    category: "Account",
-    accountType: "Premium",
-    duration: "1 Năm",
-    price: 199000,
-    image:
-      "https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?w=600",
-  },
-  {
-    id: 6,
-    name: "Spotify Premium",
-    specs: "Không quảng cáo • Nghe Offline",
-    brand: "Spotify",
-    category: "Account",
-    accountType: "Shared",
-    duration: "1 Tháng",
-    price: 59000,
-    image:
-      "https://images.unsplash.com/photo-1614680376573-df3480f0c6ff?w=600",
-  },
-  {
-    id: 7,
-    name: "Microsoft 365",
-    specs: "5TB Cloud • Full App",
-    brand: "Microsoft",
-    category: "Account",
-    accountType: "Family",
-    duration: "1 Năm",
-    price: 499000,
-    image:
-      "https://images.unsplash.com/photo-1633419461186-7d40a38105ec?w=600",
-  },
-  {
-    id: 8,
-    name: "Adobe Creative Cloud",
-    specs: "Photoshop • Premiere • AI",
-    brand: "Adobe",
-    category: "Account",
-    accountType: "Premium",
-    duration: "6 Tháng",
-    price: 899000,
-    image:
-      "https://images.unsplash.com/photo-1626785774573-4b799315345d?w=600",
-  },
-];
-
 export default function BestSellerPage() {
-  const navigate = useNavigate();
-  const [cartCount, setCartCount] = useState(2);
-  const [addedProductIds, setAddedProductIds] = useState<number[]>([]);
-  const [flyingItems, setFlyingItems] = useState<FlyingItem[]>([]);
-  const [isCartBumping, setIsCartBumping] = useState(false);
+  const navigate = useNavigate()
+  const { totalItems, addToCart } = useCart()
+  const user = useAuthStore((state) => state.user)
+  const accessToken = useAuthStore((state) => state.accessToken)
+  const isAuthenticated = Boolean(user && accessToken)
 
-  const productImageRefs = useRef<Record<number, HTMLImageElement | null>>({});
-  const desktopCartRef = useRef<HTMLAnchorElement | null>(null);
-  const mobileCartRef = useRef<HTMLAnchorElement | null>(null);
-  const timeoutIdsRef = useRef<number[]>([]);
+  const [products, setProducts] = useState<Product[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState('')
 
-  const [selectedPrices, setSelectedPrices] = useState<string[]>([]);
-  const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
-  const [selectedAccountTypes, setSelectedAccountTypes] = useState<string[]>(
-    []
-  );
-  const [selectedDurations, setSelectedDurations] = useState<string[]>([]);
+  const [addedProductIds, setAddedProductIds] = useState<string[]>([])
+  const [flyingItems, setFlyingItems] = useState<FlyingItem[]>([])
+  const [isCartBumping, setIsCartBumping] = useState(false)
+
+  const productImageRefs = useRef<Record<string, HTMLImageElement | null>>({})
+  const desktopCartRef = useRef<HTMLAnchorElement | null>(null)
+  const mobileCartRef = useRef<HTMLAnchorElement | null>(null)
+  const timeoutIdsRef = useRef<number[]>([])
+
+  const [selectedPrices, setSelectedPrices] = useState<string[]>([])
+  const [selectedBrands, setSelectedBrands] = useState<string[]>([])
+  const [selectedProductTypes, setSelectedProductTypes] = useState<string[]>([])
 
   useEffect(() => {
+    const fetchBestSellers = async () => {
+      try {
+        setIsLoading(true)
+        setError('')
+
+        const res = await getProducts({
+          is_active: true,
+          limit: 12,
+        })
+
+        setProducts(res.data.data?.products ?? [])
+      } catch (err) {
+        console.error(err)
+        setError('Không thể tải sản phẩm bán chạy.')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchBestSellers()
+
     return () => {
-      timeoutIdsRef.current.forEach((id) => {
-        window.clearTimeout(id);
-      });
-    };
-  }, []);
+      timeoutIdsRef.current.forEach((id) => window.clearTimeout(id))
+    }
+  }, [])
 
   const toggleValue = (
     value: string,
     state: string[],
     setState: React.Dispatch<React.SetStateAction<string[]>>
   ) => {
-    if (state.includes(value)) {
-      setState(state.filter((item) => item !== value));
-    } else {
-      setState([...state, value]);
-    }
-  };
+    setState(
+      state.includes(value)
+        ? state.filter((item) => item !== value)
+        : [...state, value]
+    )
+  }
+
+  const brands = useMemo(() => {
+    return Array.from(
+      new Set(products.map((item) => item.brand).filter(Boolean))
+    ) as string[]
+  }, [products])
 
   const filteredProducts = useMemo(() => {
-    return bestSellers.filter((product) => {
-      // PRICE
+    return products.filter((product) => {
+      const price = getDisplayPrice(product)
+
       const matchPrice =
         selectedPrices.length === 0 ||
-        selectedPrices.some((price) => {
-          if (price === "under500" && product.price < 500000) return true;
+        selectedPrices.some((priceRange) => {
+          if (priceRange === 'under500' && price < 500000) return true
           if (
-            price === "500to2m" &&
-            product.price >= 500000 &&
-            product.price <= 2000000
+            priceRange === '500to2m' &&
+            price >= 500000 &&
+            price <= 2000000
           )
-            return true;
+            return true
           if (
-            price === "2to10m" &&
-            product.price >= 2000000 &&
-            product.price <= 10000000
+            priceRange === '2to10m' &&
+            price >= 2000000 &&
+            price <= 10000000
           )
-            return true;
-          if (price === "10mplus" && product.price > 10000000) return true;
+            return true
+          if (priceRange === '10mplus' && price > 10000000) return true
+          return false
+        })
 
-          return false;
-        });
-
-      // BRAND
       const matchBrand =
         selectedBrands.length === 0 ||
-        selectedBrands.includes(product.brand);
+        selectedBrands.includes(product.brand || '')
 
-      // ACCOUNT TYPE
-      const matchAccountType =
-        selectedAccountTypes.length === 0 ||
-        selectedAccountTypes.includes(product.accountType || "");
+      const matchProductType =
+        selectedProductTypes.length === 0 ||
+        selectedProductTypes.includes(product.product_type)
 
-      // DURATION
-      const matchDuration =
-        selectedDurations.length === 0 ||
-        selectedDurations.includes(product.duration || "");
-
-      return (
-        matchPrice &&
-        matchBrand &&
-        matchAccountType &&
-        matchDuration
-      );
-    });
-  }, [
-    selectedPrices,
-    selectedBrands,
-    selectedAccountTypes,
-    selectedDurations,
-  ]);
+      return matchPrice && matchBrand && matchProductType
+    })
+  }, [products, selectedPrices, selectedBrands, selectedProductTypes])
 
   const getVisibleCartElement = () => {
-    const cartElements = [
-      desktopCartRef.current,
-      mobileCartRef.current,
-    ];
+    return [desktopCartRef.current, mobileCartRef.current].find((element) => {
+      if (!element) return false
+      const rect = element.getBoundingClientRect()
+      return rect.width > 0 && rect.height > 0
+    })
+  }
 
-    return cartElements.find((element) => {
-      if (!element) return false;
+  const runFlyAnimation = (item: Product) => {
+    const imageElement = productImageRefs.current[item._id]
+    const cartElement = getVisibleCartElement()
+    const image = getProductImage(item)
 
-      const rect = element.getBoundingClientRect();
-      return rect.width > 0 && rect.height > 0;
-    });
-  };
+    if (!imageElement || !cartElement) return
 
-  const handleAddToCart = (
+    const imageRect = imageElement.getBoundingClientRect()
+    const cartRect = cartElement.getBoundingClientRect()
+
+    const startX = imageRect.left + imageRect.width / 2
+    const startY = imageRect.top + imageRect.height / 2
+    const endX = cartRect.left + cartRect.width / 2
+    const endY = cartRect.top + cartRect.height / 2
+    const flyKey = Date.now()
+
+    setFlyingItems((prev) => [
+      ...prev,
+      {
+        key: flyKey,
+        image,
+        startX,
+        startY,
+        deltaX: endX - startX,
+        deltaY: endY - startY,
+      },
+    ])
+
+    const removeTimeoutId = window.setTimeout(() => {
+      setFlyingItems((prev) =>
+        prev.filter((flyItem) => flyItem.key !== flyKey)
+      )
+    }, 780)
+
+    timeoutIdsRef.current.push(removeTimeoutId)
+  }
+
+  const handleAddToCart = async (
     e: React.MouseEvent<HTMLButtonElement>,
     item: Product
   ) => {
-    e.preventDefault();
-    e.stopPropagation();
+    e.preventDefault()
+    e.stopPropagation()
 
-    const isNewProduct = !addedProductIds.includes(item.id);
-
-    const imageElement = productImageRefs.current[item.id];
-    const cartElement = getVisibleCartElement();
-
-    if (imageElement && cartElement) {
-      const imageRect = imageElement.getBoundingClientRect();
-      const cartRect = cartElement.getBoundingClientRect();
-      const startX = imageRect.left + imageRect.width / 2;
-      const startY = imageRect.top + imageRect.height / 2;
-      const endX = cartRect.left + cartRect.width / 2;
-      const endY = cartRect.top + cartRect.height / 2;
-      const flyKey = Date.now() + item.id;
-
-      setFlyingItems((prev) => [
-        ...prev,
-        {
-          key: flyKey,
-          image: item.image,
-          startX,
-          startY,
-          deltaX: endX - startX,
-          deltaY: endY - startY,
-        },
-      ]);
-
-      const removeTimeoutId = window.setTimeout(() => {
-        setFlyingItems((prev) =>
-          prev.filter((flyItem) => flyItem.key !== flyKey)
-        );
-      }, 780);
-
-      timeoutIdsRef.current.push(removeTimeoutId);
+    if (!isAuthenticated) {
+      navigate('/login')
+      return false
     }
 
-    setIsCartBumping(true);
+    const detailResponse = await getProductById(item._id)
+    const detail = normalizeProductDetail(detailResponse.data?.data)
+
+    if (!detail?.availableItem?._id) {
+      toast.warning('Sản phẩm hiện chưa có hàng để thêm vào giỏ.')
+      return false
+    }
+
+    await addToCart(detail.availableItem._id, detail.product_type, 1)
+
+    runFlyAnimation(item)
+
+    setIsCartBumping(true)
+
     const bumpTimeoutId = window.setTimeout(() => {
-      setIsCartBumping(false);
-    }, 240);
-    timeoutIdsRef.current.push(bumpTimeoutId);
+      setIsCartBumping(false)
+    }, 240)
 
-    if (isNewProduct) {
-      setAddedProductIds((prev) => [...prev, item.id]);
-      setCartCount((prev) => prev + 1);
+    timeoutIdsRef.current.push(bumpTimeoutId)
+
+    if (!addedProductIds.includes(item._id)) {
+      setAddedProductIds((prev) => [...prev, item._id])
     }
-  };
 
-  const formatPrice = (price: number) => {
-    return `${price.toLocaleString("vi-VN")}đ`;
-  };
+    return true
+  }
 
   const handleBuyNow = (
     e: React.MouseEvent<HTMLButtonElement>,
     item: Product
   ) => {
-    e.preventDefault();
-    e.stopPropagation();
+    e.preventDefault()
+    e.stopPropagation()
 
-    navigate("/checkout", {
-      state: {
-        selectedItems: [
-          {
-            id: String(item.id),
-            name: item.name,
-            description: item.specs,
-            price: item.price,
-            quantity: 1,
-            image: item.image,
-          },
-        ],
-      },
-    });
-  };
+    handleAddToCart(e, item).then((added) => {
+      if (added) {
+        navigate('/checkout')
+      }
+    })
+  }
+
+  const getProductLink = (item: Product) => {
+    return item.product_type === 'physical'
+      ? `/laptops/${item._id}`
+      : `/accounts/${item._id}`
+  }
 
   return (
-    <div className="w-full min-h-screen flex flex-col bg-[#F5F5F5] text-black">
+    <div className="flex min-h-screen w-full flex-col bg-[#09051f] text-white">
       <style>
         {`
           @keyframes flyToCart {
-            0% {
-              transform: translate3d(0, 0, 0) scale(1);
-              opacity: 1;
-            }
-            85% {
-              opacity: 1;
-            }
-            100% {
-              transform: translate3d(var(--delta-x), var(--delta-y), 0) scale(0.25);
-              opacity: 0;
-            }
+            0% { transform: translate3d(0, 0, 0) scale(1); opacity: 1; }
+            85% { opacity: 1; }
+            100% { transform: translate3d(var(--delta-x), var(--delta-y), 0) scale(0.25); opacity: 0; }
           }
 
           @keyframes cartBump {
-            0%,
-            100% {
-              transform: scale(1);
-            }
-            50% {
-              transform: scale(1.14);
-            }
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.14); }
           }
 
           .fly-item {
@@ -361,8 +278,8 @@ export default function BestSellerPage() {
               {
                 left: `${flyItem.startX - 28}px`,
                 top: `${flyItem.startY - 28}px`,
-                "--delta-x": `${flyItem.deltaX}px`,
-                "--delta-y": `${flyItem.deltaY}px`,
+                '--delta-x': `${flyItem.deltaX}px`,
+                '--delta-y': `${flyItem.deltaY}px`,
               } as React.CSSProperties
             }
           />
@@ -370,275 +287,196 @@ export default function BestSellerPage() {
       </div>
 
       <Header
-        cartCount={cartCount}
+        cartCount={totalItems}
         mobileCartRef={mobileCartRef}
         desktopCartRef={desktopCartRef}
-        cartIconClassName={isCartBumping ? "cart-bump" : ""}
+        cartIconClassName={isCartBumping ? 'cart-bump' : ''}
       />
-      
-      {/* BODY */}
-      <main className="w-full max-w-[1200px] mx-auto px-4 py-6 flex-1">
 
-        <h1 className="text-3xl font-bold mb-2">
-          Sản phẩm bán chạy
-        </h1>
+      <main className="mx-auto w-full max-w-[1840px] flex-1 px-4 py-6">
+        <h1 className="mb-2 text-3xl font-bold">Sản phẩm bán chạy</h1>
 
-        <p className="text-gray-500 mb-8">
-          Top những sản phẩm được mua nhiều nhất trong thang qua. Cập nhật liên tục để bạn không bỏ lỡ cơ hội sở hữu những món hời!
+        <p className="mb-8 text-[#b9b4d7]">
+          Top những sản phẩm được mua nhiều nhất trong tháng qua. Cập nhật liên
+          tục để bạn không bỏ lỡ cơ hội sở hữu những món hời.
         </p>
 
         <div className="flex gap-6">
-
-          {/* FILTER */}
-          <aside className="hidden lg:block w-[280px] bg-white p-5 rounded-2xl shadow-sm h-fit">
-
-            <h2 className="font-bold text-lg mb-5">
-              Bộ lọc sản phẩm
-            </h2>
+          <aside className="hidden h-fit w-[280px] rounded-2xl bg-[#211b42] p-5 shadow-[0_18px_40px_rgba(0,0,0,0.18)] lg:block">
+            <h2 className="mb-5 text-lg font-bold">Bộ lọc sản phẩm</h2>
 
             <div className="space-y-6">
-
-              {/* PRICE */}
               <div>
-                <p className="font-semibold mb-3">
-                  Khoảng giá
-                </p>
-
-                <div className="space-y-2 text-[14px]">
-
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={selectedPrices.includes("under500")}
-                      onChange={() =>
-                        toggleValue(
-                          "under500",
-                          selectedPrices,
-                          setSelectedPrices
-                        )
-                      }
-                    />
-                    Dưới 500K
-                  </label>
-
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={selectedPrices.includes("500to2m")}
-                      onChange={() =>
-                        toggleValue(
-                          "500to2m",
-                          selectedPrices,
-                          setSelectedPrices
-                        )
-                      }
-                    />
-                    500K - 2 Triệu
-                  </label>
-
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={selectedPrices.includes("2to10m")}
-                      onChange={() =>
-                        toggleValue(
-                          "2to10m",
-                          selectedPrices,
-                          setSelectedPrices
-                        )
-                      }
-                    />
-                    2 Triệu - 10 Triệu
-                  </label>
-
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={selectedPrices.includes("10mplus")}
-                      onChange={() =>
-                        toggleValue(
-                          "10mplus",
-                          selectedPrices,
-                          setSelectedPrices
-                        )
-                      }
-                    />
-                    10 Triệu trở lên
-                  </label>
-                </div>
-              </div>
-
-              {/* BRAND */}
-              <div>
-                <p className="font-semibold mb-3">
-                  Thương hiệu
-                </p>
+                <p className="mb-3 font-semibold">Khoảng giá</p>
 
                 <div className="space-y-2 text-[14px]">
                   {[
-                    "Dell",
-                    "Apple",
-                    "Lenovo",
-                    "ASUS",
-                    "Netflix",
-                    "Spotify",
-                    "Microsoft",
-                    "Adobe",
-                  ].map((brand) => (
-                    <label
-                      key={brand}
-                      className="flex items-center gap-2"
-                    >
+                    ['under500', 'Dưới 500K'],
+                    ['500to2m', '500K - 2 Triệu'],
+                    ['2to10m', '2 Triệu - 10 Triệu'],
+                    ['10mplus', '10 Triệu trở lên'],
+                  ].map(([value, label]) => (
+                    <label key={value} className="flex items-center gap-2">
                       <input
                         type="checkbox"
-                        checked={selectedBrands.includes(brand)}
+                        checked={selectedPrices.includes(value)}
                         onChange={() =>
-                          toggleValue(
-                            brand,
-                            selectedBrands,
-                            setSelectedBrands
-                          )
+                          toggleValue(value, selectedPrices, setSelectedPrices)
                         }
                       />
-                      {brand}
+                      {label}
                     </label>
                   ))}
                 </div>
               </div>
 
-              {/* ACCOUNT */}
               <div>
-                <p className="font-semibold mb-3">
-                  Loại account
-                </p>
+                <p className="mb-3 font-semibold">Loại sản phẩm</p>
 
                 <div className="space-y-2 text-[14px]">
-                  {["Premium", "Shared", "Family"].map((type) => (
-                    <label
-                      key={type}
-                      className="flex items-center gap-2"
-                    >
+                  {[
+                    ['physical', 'Laptop'],
+                    ['digital', 'Account'],
+                  ].map(([value, label]) => (
+                    <label key={value} className="flex items-center gap-2">
                       <input
                         type="checkbox"
-                        checked={selectedAccountTypes.includes(type)}
+                        checked={selectedProductTypes.includes(value)}
                         onChange={() =>
                           toggleValue(
-                            type,
-                            selectedAccountTypes,
-                            setSelectedAccountTypes
+                            value,
+                            selectedProductTypes,
+                            setSelectedProductTypes
                           )
                         }
                       />
-                      {type}
+                      {label}
                     </label>
                   ))}
                 </div>
               </div>
 
-              {/* DURATION */}
               <div>
-                <p className="font-semibold mb-3">
-                  Thời hạn sử dụng
-                </p>
+                <p className="mb-3 font-semibold">Thương hiệu</p>
 
                 <div className="space-y-2 text-[14px]">
-                  {["1 Tháng", "6 Tháng", "1 Năm"].map((time) => (
-                    <label
-                      key={time}
-                      className="flex items-center gap-2"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={selectedDurations.includes(time)}
-                        onChange={() =>
-                          toggleValue(
-                            time,
-                            selectedDurations,
-                            setSelectedDurations
-                          )
-                        }
-                      />
-                      {time}
-                    </label>
-                  ))}
+                  {brands.length === 0 ? (
+                    <p className="text-[#8d86b6]">Chưa có thương hiệu</p>
+                  ) : (
+                    brands.map((brand) => (
+                      <label key={brand} className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={selectedBrands.includes(brand)}
+                          onChange={() =>
+                            toggleValue(brand, selectedBrands, setSelectedBrands)
+                          }
+                        />
+                        {brand}
+                      </label>
+                    ))
+                  )}
                 </div>
               </div>
             </div>
           </aside>
 
-          {/* PRODUCTS */}
           <section className="flex-1">
+            {isLoading && (
+              <div className="rounded-[22px] bg-[#211b42] p-8 text-center text-[#b9b4d7]">
+                Đang tải sản phẩm...
+              </div>
+            )}
 
-            <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-5">
+            {!isLoading && error && (
+              <div className="rounded-[22px] bg-[#211b42] p-8 text-center text-red-500">
+                {error}
+              </div>
+            )}
 
-              {filteredProducts.map((item) => (
-                <a
-                  key={item.id}
-                  href={`/product/${item.id}`}
-                  className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-all overflow-hidden group"
-                >
-                  <div className="overflow-hidden">
-                    <img
-                      ref={(element) => {
-                        productImageRefs.current[item.id] = element;
-                      }}
-                      src={item.image}
-                      alt={item.name}
-                      className="w-full h-40 md:h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                  </div>
+            {!isLoading && !error && filteredProducts.length === 0 && (
+              <div className="rounded-[22px] bg-[#211b42] p-8 text-center text-[#b9b4d7]">
+                Chưa có sản phẩm nào.
+              </div>
+            )}
 
-                  <div className="p-4">
+            {!isLoading && !error && filteredProducts.length > 0 && (
+              <div className="grid grid-cols-2 gap-5 md:grid-cols-3 xl:grid-cols-4">
+                {filteredProducts.map((item) => {
+                  const image = getProductImage(item)
+                  const price = getDisplayPrice(item)
 
-                    <h3 className="font-bold text-[15px] line-clamp-2 min-h-[44px]">
-                      {item.name}
-                    </h3>
-
-                    <p className="text-[12px] text-gray-500 mt-2 line-clamp-2 min-h-[36px]">
-                      {item.specs}
-                    </p>
-
-                    <div className="flex items-center justify-between mt-4">
-
-                      <span className="text-[#27AE60] font-bold text-[16px]">
-                        {formatPrice(item.price)}
-                      </span>
-
-                      <button
-                        onClick={(e) => handleAddToCart(e, item)}
-                        className="w-10 h-10 rounded-xl bg-[#3783EC] text-white flex items-center justify-center hover:bg-[#206ed6] transition-colors"
-                        aria-label={`Thêm ${item.name} vào giỏ hàng`}
-                      >
-                        <svg
-                          className="w-5 h-5"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M3 3h2l.4 2M7 13h9l3-6H6.4M7 13L5.4 5M7 13l-1.5 1.5a1 1 0 00.7 1.7H17m-8 2a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm9 0a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"
-                          />
-                        </svg>
-                      </button>
-                    </div>
-
-                    <button
-                      onClick={(e) => handleBuyNow(e, item)}
-                      className="w-full mt-4 h-[42px] rounded-xl bg-[#3783EC] text-white font-semibold hover:bg-[#206ed6] transition-colors"
+                  return (
+                    <a
+                      key={item._id}
+                      href={getProductLink(item)}
+                      className="group overflow-hidden rounded-2xl bg-[#211b42] shadow-[0_18px_40px_rgba(0,0,0,0.18)] transition-all hover:shadow-md"
                     >
-                      Mua ngay
-                    </button>
-                  </div>
-                </a>
-              ))}
-            </div>
+                      <div className="overflow-hidden">
+                        <img
+                          ref={(element) => {
+                            productImageRefs.current[item._id] = element
+                          }}
+                          src={image}
+                          alt={item.name}
+                          className="h-40 w-full object-cover transition-transform duration-300 group-hover:scale-105 md:h-48"
+                        />
+                      </div>
+
+                      <div className="p-4">
+                        <h3 className="line-clamp-2 min-h-[44px] text-[15px] font-bold">
+                          {item.name}
+                        </h3>
+
+                        <p className="mt-2 line-clamp-2 min-h-[36px] text-[12px] text-[#b9b4d7]">
+                          {item.description || 'Chưa có mô tả sản phẩm'}
+                        </p>
+
+                        <div className="mt-4 flex items-center justify-between">
+                          <span className="text-[16px] font-bold text-[#27AE60]">
+                            {formatPrice(price)}
+                          </span>
+
+                          <button
+                            type="button"
+                            onClick={(e) => handleAddToCart(e, item)}
+                            className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#3783EC] text-white transition-colors hover:bg-[#206ed6]"
+                            aria-label={`Thêm ${item.name} vào giỏ hàng`}
+                          >
+                            <svg
+                              className="h-5 w-5"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M3 3h2l.4 2M7 13h9l3-6H6.4M7 13L5.4 5M7 13l-1.5 1.5a1 1 0 00.7 1.7H17m-8 2a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm9 0a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"
+                              />
+                            </svg>
+                          </button>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={(e) => handleBuyNow(e, item)}
+                          className="mt-4 h-[42px] w-full rounded-xl bg-[#3783EC] font-semibold text-white transition-colors hover:bg-[#206ed6]"
+                        >
+                          Mua ngay
+                        </button>
+                      </div>
+                    </a>
+                  )
+                })}
+              </div>
+            )}
           </section>
         </div>
       </main>
+
       <Footer />
     </div>
-  );
+  )
 }

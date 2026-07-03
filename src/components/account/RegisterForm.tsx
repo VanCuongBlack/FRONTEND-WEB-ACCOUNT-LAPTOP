@@ -1,14 +1,15 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
-import { Loader2, User, Mail, Phone, Lock, Eye, EyeOff } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { CheckCircle2, Eye, EyeOff, Loader2, Lock, Mail, Phone, User } from 'lucide-react'
 import { toast } from 'sonner'
-import { Button } from '@/components/ui/button'
 import { registerSchema, type RegisterFormValues } from '@/utils/validators'
-import { register } from '@/services/auth.service'
+import { useAuth } from '@/hooks/useAuth'
 
 export default function RegisterForm() {
+  const navigate = useNavigate()
+  const { register: registerUser, isLoading } = useAuth()
   const [showPass, setShowPass] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
   const [success, setSuccess] = useState(false)
@@ -16,6 +17,7 @@ export default function RegisterForm() {
   const {
     register: field,
     handleSubmit,
+    setError,
     formState: { errors, isSubmitting },
   } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
@@ -23,126 +25,174 @@ export default function RegisterForm() {
   })
 
   const onSubmit = async (data: RegisterFormValues) => {
-    try {
-      const res = await register({
-        fullname: data.fullName,
-        email: data.email,
-        phone: data.phone,
-        password: data.password,
-      })
-      if (res.data?.success === false) {
-        toast.error(res.data.message || 'Đăng ký thất bại.')
-      } else {
-        setSuccess(true)
-        toast.success('Đăng ký thành công!')
-      }
-    } catch (err: unknown) {
-      const message =
-        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-        'Đăng ký thất bại. Vui lòng thử lại.'
-      toast.error(message)
+    const response = await registerUser({
+      fullname: data.fullName,
+      email: data.email.trim().toLowerCase(),
+      phone: data.phone.trim(),
+      password: data.password,
+    })
+
+    if (response.success) {
+      setSuccess(true)
+      return
     }
+
+    if (response.error?.toLowerCase().includes('email')) {
+      setError('email', { type: 'server', message: response.error })
+      return
+    }
+
+    if (response.error?.toLowerCase().includes('điện thoại') || response.error?.toLowerCase().includes('phone')) {
+      setError('phone', { type: 'server', message: response.error })
+      return
+    }
+
+    setError('root', {
+      type: 'server',
+      message: response.error || 'Đăng ký thất bại',
+    })
   }
 
   if (success) {
     return (
       <div className="flex flex-col items-center gap-4 py-10 text-center">
-        <div className="text-6xl">✅</div>
-        <p className="text-xl font-bold text-[#1a237e]">Đăng ký thành công!</p>
-        <p className="text-sm text-gray-500">Tài khoản của bạn đã được tạo.</p>
-        <Link to="/login" className="mt-2 text-sm font-semibold text-blue-600 hover:underline">
-          Đến trang đăng nhập →
-        </Link>
+        <CheckCircle2 className="h-16 w-16 text-[#35d07f]" />
+        <p className="text-2xl font-black text-white">Đăng ký thành công</p>
+        <p className="max-w-sm text-sm leading-6 text-[#b9b4d7]">
+          Vui lòng xác thực email của bạn. Sau đó đăng nhập để tiếp tục mua sắm.
+        </p>
+        <button
+          type="button"
+          onClick={() => navigate('/login')}
+          className="mt-2 rounded-2xl bg-[#1677ff] px-5 py-3 text-sm font-black text-white hover:bg-[#0f66df]"
+        >
+          Đến trang đăng nhập
+        </button>
       </div>
     )
   }
 
-  const iconCls = 'w-5 h-5 text-blue-500 flex-shrink-0'
-  const inp = 'flex-1 bg-transparent text-sm text-gray-800 placeholder-[#ADA2A2] focus:outline-none py-1'
+  const iconCls = 'h-5 w-5 shrink-0 text-[#79a7ff]'
+  const inputCls = 'h-12 flex-1 bg-transparent text-sm font-semibold text-white outline-none placeholder:text-[#8d86b6]'
 
   const Field = ({
-    icon, error, children,
-  }: { icon: React.ReactNode; error?: string; children: React.ReactNode }) => (
-    <div className="flex flex-col gap-1">
-      <div className={`flex items-center gap-3 border-b pb-2 transition-colors ${error ? 'border-red-400' : 'border-gray-300 focus-within:border-blue-500'}`}>
+    icon,
+    error,
+    children,
+  }: {
+    icon: React.ReactNode
+    error?: string
+    children: React.ReactNode
+  }) => (
+    <div className="flex flex-col gap-2">
+      <div className={`flex items-center gap-3 rounded-2xl border bg-[#171233] px-4 transition-colors ${
+        error ? 'border-[#ff7b8f]' : 'border-[#3d63ff]/25 focus-within:border-[#79a7ff]'
+      }`}>
         {icon}
         {children}
       </div>
-      {error && <p className="pl-8 text-xs text-red-500">{error}</p>}
+      {error && <p className="pl-2 text-xs font-semibold text-[#ff7b8f]">{error}</p>}
     </div>
   )
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-6 w-full">
-      <h1 className="text-[28px] font-bold text-[#1a237e] leading-tight">Đăng ký</h1>
-
-      {/* Họ và tên */}
-      <Field icon={<User className={iconCls} />} error={errors.fullName?.message}>
-        <input {...field('fullName')} type="text" placeholder="Họ và tên" className={inp} />
-      </Field>
-
-      {/* Email */}
-      <Field icon={<Mail className={iconCls} />} error={errors.email?.message}>
-        <input {...field('email')} type="email" placeholder="Email" className={inp} />
-      </Field>
-
-      {/* Số điện thoại */}
-      <Field icon={<Phone className={iconCls} />} error={errors.phone?.message}>
-        <input {...field('phone')} type="tel" inputMode="numeric" maxLength={11}
-          placeholder="Số điện thoại (VD: 0912345678)" className={inp} />
-      </Field>
-
-      {/* Mật khẩu */}
-      <Field icon={<Lock className={iconCls} />} error={errors.password?.message}>
-        <input {...field('password')} type={showPass ? 'text' : 'password'}
-          placeholder="Mật khẩu (ít nhất 8 ký tự)" autoComplete="new-password" className={inp} />
-        <button type="button" tabIndex={-1} onClick={() => setShowPass(v => !v)}
-          className="flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors">
-          {showPass ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-        </button>
-      </Field>
-
-      {/* Xác nhận mật khẩu */}
-      <Field icon={<Lock className={iconCls} />} error={errors.confirmPassword?.message}>
-        <input {...field('confirmPassword')} type={showConfirm ? 'text' : 'password'}
-          placeholder="Nhập lại mật khẩu" autoComplete="new-password" className={inp} />
-        <button type="button" tabIndex={-1} onClick={() => setShowConfirm(v => !v)}
-          className="flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors">
-          {showConfirm ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-        </button>
-      </Field>
-
-      {/* Submit */}
-      <Button type="submit" disabled={isSubmitting}
-        className="w-full rounded-full bg-[#1a237e] hover:bg-[#283593] py-3 text-sm font-bold tracking-wide">
-        {isSubmitting
-          ? <span className="flex items-center justify-center gap-2"><Loader2 className="h-4 w-4 animate-spin" />Đang xử lý...</span>
-          : 'Đăng ký'}
-      </Button>
-
-      {/* Divider */}
-      <div className="flex items-center gap-3">
-        <div className="h-px flex-1 bg-gray-200" />
-        <span className="flex-shrink-0 text-sm text-gray-400">hoặc</span>
-        <div className="h-px flex-1 bg-gray-200" />
+    <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex w-full flex-col gap-5">
+      <div>
+        <p className="text-sm font-black uppercase text-[#79a7ff]">Đăng ký</p>
+        <h1 className="mt-2 text-3xl font-black text-white">Tạo tài khoản mới</h1>
+        <p className="mt-2 text-sm text-[#b9b4d7]">Nhập thông tin để bắt đầu mua sắm trên PCAcc.</p>
       </div>
 
-      {/* Google */}
-      <button type="button" onClick={() => toast.info('Google OAuth chưa được tích hợp.')}
-        className="flex w-full items-center justify-center gap-3 rounded-full border border-gray-300 bg-white py-2.5 text-sm font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-50">
-        <svg className="h-5 w-5 flex-shrink-0" viewBox="0 0 24 24">
-          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" />
-          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-        </svg>
+      <Field icon={<User className={iconCls} />} error={errors.fullName?.message}>
+        <input {...field('fullName')} type="text" placeholder="Họ và tên" className={inputCls} />
+      </Field>
+
+      <Field icon={<Mail className={iconCls} />} error={errors.email?.message}>
+        <input {...field('email')} type="email" placeholder="Email" className={inputCls} />
+      </Field>
+
+      <Field icon={<Phone className={iconCls} />} error={errors.phone?.message}>
+        <input
+          {...field('phone')}
+          type="tel"
+          inputMode="numeric"
+          maxLength={11}
+          placeholder="Số điện thoại"
+          className={inputCls}
+        />
+      </Field>
+
+      <Field icon={<Lock className={iconCls} />} error={errors.password?.message}>
+        <input
+          {...field('password')}
+          type={showPass ? 'text' : 'password'}
+          placeholder="Mật khẩu"
+          autoComplete="new-password"
+          className={inputCls}
+        />
+        <button
+          type="button"
+          tabIndex={-1}
+          onClick={() => setShowPass((value) => !value)}
+          className="shrink-0 text-[#8d86b6] hover:text-white"
+        >
+          {showPass ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+        </button>
+      </Field>
+
+      <Field icon={<Lock className={iconCls} />} error={errors.confirmPassword?.message}>
+        <input
+          {...field('confirmPassword')}
+          type={showConfirm ? 'text' : 'password'}
+          placeholder="Nhập lại mật khẩu"
+          autoComplete="new-password"
+          className={inputCls}
+        />
+        <button
+          type="button"
+          tabIndex={-1}
+          onClick={() => setShowConfirm((value) => !value)}
+          className="shrink-0 text-[#8d86b6] hover:text-white"
+        >
+          {showConfirm ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+        </button>
+      </Field>
+
+      {errors.root?.message && (
+        <p className="rounded-2xl bg-[#ff7b8f]/10 px-4 py-3 text-center text-sm font-semibold text-[#ff7b8f]">
+          {errors.root.message}
+        </p>
+      )}
+
+      <button
+        type="submit"
+        disabled={isSubmitting || isLoading}
+        className="flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[#1677ff] text-sm font-black text-white transition-colors hover:bg-[#0f66df] disabled:cursor-not-allowed disabled:bg-[#625b84]"
+      >
+        {isSubmitting || isLoading ? (
+          <>
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Đang xử lý...
+          </>
+        ) : (
+          'Đăng ký'
+        )}
+      </button>
+
+      <button
+        type="button"
+        onClick={() => toast.info('Google OAuth chưa được tích hợp.')}
+        className="flex h-12 w-full items-center justify-center gap-3 rounded-2xl border border-[#3d63ff]/25 bg-[#171233] text-sm font-black text-white hover:border-[#79a7ff]"
+      >
+        G
         Đăng ký bằng Google
       </button>
 
-      {/* Link đăng nhập */}
-      <p className="text-center text-sm text-gray-600">
+      <p className="text-center text-sm text-[#b9b4d7]">
         Đã có tài khoản?{' '}
-        <Link to="/login" className="font-bold text-blue-700 hover:underline">Đăng nhập</Link>
+        <button type="button" onClick={() => navigate('/login')} className="font-black text-[#79a7ff] hover:text-white">
+          Đăng nhập
+        </button>
       </p>
     </form>
   )
