@@ -13,23 +13,32 @@ type LaptopTab = '' | 'Gaming' | 'Văn phòng' | 'MacBook'
 export default function LaptopListPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const { laptops, isLoading, getLaptops } = useProduct()
+  const { laptops, products, isLoading, getLaptops, searchProducts } = useProduct()
   const [search, setSearch] = useState('')
   const [activeTab, setActiveTab] = useState<LaptopTab>('Gaming')
   const [selectedPrices, setSelectedPrices] = useState<string[]>([])
   const [selectedBrands, setSelectedBrands] = useState<string[]>([])
 
   useEffect(() => {
-    getLaptops({ is_active: true })
-  }, [])
-
-  useEffect(() => {
     const query = searchParams.get('search') ?? ''
+    setSearch(query)
     if (query) {
-      setSearch(query)
       setActiveTab('')
     }
   }, [searchParams])
+
+  useEffect(() => {
+    if (search) {
+      const keyword = search.toLowerCase().trim()
+      if (keyword === 'laptop' || keyword === 'laptops' || keyword === 'pc') {
+        getLaptops({ is_active: true, limit: 100 })
+      } else {
+        searchProducts(search)
+      }
+    } else {
+      getLaptops({ is_active: true, limit: 100 })
+    }
+  }, [search])
 
   const toggleValue = (
     value: string,
@@ -53,8 +62,9 @@ export default function LaptopListPage() {
       ? 'border-[#3d63ff] bg-[#0f0a2c] text-white'
       : 'border-transparent bg-[#4a4568] text-[#f0edf9] hover:bg-[#5a5378]'
 
-  const pageTitle =
-    activeTab === 'Gaming'
+  const pageTitle = search && activeTab === ''
+    ? `Kết quả tìm kiếm: "${search}"`
+    : activeTab === 'Gaming'
       ? 'Laptop Gaming'
       : activeTab === 'Văn phòng'
         ? 'Laptop Văn Phòng'
@@ -62,8 +72,9 @@ export default function LaptopListPage() {
           ? 'MacBook'
           : 'Laptop / PC cũ'
 
-  const pageDescription =
-    activeTab === 'Gaming'
+  const pageDescription = search && activeTab === ''
+    ? `Tìm kiếm sản phẩm phù hợp với từ khoá "${search}".`
+    : activeTab === 'Gaming'
       ? 'Khám phá các dòng laptop gaming, PC chiến game và cấu hình hiệu năng cao.'
       : activeTab === 'Văn phòng'
         ? 'Laptop văn phòng mỏng nhẹ, ổn định, phù hợp học tập và làm việc.'
@@ -72,12 +83,15 @@ export default function LaptopListPage() {
           : 'Tìm kiếm laptop và PC cũ chất lượng, giá tốt.'
 
   const filteredProducts = useMemo(() => {
-    return laptops
-      .filter((item) => {
-        const keyword = search.toLowerCase().trim()
+    const keyword = search.toLowerCase().trim()
+    const isGenericKeyword = keyword === 'laptop' || keyword === 'laptops' || keyword === 'pc'
+    const listToFilter = (search && activeTab === '' && !isGenericKeyword) ? products : laptops
 
+    return listToFilter
+      .filter((item) => {
         const matchSearch =
           !keyword ||
+          isGenericKeyword ||
           item.name.toLowerCase().includes(keyword) ||
           (item.description || '').toLowerCase().includes(keyword) ||
           (item.brand || '').toLowerCase().includes(keyword)
@@ -99,7 +113,7 @@ export default function LaptopListPage() {
           (item.brand || '').toLowerCase().includes(brand.toLowerCase())
         )
       })
-  }, [search, selectedPrices, selectedBrands, laptops])
+  }, [search, activeTab, selectedPrices, selectedBrands, laptops, products])
 
   return (
     <div className="flex min-h-screen flex-col bg-[#09051f] font-sans text-white">
@@ -220,8 +234,8 @@ export default function LaptopListPage() {
                     price={item.sale_price ?? item.base_price}
                     subtitle={item.description || item.brand || 'Laptop / PC cũ'}
                     image={item.thumbnail || item.images?.[0]}
-                    productType="physical"
-                    to="/laptops"
+                    productType={item.product_type}
+                    to={item.product_type === 'physical' ? '/laptops' : '/accounts'}
                   />
                 ))
               ) : (

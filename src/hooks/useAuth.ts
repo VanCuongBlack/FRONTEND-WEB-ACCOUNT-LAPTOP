@@ -72,7 +72,11 @@ export const useAuth = () => {
           error: response.data.message || 'Đăng ký thất bại',
         }
       } catch (err: any) {
-        const message = err.response?.data?.message || 'Đăng ký thất bại'
+        const message =
+          err.response?.data?.message ||
+          err.response?.data?.error ||
+          err.message ||
+          'Đăng ký thất bại'
         setError(message)
         toast.error(message)
         return {

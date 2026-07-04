@@ -9,6 +9,8 @@ import ForgotPasswordPage from '@/pages/auth/ForgotPasswordPage'
 import ResetPasswordPage from '@/pages/auth/ResetPasswordPage'
 import VerifyEmailPage from '@/pages/auth/VerifyEmailPage'
 import VerifyResetOtpPage from '@/pages/auth/VerifyResetOtpPage'
+import GoogleAuthPage from '@/pages/auth/GoogleAuthPage'
+import GoogleAuthSuccessPage from '@/pages/auth/GoogleAuthSuccessPage'
 
 import LaptopListPage from '@/pages/product/LaptopListPage'
 import LaptopDetailPage from '@/pages/product/LaptopDetailPage'
@@ -58,6 +60,8 @@ export default function AppRoutes() {
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/verify-reset-otp" element={<VerifyResetOtpPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/auth/google" element={<GoogleAuthPage />} />
+        <Route path="/auth/google/success" element={<GoogleAuthSuccessPage />} />
 
         <Route path="/laptops" element={<LaptopListPage />} />
         <Route path="/laptops/:id" element={<LaptopDetailPage />} />
