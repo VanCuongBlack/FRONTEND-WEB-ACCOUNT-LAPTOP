@@ -1,0 +1,118 @@
+import api from './api'
+import type { Payment } from './payment.service'
+
+export interface ApiResponse<T = unknown> {
+  success: boolean
+  statusCode?: number
+  message: string
+  data?: T
+  error?: string
+}
+
+export type PaymentMethod = 'cod' | 'bank_transfer'
+
+export type OrderStatus =
+  | 'pending'
+  | 'confirmed'
+  | 'processing'
+  | 'completed'
+  | 'failed'
+  | 'cancelled'
+
+export interface OrderItemProduct {
+  _id?: string
+  name?: string
+  description?: string
+  base_price?: number
+}
+
+export interface OrderItem {
+  _id?: string
+  item_id?: string
+  product_id?: string
+  product_type?: 'physical' | 'digital'
+  quantity?: number
+  product_name?: string
+  price?: number
+  sale_price?: number
+  item_type_ref?: 'PhysicalProductItem' | 'DigitalProductItem'
+  total?: number
+  product?: OrderItemProduct
+}
+
+export interface Order {
+  _id: string
+  user_id?: string
+  items: OrderItem[]
+  total_amount: number
+  status: OrderStatus
+  shipping_address?: string
+  payment_method?: PaymentMethod
+  note?: string
+  createdAt?: string
+  updatedAt?: string
+}
+
+export interface OrdersResponse {
+  orders: Order[]
+  total?: number
+  page?: number
+  limit?: number
+}
+
+export interface CreateOrderPayload {
+  payment_method: PaymentMethod
+  shipping_address?: string
+  note?: string
+}
+
+export interface CreateOrderResponse {
+  order: Order
+  payment?: Payment
+}
+
+export interface GetOrdersParams {
+  status?: OrderStatus
+  page?: number
+  limit?: number
+}
+
+// Lấy đơn hàng của user đang đăng nhập.
+export const getOrders = (params?: GetOrdersParams) => {
+  return api.get<ApiResponse<OrdersResponse | Order[]>>(
+    '/order/my-orders',
+    {
+      params,
+    }
+  )
+}
+
+// Lấy chi tiết đơn hàng.
+export const getOrderById = (orderId: string) => {
+  return api.get<ApiResponse<Order>>(`/order/${orderId}`)
+}
+
+// Tạo đơn hàng từ cart. BE tự lấy cart hiện tại, FE không gửi items.
+export const createOrder = (data: CreateOrderPayload) => {
+  return api.post<ApiResponse<CreateOrderResponse>>('/order/create', data)
+}
+
+// Hủy đơn hàng.
+export const cancelOrder = (orderId: string, reason?: string) => {
+  return api.put<ApiResponse<Order>>(
+    `/order/${orderId}/cancel`,
+    {
+      cancel_reason: reason,
+    }
+  )
+}
+
+export function extractOrders(data: OrdersResponse | Order[] | undefined) {
+  if (!data) return []
+  if (Array.isArray(data)) return data
+  return data.orders ?? []
+}
+
+export function extractCreatedOrder(data: CreateOrderResponse | undefined) {
+  return data?.order ?? null
+}

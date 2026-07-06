@@ -21,7 +21,7 @@ const PROMO_ITEMS = [
 
 export default function PromoBanners() {
   return (
-    <section className="max-w-[1200px] mx-auto px-4 sm:px-6 pb-4 sm:pb-6">
+    <section className="max-w-[1840px] mx-auto px-4 sm:px-6 pb-4 sm:pb-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {PROMO_ITEMS.map((item) => (
           <div

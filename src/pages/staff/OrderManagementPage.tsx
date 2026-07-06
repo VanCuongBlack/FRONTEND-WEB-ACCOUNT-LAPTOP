@@ -1,359 +1,245 @@
-import { useState, useMemo } from 'react'
+import { useState, type ReactNode } from 'react'
 import {
-  Search, SlidersHorizontal, Check, Clock, Truck,
-  CheckCircle, MoreHorizontal, ChevronLeft, ChevronRight,
-  TrendingUp, AlertCircle
+  AlertCircle,
+  CheckCircle2,
+  ClipboardList,
+  CreditCard,
+  FileText,
+  RefreshCw,
 } from 'lucide-react'
 import StaffLayout from '@/layouts/StaffLayout'
+import { confirmCOD, getPaymentByOrder } from '@/services/payment.service'
 
-// ─── Interfaces ───────────────────────────────────────────────────────────────
-
-interface Order {
-  id: string
-  customer: string
-  amount: string
-  amountRaw: number
-  status: 'PENDING' | 'SHIPPING' | 'COMPLETED'
-  date: string
+function formatPrice(price?: number) {
+  return `${(price ?? 0).toLocaleString('vi-VN')}đ`
 }
 
-const INITIAL_ORDERS: Order[] = [
-  { id: '#DH001', customer: 'Nguyễn Văn A', amount: '29.990.000đ', amountRaw: 29990000, status: 'PENDING', date: '03/06/2026 14:30' },
-  { id: '#DH002', customer: 'Trần Văn B', amount: '42.990.000đ', amountRaw: 42990000, status: 'SHIPPING', date: '03/06/2026 11:15' },
-  { id: '#DH003', customer: 'Lê Văn C', amount: '18.990.000đ', amountRaw: 18990000, status: 'COMPLETED', date: '02/06/2026 17:45' },
-  { id: '#DH004', customer: 'Hoàng Thị D', amount: '55.000.000đ', amountRaw: 55000000, status: 'COMPLETED', date: '02/06/2026 09:20' },
-  { id: '#DH005', customer: 'Phạm Minh E', amount: '250.000đ', amountRaw: 250000, status: 'PENDING', date: '03/06/2026 15:10' },
-  { id: '#DH006', customer: 'Đỗ Thị F', amount: '290.000đ', amountRaw: 290000, status: 'SHIPPING', date: '03/06/2026 08:05' },
-]
+function formatMethod(method?: string) {
+  if (method === 'cod') return 'Thanh toán khi nhận hàng'
+  if (method === 'bank_transfer') return 'Chuyển khoản ngân hàng'
+  return method ?? '-'
+}
+
+function formatStatus(status?: string) {
+  const labels: Record<string, string> = {
+    pending: 'Đang chờ',
+    paid: 'Đã thanh toán',
+    failed: 'Thất bại',
+    expired: 'Hết hạn',
+    refunded: 'Đã hoàn tiền',
+  }
+
+  return status ? labels[status] ?? status : '-'
+}
+
+function isMongoObjectId(value: string) {
+  return /^[a-f\d]{24}$/i.test(value)
+}
 
 export default function OrderManagementPage() {
-  const [orders, setOrders] = useState<Order[]>(INITIAL_ORDERS)
-  const [search, setSearch] = useState('')
-  const [activeTab, setActiveTab] = useState<'ALL' | 'PENDING' | 'SHIPPING' | 'COMPLETED'>('ALL')
-  const [selectedOrders, setSelectedOrders] = useState<string[]>([])
+  const [orderId, setOrderId] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const [message, setMessage] = useState('')
+  const [error, setError] = useState('')
+  const [paymentInfo, setPaymentInfo] = useState<{
+    amount?: number
+    status?: string
+    method?: string
+  } | null>(null)
 
-  // Action Handlers
-  const handleApprove = (orderId: string) => {
-    setOrders(prev =>
-      prev.map(o => (o.id === orderId ? { ...o, status: 'SHIPPING' } : o))
-    )
-    alert(`Đã duyệt đơn hàng ${orderId} thành công! Trạng thái chuyển sang Đang giao.`)
-  }
+  const normalizedOrderId = orderId.trim()
 
-  const handleComplete = (orderId: string) => {
-    setOrders(prev =>
-      prev.map(o => (o.id === orderId ? { ...o, status: 'COMPLETED' } : o))
-    )
-    alert(`Đã cập nhật đơn hàng ${orderId} hoàn thành!`)
-  }
+  const handleLoadPayment = async () => {
+    if (!normalizedOrderId) {
+      setError('Nhập orderId trước khi kiểm tra thanh toán.')
+      return
+    }
 
-  const handleViewDetail = (order: Order) => {
-    alert(`Thông tin chi tiết Đơn hàng:\nMã đơn: ${order.id}\nKhách hàng: ${order.customer}\nTổng tiền: ${order.amount}\nTrạng thái: ${order.status}\nThời gian đặt: ${order.date}`)
-  }
+    if (!isMongoObjectId(normalizedOrderId)) {
+      setError('BE hiện chỉ nhận Mongo _id của đơn hàng gồm 24 ký tự. Mã DH... là nội dung chuyển khoản, không dùng để xác nhận COD.')
+      return
+    }
 
-  const handleToggleSelectAll = () => {
-    if (selectedOrders.length === filteredOrders.length) {
-      setSelectedOrders([])
-    } else {
-      setSelectedOrders(filteredOrders.map(o => o.id))
+    setIsLoading(true)
+    setError('')
+    setMessage('')
+    setPaymentInfo(null)
+
+    try {
+      const res = await getPaymentByOrder(normalizedOrderId)
+      const payment = res.data.data
+      setPaymentInfo({
+        amount: payment?.amount,
+        status: payment?.status,
+        method: payment?.method ?? payment?.payment_method,
+      })
+      setMessage('Đã tải thông tin thanh toán của đơn.')
+    } catch (err: any) {
+      setError(
+        err?.response?.data?.message ||
+          err?.message ||
+          'Không thể tải thông tin thanh toán.'
+      )
+    } finally {
+      setIsLoading(false)
     }
   }
 
-  const handleToggleSelectOne = (id: string) => {
-    setSelectedOrders(prev =>
-      prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
-    )
-  }
-
-  // Memoized Filtered List
-  const filteredOrders = useMemo(() => {
-    return orders.filter(o => {
-      const matchSearch =
-        o.id.toLowerCase().includes(search.toLowerCase()) ||
-        o.customer.toLowerCase().includes(search.toLowerCase())
-      
-      const matchTab = activeTab === 'ALL' || o.status === activeTab
-      return matchSearch && matchTab
-    })
-  }, [orders, search, activeTab])
-
-  // Count helper functions
-  const countStats = useMemo(() => {
-    return {
-      all: orders.length,
-      pending: orders.filter(o => o.status === 'PENDING').length,
-      shipping: orders.filter(o => o.status === 'SHIPPING').length,
-      completed: orders.filter(o => o.status === 'COMPLETED').length,
+  const handleConfirmCOD = async () => {
+    if (!normalizedOrderId) {
+      setError('Nhập orderId trước khi xác nhận COD.')
+      return
     }
-  }, [orders])
+
+    if (!isMongoObjectId(normalizedOrderId)) {
+      setError('BE hiện chỉ nhận Mongo _id của đơn hàng gồm 24 ký tự. Mã DH... là nội dung chuyển khoản, không dùng để xác nhận COD.')
+      return
+    }
+
+    setIsLoading(true)
+    setError('')
+    setMessage('')
+
+    try {
+      await confirmCOD(normalizedOrderId)
+      setMessage('Đã xác nhận COD thành công. BE đã chuyển thanh toán sang paid và đơn sang completed.')
+      await handleLoadPayment()
+    } catch (err: any) {
+      setError(err?.response?.data?.message || err?.message || 'Không thể xác nhận COD.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   return (
-    <StaffLayout title="Quản lý đơn hàng" notificationCount={3}>
-      <div className="space-y-6 max-w-[1600px] mx-auto font-sans text-slate-800">
-        
-        {/* Title Section */}
+    <StaffLayout title="Quản lý đơn hàng" notificationCount={0}>
+      <div className="mx-auto w-full max-w-[1840px] space-y-6 font-sans text-slate-800">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Quản lý đơn hàng</h1>
-          <p className="text-sm text-slate-500 mt-1">Quản lý vòng đời đơn hàng, xác nhận giao dịch và cập nhật tiến độ vận chuyển.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+            Quản lý đơn hàng
+          </h1>
+          <p className="mt-1 text-sm text-slate-500">
+            Xử lý đơn COD theo quy trình: khách tạo đơn, nhân viên gọi xác nhận, sau đó xác nhận thủ công.
+          </p>
         </div>
 
-        {/* ─── Metrics Row (4 Cards) ─── */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {/* Card 1: Tổng đơn hàng */}
-          <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm flex items-center justify-between">
-            <div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Tổng đơn hàng</p>
-              <h3 className="text-2xl font-extrabold text-slate-900 mt-1">12.450</h3>
-              <p className="text-xs text-emerald-600 font-semibold mt-2 flex items-center gap-0.5">
-                <TrendingUp className="w-3.5 h-3.5" />
-                +12.5% so với hôm qua
-              </p>
-            </div>
-            <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
-              <SlidersHorizontal className="w-6 h-6" />
-            </div>
-          </div>
-
-          {/* Card 2: Chờ xác nhận */}
-          <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm flex items-center justify-between">
-            <div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Chờ xác nhận</p>
-              <h3 className="text-2xl font-extrabold text-rose-600 mt-1">320</h3>
-              <p className="text-[11px] text-rose-500 font-bold mt-2 flex items-center gap-0.5">
-                <AlertCircle className="w-3.5 h-3.5" />
-                Cần xử lý gấp
-              </p>
-            </div>
-            <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center animate-pulse">
-              <Clock className="w-6 h-6" />
-            </div>
-          </div>
-
-          {/* Card 3: Đang giao */}
-          <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm flex items-center justify-between">
-            <div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Đang giao</p>
-              <h3 className="text-2xl font-extrabold text-blue-600 mt-1">128</h3>
-              <p className="text-xs text-blue-500 font-semibold mt-2">Đúng tiến độ</p>
-            </div>
-            <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
-              <Truck className="w-6 h-6" />
-            </div>
-          </div>
-
-          {/* Card 4: Hoàn thành */}
-          <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm flex items-center justify-between">
-            <div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Hoàn thành</p>
-              <h3 className="text-2xl font-extrabold text-emerald-600 mt-1">8.9K</h3>
-              <p className="text-xs text-emerald-600 font-semibold mt-2">85% Tỉ lệ thành công</p>
-            </div>
-            <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-              <CheckCircle className="w-6 h-6" />
-            </div>
-          </div>
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
+          <InfoCard
+            icon={<ClipboardList className="h-8 w-8 text-blue-600" />}
+            label="Bước 1"
+            value="Khách tạo đơn COD"
+          />
+          <InfoCard
+            icon={<FileText className="h-8 w-8 text-emerald-600" />}
+            label="Bước 2"
+            value="Nhân viên gọi xác nhận"
+          />
+          <InfoCard
+            icon={<CreditCard className="h-8 w-8 text-violet-600" />}
+            label="Bước 3"
+            value="Bấm xác nhận COD"
+          />
         </div>
 
-        {/* ─── Controls & Search Section ─── */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-sm flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          {/* Navigation Filter Tabs */}
-          <div className="flex flex-wrap gap-1 bg-slate-100 p-1 rounded-xl w-fit">
-            <button
-              onClick={() => setActiveTab('ALL')}
-              className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                activeTab === 'ALL'
-                  ? 'bg-white text-slate-900 shadow-sm'
-                  : 'text-slate-500 hover:text-slate-800'
-              }`}
-            >
-              Tất cả ({countStats.all})
-            </button>
-            <button
-              onClick={() => setActiveTab('PENDING')}
-              className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                activeTab === 'PENDING'
-                  ? 'bg-rose-500 text-white shadow-sm'
-                  : 'text-slate-500 hover:text-slate-800'
-              }`}
-            >
-              Chờ xác nhận ({countStats.pending})
-            </button>
-            <button
-              onClick={() => setActiveTab('SHIPPING')}
-              className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                activeTab === 'SHIPPING'
-                  ? 'bg-blue-600 text-white shadow-sm'
-                  : 'text-slate-500 hover:text-slate-800'
-              }`}
-            >
-              Đang giao ({countStats.shipping})
-            </button>
-            <button
-              onClick={() => setActiveTab('COMPLETED')}
-              className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                activeTab === 'COMPLETED'
-                  ? 'bg-emerald-600 text-white shadow-sm'
-                  : 'text-slate-500 hover:text-slate-800'
-              }`}
-            >
-              Hoàn thành ({countStats.completed})
-            </button>
-          </div>
-
-          {/* Search Inputs & Filter Action */}
-          <div className="flex items-center gap-3 w-full md:w-auto">
-            <div className="relative flex-1 md:w-64">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end">
+            <label className="flex-1">
+              <span className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-slate-500">
+                Order ID
+              </span>
               <input
-                type="text"
-                placeholder="Tìm mã đơn, khách hàng..."
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-xl text-xs bg-slate-50/50 focus:outline-none focus:border-blue-500 focus:bg-white transition-colors"
+                value={orderId}
+                onChange={(event) => setOrderId(event.target.value)}
+                placeholder="Dán Mongo _id của đơn hàng, ví dụ 6a461b49327337931e809297"
+                className="h-11 w-full rounded-xl border border-slate-200 px-4 text-sm outline-none focus:border-blue-500"
               />
-            </div>
+              <span className="mt-1.5 block text-xs text-slate-500">
+                Không nhập mã DH... vì đó là nội dung chuyển khoản do payment tạo ra.
+              </span>
+            </label>
+
             <button
-              onClick={() => alert('Chức năng lọc nâng cao đang được phát triển...')}
-              className="px-3.5 py-2 border border-slate-200 rounded-xl hover:bg-slate-50 text-xs font-semibold text-slate-600 flex items-center gap-2 transition-colors whitespace-nowrap"
+              type="button"
+              disabled={isLoading}
+              onClick={handleLoadPayment}
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 text-sm font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-60"
             >
-              <SlidersHorizontal className="w-3.5 h-3.5" />
-              Bộ lọc nâng cao
+              <RefreshCw className="h-4 w-4" />
+              Kiểm tra thanh toán
+            </button>
+
+            <button
+              type="button"
+              disabled={isLoading}
+              onClick={handleConfirmCOD}
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 text-sm font-bold text-white hover:bg-blue-500 disabled:opacity-60"
+            >
+              <CheckCircle2 className="h-4 w-4" />
+              Xác nhận COD
             </button>
           </div>
-        </div>
 
-        {/* ─── Order Table ─── */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-slate-50/75 border-b border-slate-100">
-                  <th className="px-6 py-4 w-12">
-                    <input
-                      type="checkbox"
-                      checked={filteredOrders.length > 0 && selectedOrders.length === filteredOrders.length}
-                      onChange={handleToggleSelectAll}
-                      className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
-                    />
-                  </th>
-                  <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Mã đơn</th>
-                  <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Khách hàng</th>
-                  <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Ngày đặt</th>
-                  <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Tổng tiền</th>
-                  <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Trạng thái</th>
-                  <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Thao tác</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {filteredOrders.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} className="px-6 py-10 text-center text-sm text-slate-400 font-medium">
-                      Không tìm thấy đơn hàng phù hợp.
-                    </td>
-                  </tr>
-                ) : (
-                  filteredOrders.map(order => (
-                    <tr key={order.id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="px-6 py-4">
-                        <input
-                          type="checkbox"
-                          checked={selectedOrders.includes(order.id)}
-                          onChange={() => handleToggleSelectOne(order.id)}
-                          className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
-                        />
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-sm font-bold text-blue-600 hover:underline cursor-pointer" onClick={() => handleViewDetail(order)}>
-                          {order.id}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-slate-900">{order.customer}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-xs text-slate-500">{order.date}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-900">{order.amount}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {order.status === 'PENDING' && (
-                          <span className="inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-50 text-rose-600 border border-rose-100 uppercase">
-                            Chờ xác nhận
-                          </span>
-                        )}
-                        {order.status === 'SHIPPING' && (
-                          <span className="inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold bg-blue-50 text-blue-600 border border-blue-100 uppercase">
-                            Đang giao
-                          </span>
-                        )}
-                        {order.status === 'COMPLETED' && (
-                          <span className="inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-100 uppercase">
-                            Hoàn thành
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-xs">
-                        <div className="flex items-center justify-end gap-2">
-                          {order.status === 'PENDING' && (
-                            <button
-                              onClick={() => handleApprove(order.id)}
-                              className="px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 font-bold flex items-center gap-1 transition-all"
-                            >
-                              <Check className="w-3.5 h-3.5" />
-                              Duyệt
-                            </button>
-                          )}
-                          {order.status === 'SHIPPING' && (
-                            <button
-                              onClick={() => handleComplete(order.id)}
-                              className="px-3 py-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 font-bold flex items-center gap-1 transition-all"
-                            >
-                              <Check className="w-3.5 h-3.5" />
-                              Cập nhật
-                            </button>
-                          )}
-                          {order.status === 'COMPLETED' && (
-                            <button
-                              onClick={() => handleViewDetail(order)}
-                              className="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 font-semibold transition-all"
-                            >
-                              Chi tiết
-                            </button>
-                          )}
+          {paymentInfo && (
+            <div className="mt-5 grid grid-cols-1 gap-3 rounded-2xl bg-slate-50 p-4 text-sm md:grid-cols-3">
+              <p>
+                <span className="block text-slate-500">Phương thức</span>
+                <strong>{formatMethod(paymentInfo.method)}</strong>
+              </p>
+              <p>
+                <span className="block text-slate-500">Trạng thái</span>
+                <strong>{formatStatus(paymentInfo.status)}</strong>
+              </p>
+              <p>
+                <span className="block text-slate-500">Số tiền</span>
+                <strong>{formatPrice(paymentInfo.amount)}</strong>
+              </p>
+            </div>
+          )}
 
-                          <button
-                            onClick={() => alert('Thao tác phụ: Hủy đơn / In hóa đơn / Lưu ghi chú...')}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
-                          >
-                            <MoreHorizontal className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+          {message && (
+            <p className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
+              {message}
+            </p>
+          )}
+          {error && (
+            <p className="mt-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
+              {error}
+            </p>
+          )}
+        </section>
 
-          {/* Table Footer / Pagination */}
-          <div className="px-6 py-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <span className="text-xs font-semibold text-slate-500">
-              Hiển thị 1 - {filteredOrders.length} của {orders.length} đơn hàng
-            </span>
-
-            <div className="flex items-center gap-1.5">
-              <button className="p-1.5 rounded-lg border border-slate-200 text-slate-400 hover:bg-slate-50 disabled:opacity-50 cursor-pointer" disabled>
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              <button className="w-8 h-8 rounded-lg bg-blue-600 text-white text-xs font-bold">1</button>
-              <button className="w-8 h-8 rounded-lg border border-slate-200 hover:bg-slate-50 text-xs text-slate-600 font-bold">2</button>
-              <button className="w-8 h-8 rounded-lg border border-slate-200 hover:bg-slate-50 text-xs text-slate-600 font-bold">3</button>
-              <span className="px-1 text-slate-400">...</span>
-              <button className="w-8 h-8 rounded-lg border border-slate-200 hover:bg-slate-50 text-xs text-slate-600 font-bold">312</button>
-              <button className="p-1.5 rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 cursor-pointer">
-                <ChevronRight className="w-4 h-4" />
-              </button>
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
+            <div>
+              <h2 className="font-bold text-amber-900">
+                Lưu ý khi xác nhận COD
+              </h2>
+              <p className="mt-2 text-sm leading-6 text-amber-800">
+                Chỉ bấm xác nhận sau khi nhân viên đã gọi khách và xác nhận đơn hợp lệ. API BE chỉ cho admin/staff xác nhận COD, sau đó tự cập nhật thanh toán, trạng thái đơn và item đã bán.
+              </p>
             </div>
           </div>
         </div>
-
       </div>
     </StaffLayout>
+  )
+}
+
+function InfoCard({
+  icon,
+  label,
+  value,
+}: {
+  icon: ReactNode
+  label: string
+  value: string
+}) {
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      {icon}
+      <p className="mt-4 text-sm font-semibold text-slate-500">{label}</p>
+      <p className="mt-1 break-words text-lg font-bold text-slate-900">{value}</p>
+    </div>
   )
 }

@@ -1,12 +1,13 @@
 import { z } from 'zod'
 
-const passwordRule = z
+export const passwordRule = z
   .string()
   .min(8, 'Mật khẩu ít nhất 8 ký tự.')
-  .regex(/[A-Z]/, 'Mật khẩu phải chứa ít nhất 1 chữ HOA.')
   .regex(/[a-z]/, 'Mật khẩu phải chứa ít nhất 1 chữ thường.')
-  .regex(/[0-9]/, 'Mật khẩu phải chứa ít nhất 1 chữ số.')
-  .regex(/[^A-Za-z0-9]/, 'Mật khẩu phải chứa ít nhất 1 ký tự đặc biệt.')
+  .regex(/[A-Z]/, 'Mật khẩu phải chứa ít nhất 1 chữ hoa.')
+  .regex(/\d/, 'Mật khẩu phải chứa ít nhất 1 chữ số.')
+  .regex(/[@$!%*?&]/, 'Mật khẩu phải chứa ít nhất 1 ký tự đặc biệt @$!%*?&.')
+  .regex(/^[A-Za-z\d@$!%*?&]+$/, 'Mật khẩu chỉ được dùng chữ, số và ký tự @$!%*?&.')
 
 export const registerSchema = z
   .object({
@@ -15,7 +16,7 @@ export const registerSchema = z
     phone: z
       .string()
       .min(1, 'Số điện thoại không được để trống.')
-      .regex(/^(0|\+84)(3|5|7|8|9)[0-9]{8}$/, 'SĐT không hợp lệ (VD: 0912345678).'),
+      .regex(/^\d{10}$/, 'Số điện thoại phải gồm đúng 10 chữ số.'),
     password: passwordRule,
     confirmPassword: z.string().min(1, 'Vui lòng xác nhận mật khẩu.'),
   })
@@ -38,7 +39,7 @@ export const verifyEmailSchema = z.object({
   otp: z
     .string()
     .min(1, 'Mã OTP không được để trống.')
-    .regex(/^[0-9]{4,6}$/, 'Mã OTP phải gồm 4 đến 6 chữ số.'),
+    .regex(/^\d{6}$/, 'Mã OTP phải gồm đúng 6 chữ số.'),
 })
 
 export type VerifyEmailFormValues = z.infer<typeof verifyEmailSchema>
@@ -52,10 +53,6 @@ export type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>
 export const resetPasswordSchema = z
   .object({
     email: z.string().email('Email không hợp lệ.').optional(),
-    otp: z
-      .string()
-      .min(1, 'Mã OTP không được để trống.')
-      .regex(/^[0-9]{4,6}$/, 'Mã OTP phải gồm 4 đến 6 chữ số.'),
     newPassword: passwordRule,
     confirmNewPassword: z.string().min(1, 'Vui lòng xác nhận mật khẩu mới.'),
   })

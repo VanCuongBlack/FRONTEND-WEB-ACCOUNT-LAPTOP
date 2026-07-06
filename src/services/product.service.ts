@@ -1,103 +1,208 @@
-import type { AccountProduct, LaptopProduct } from '@/types/product.type'
+import api from './api'
 
-export const laptopProducts: LaptopProduct[] = [
-  {
-    id: 'm1',
-    name: 'Dell Latitude 7420 i7',
-    price: 22500000,
-    thumbnail: '',
-    brand: 'Dell',
-    cpu: 'Intel Core i7 Gen 11',
-    gpu: 'Intel Iris Xe Graphics',
-    ram: '16GB DDR4',
-    ssd: '512GB NVMe SSD',
-    screen: '14 inch Full HD IPS',
-    description: 'Laptop doanh nhân siêu bền bỉ, mỏng nhẹ và bảo mật cao. Hiệu năng vượt trội từ chip Intel Core i7 thế hệ 11, phù hợp cho mọi công việc văn phòng và đồ họa nhẹ.',
-  },
-  {
-    id: 'm3',
-    name: 'MacBook Pro 14" M3 2024',
-    price: 39990000,
-    thumbnail: '',
-    brand: 'Apple',
-    cpu: 'Apple M3 Pro',
-    gpu: '14-core GPU',
-    ram: '18GB Unified Memory',
-    ssd: '512GB SSD',
-    screen: '14.2 inch Liquid Retina XDR 120Hz',
-    description: 'Siêu phẩm công nghệ mới nhất từ Apple với con chip M3 Pro siêu mạnh mẽ. Màn hình Liquid Retina XDR đỉnh cao và thời lượng pin ấn tượng lên tới 22 tiếng.',
-  },
-  {
-    id: 'm6',
-    name: 'HP Envy 13 x360 Mới',
-    price: 18500000,
-    thumbnail: '',
-    brand: 'HP',
-    cpu: 'AMD Ryzen 7 5700U',
-    gpu: 'AMD Radeon Graphics',
-    ram: '16GB DDR4',
-    ssd: '512GB NVMe SSD',
-    screen: '13.3 inch Full HD OLED Touch',
-    description: 'Laptop xoay gập 360 độ cao cấp từ HP. Màn hình OLED cảm ứng sắc nét cùng bút cảm ứng đi kèm, lý tưởng cho những ai thích sáng tạo và vẽ phác thảo.',
-  },
-  {
-    id: 'm8',
-    name: 'ThinkPad X1 Carbon Gen 10',
-    price: 32000000,
-    thumbnail: '',
-    brand: 'Lenovo',
-    cpu: 'Intel Core i7 Gen 12',
-    gpu: 'Intel Iris Xe Graphics',
-    ram: '16GB LPDDR5',
-    ssd: '512GB NVMe SSD Gen 4',
-    screen: '14 inch WUXGA IPS 400 nits',
-    description: 'Huyền thoại laptop doanh nhân cao cấp. Chất liệu sợi carbon siêu nhẹ, bàn phím gõ êm ái nhất thế giới và độ bền chuẩn quân đội Mỹ.',
-  },
-]
+export interface Product {
+  _id: string
+  name: string
+  description: string
+  sku?: string
+  brand?: string
+  thumbnail?: string
+  images?: string[]
+  base_price: number
+  sale_price?: number
+  stock_quantity?: number
+  product_type: 'physical' | 'digital'
+  is_active: boolean
+  createdAt: string
+  updatedAt: string
+}
 
-export const accountProducts: AccountProduct[] = [
-  {
-    id: 'm2',
-    name: 'Netflix Premium 4K 1 Tháng',
-    price: 55000,
-    thumbnail: '',
-    platform: 'Netflix',
-    duration: '1 tháng',
-    devices: '1 profile',
-    description: 'Tài khoản Netflix Premium hỗ trợ chất lượng hình ảnh Ultra HD 4K và âm thanh vòm Dolby Atmos. Xem trực tiếp trên Tivi, Điện thoại, Máy tính cá nhân.',
-  },
-  {
-    id: 'm4',
-    name: 'Adobe Creative Cloud 1 Năm',
-    price: 350000,
-    thumbnail: '',
-    platform: 'Adobe',
-    duration: '12 tháng',
-    devices: '2 thiết bị',
-    description: 'Trọn bộ hơn 20 ứng dụng Adobe chính chủ (Photoshop, Illustrator, Premiere Pro, After Effects...) dung lượng lưu trữ đám mây 80GB Cloud storage.',
-  },
-  {
-    id: 'm5',
-    name: 'Adobe Gia hạn chính chủ',
-    price: 280000,
-    thumbnail: '',
-    platform: 'Adobe',
-    duration: '12 tháng',
-    devices: '2 thiết bị',
-    description: 'Gia hạn trực tiếp trên tài khoản Adobe cá nhân chính chủ của bạn. Giữ nguyên mọi dữ liệu đám mây và lịch sử làm việc trước đó.',
-  },
-  {
-    id: 'm7',
-    name: 'Spotify Premium 1 Năm',
-    price: 290000,
-    thumbnail: '',
-    platform: 'Spotify',
-    duration: '12 tháng',
-    devices: '1 tài khoản',
-    description: 'Nghe nhạc chất lượng cao không quảng cáo trên Spotify. Tải nhạc ngoại tuyến và cá nhân hóa danh sách phát của bạn.',
-  },
-]
+export interface ProductItem {
+  _id: string
+  status?: 'available' | 'reserved' | 'sold' | 'expired'
+  sale_price?: number
+  images_urls?: string[]
+  serial_number?: string
+  account_email?: string
+  expired_at?: string | null
+}
 
-export const formatPrice = (price: number) => {
-  return price.toLocaleString('vi-VN') + 'đ'
+export interface PhysicalProductData {
+  _id: string
+  brand?: string
+  model?: string
+  weight_kg?: number
+  cpu?: string
+  gpu?: string
+  ram?: string
+  storage?: string
+  display_inches?: number
+  os?: string
+  condition_percent?: number
+  warranty_months?: number
+  important_price?: number
+}
+
+export interface DigitalProductData {
+  _id: string
+  platform?: string
+  category?: string
+  region?: string
+  duration_months?: number
+}
+
+export interface ProductDetailResponse {
+  product: Product
+  physical?: PhysicalProductData
+  digital?: DigitalProductData
+  items?: ProductItem[]
+}
+
+export type ProductDetail = Product & {
+  physical?: PhysicalProductData
+  digital?: DigitalProductData
+  items: ProductItem[]
+  availableItem?: ProductItem
+  brand?: string
+  model?: string
+  weight_kg?: number
+  cpu?: string
+  gpu?: string
+  ram?: string
+  storage?: string
+  display_inches?: number
+  os?: string
+  condition_percent?: number
+  warranty_months?: number
+  important_price?: number
+  platform?: string
+  category?: string
+  region?: string
+  duration_months?: number
+}
+
+export interface ApiResponse<T = unknown> {
+  success: boolean
+  statusCode?: number
+  message: string
+  data?: T
+  error?: string
+}
+
+export interface ProductsResponse {
+  products: Product[]
+  total: number
+  page: number
+  limit: number
+}
+
+export interface ProductQuery {
+  product_type?: 'physical' | 'digital'
+  is_active?: boolean
+  search?: string
+  page?: number
+  limit?: number
+}
+
+export const getProducts = (
+  params?: ProductQuery
+) => {
+  return api.get<ApiResponse<ProductsResponse>>(
+    '/product',
+    { params }
+  )
+}
+
+export const getProductById = (
+  productId: string
+) => {
+  return api.get<ApiResponse<ProductDetailResponse>>(
+    `/product/${productId}`
+  )
+}
+
+export const getPhysicalProducts = (
+  params?: Omit<ProductQuery, 'product_type'>
+) => {
+  return api.get<ApiResponse<ProductsResponse>>(
+    '/product',
+    {
+      params: {
+        ...params,
+        product_type: 'physical',
+      },
+    }
+  )
+}
+
+export const getDigitalProducts = (
+  params?: Omit<ProductQuery, 'product_type'>
+) => {
+  return api.get<ApiResponse<ProductsResponse>>(
+    '/product',
+    {
+      params: {
+        ...params,
+        product_type: 'digital',
+      },
+    }
+  )
+}
+
+export const getDisplayPrice = (
+  product: Product | ProductDetail
+) => {
+  return (
+    ('availableItem' in product ? product.availableItem?.sale_price : undefined) ??
+    ('items' in product ? product.items?.find((item) => item.status === 'available')?.sale_price : undefined) ??
+    product.sale_price ??
+    product.base_price
+  )
+}
+
+export const formatPrice = (
+  price: number
+) => {
+  return (
+    price.toLocaleString('vi-VN') + 'đ'
+  )
+}
+
+export const getProductImage = (
+  product: Product | ProductDetail
+) => {
+  return (
+    product.thumbnail ||
+    product.images?.[0] ||
+    ('availableItem' in product ? product.availableItem?.images_urls?.[0] : undefined) ||
+    ('items' in product ? product.items?.find((item) => item.status === 'available' && item.images_urls?.[0])?.images_urls?.[0] : undefined) ||
+    ('items' in product ? product.items?.find((item) => item.images_urls?.[0])?.images_urls?.[0] : undefined) ||
+    '/placeholder.png'
+  )
+}
+
+export function getAvailableItem(items: ProductItem[] = []) {
+  return items.find((item) => item.status === 'available')
+}
+
+export function normalizeProductDetail(
+  detail?: ProductDetailResponse
+): ProductDetail | null {
+  if (!detail?.product) return null
+
+  const items = detail.items ?? []
+  const availableItem = getAvailableItem(items)
+
+  return {
+    ...detail.product,
+    ...(detail.physical ?? {}),
+    ...(detail.digital ?? {}),
+    physical: detail.physical,
+    digital: detail.digital,
+    items,
+    availableItem,
+    sale_price: availableItem?.sale_price ?? detail.product.sale_price,
+    thumbnail: availableItem?.images_urls?.[0] ?? detail.product.thumbnail,
+    images: availableItem?.images_urls ?? detail.product.images,
+  }
 }

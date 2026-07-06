@@ -1,330 +1,222 @@
-import { FormEvent, useEffect, useRef, useState } from 'react'
-import { ChevronLeft, FileUp, Paperclip, X } from 'lucide-react'
+import { useMemo, useState, type FormEvent, type ReactNode } from 'react'
+import { ChevronLeft, Link2, Send } from 'lucide-react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
-import { createSupportRequestTicket } from '@/utils/supportRequestStorage'
-import { saveTicketMediaFiles } from '@/utils/supportRequestMediaStorage'
+import { createTicket, type SupportTicketType } from '@/services/support.service'
 
-type ProductIssueType = 'account' | 'laptop'
+const objectIdPattern = /^[a-fA-F0-9]{24}$/
+const fieldClass =
+  'w-full rounded-xl border border-[#3d63ff]/30 bg-[#151033] px-4 text-sm text-white outline-none placeholder:text-[#8d86b6] focus:border-[#3783EC] focus:ring-2 focus:ring-[#3783EC]/20'
 
-interface AttachmentItem {
-  file: File
-  previewUrl: string
-  isVideo: boolean
-}
-
-const ISSUE_LABELS: Record<ProductIssueType, string> = {
-  account: 'Account',
-  laptop: 'Laptop/Pc',
-}
-
-function fileToDataUrl(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = () => {
-      if (typeof reader.result === 'string') {
-        resolve(reader.result)
-        return
-      }
-      reject(new Error('Không đọc được file đã chọn'))
-    }
-    reader.onerror = () => reject(new Error('Không đọc được file đã chọn'))
-    reader.readAsDataURL(file)
-  })
-}
+const ticketTypes: Array<{ value: SupportTicketType; label: string }> = [
+  { value: 'warranty', label: 'Bảo hành' },
+  { value: 'support', label: 'Hỗ trợ kỹ thuật' },
+  { value: 'complaint', label: 'Khiếu nại' },
+  { value: 'refund_request', label: 'Yêu cầu hoàn tiền' },
+]
 
 export default function SupportRequestPage() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { type, id } = useParams<{ type: ProductIssueType; id: string }>()
-  const fileInputRef = useRef<HTMLInputElement | null>(null)
+  const { type, id } = useParams<{ type?: string; id?: string }>()
+  const routeState = location.state as {
+    orderId?: string
+    orderItemId?: string
+    productName?: string
+    productType?: 'physical' | 'digital'
+  } | null
 
-  const initialType: ProductIssueType = type === 'account' ? 'account' : 'laptop'
-
-  const [orderCode, setOrderCode] = useState(id ?? '')
-  const [productName, setProductName] = useState<string>(() => {
-    const routeState = location.state as { productName?: string } | null
-    return routeState?.productName?.trim() || (initialType === 'account' ? 'Tài khoản số cần hỗ trợ' : 'Laptop/Pc cần hỗ trợ')
-  })
-  const [contactInfo, setContactInfo] = useState('')
-  const [issueType, setIssueType] = useState<ProductIssueType>(initialType)
-  const [isDescriptionOpen, setIsDescriptionOpen] = useState(false)
+  const defaultType: SupportTicketType = type === 'account' ? 'support' : 'warranty'
+  const [orderId, setOrderId] = useState(routeState?.orderId || id || '')
+  const [orderItemId, setOrderItemId] = useState(routeState?.orderItemId || '')
+  const [ticketType, setTicketType] = useState<SupportTicketType>(defaultType)
+  const [title, setTitle] = useState(
+    routeState?.productName ? `Hỗ trợ ${routeState.productName}` : ''
+  )
   const [description, setDescription] = useState('')
-  const [attachments, setAttachments] = useState<AttachmentItem[]>([])
-  const [previewVideoUrl, setPreviewVideoUrl] = useState<string | null>(null)
+  const [attachmentText, setAttachmentText] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState('')
 
-  useEffect(() => {
-    return () => {
-      attachments.forEach((item) => URL.revokeObjectURL(item.previewUrl))
-    }
-  }, [attachments])
-
-  const handlePickFiles = () => {
-    fileInputRef.current?.click()
-  }
-
-  const handleFilesChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFiles = Array.from(event.target.files ?? [])
-
-    if (selectedFiles.length === 0) {
-      return
-    }
-
-    setAttachments((prev) => {
-      const mappedFiles = selectedFiles.map((file) => ({
-        file,
-        previewUrl: URL.createObjectURL(file),
-        isVideo: file.type.startsWith('video/'),
-      }))
-
-      const mergedFiles = [...prev, ...mappedFiles]
-      if (mergedFiles.length > 6) {
-        mergedFiles.slice(6).forEach((item) => URL.revokeObjectURL(item.previewUrl))
-      }
-      return mergedFiles.slice(0, 6)
-    })
-
-    event.target.value = ''
-  }
-
-  const handleRemoveAttachment = (index: number) => {
-    setAttachments((prev) => {
-      const target = prev[index]
-      if (target) {
-        URL.revokeObjectURL(target.previewUrl)
-      }
-
-      return prev.filter((_, fileIndex) => fileIndex !== index)
-    })
-  }
+  const attachmentUrls = useMemo(() => {
+    return attachmentText
+      .split('\n')
+      .map((item) => item.trim())
+      .filter(Boolean)
+      .slice(0, 5)
+  }, [attachmentText])
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+    setSubmitError('')
 
-    const attachmentPayload = await Promise.all(
-      attachments.map(async (item) => ({
-        name: item.file.name,
-        type: item.file.type,
-        isVideo: item.isVideo,
-        previewUrl: item.isVideo ? undefined : await fileToDataUrl(item.file),
-      }))
-    )
+    if (!objectIdPattern.test(orderId.trim())) {
+      setSubmitError('Mã đơn hàng không hợp lệ. Hãy mở yêu cầu từ trang chi tiết đơn hàng.')
+      return
+    }
 
-    const createdTicket = createSupportRequestTicket({
-      orderCode: orderCode.trim(),
-      productName: productName.trim() || (issueType === 'account' ? 'Tài khoản số cần hỗ trợ' : 'Laptop/Pc cần hỗ trợ'),
-      contactInfo: contactInfo.trim(),
-      issueType,
-      description: description.trim(),
-      attachments: attachmentPayload,
-    })
+    if (!objectIdPattern.test(orderItemId.trim())) {
+      setSubmitError('Mã sản phẩm trong đơn không hợp lệ. Hãy mở yêu cầu từ trang chi tiết đơn hàng.')
+      return
+    }
 
-    await saveTicketMediaFiles(
-      createdTicket.id,
-      attachments.map((item) => item.file)
-    )
+    if (title.trim().length < 10) {
+      setSubmitError('Tiêu đề cần ít nhất 10 ký tự.')
+      return
+    }
 
-    alert('Đã tiếp nhận yêu cầu hỗ trợ kỹ thuật của bạn. Bộ phận CSKH sẽ phản hồi sớm.')
-    navigate('/profile')
+    if (description.trim().length < 20) {
+      setSubmitError('Mô tả cần ít nhất 20 ký tự để nhân viên có đủ thông tin xử lý.')
+      return
+    }
+
+    setIsSubmitting(true)
+    try {
+      const res = await createTicket({
+        order_id: orderId.trim(),
+        order_item_id: orderItemId.trim(),
+        type: ticketType,
+        title: title.trim().slice(0, 200),
+        description: description.trim(),
+        attachments: attachmentUrls,
+      })
+
+      const createdTicketId = res.data?.data?._id
+      navigate(createdTicketId ? `/profile/support/${createdTicketId}` : '/profile')
+    } catch (error: any) {
+      setSubmitError(
+        error?.response?.data?.message ||
+          error?.message ||
+          'Không thể gửi yêu cầu hỗ trợ. Vui lòng thử lại.'
+      )
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA] px-3 py-4 md:px-6 md:py-8 text-slate-900">
-      <div className="mx-auto w-full max-w-[860px] rounded-2xl border border-slate-200 bg-white p-4 shadow-sm md:p-8">
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="flex items-center justify-between">
-            <button
-              type="button"
-              onClick={() => navigate(-1)}
-              className="rounded-full p-2 text-slate-700 transition-colors hover:bg-slate-100"
-              aria-label="Quay lại"
+    <div className="min-h-screen bg-[#09051f] px-4 py-6 text-white md:px-6 md:py-8">
+      <div className="mx-auto w-full max-w-[980px] rounded-[22px] border border-[#3d63ff]/20 bg-[#211b42] p-5 shadow-[0_18px_40px_rgba(0,0,0,0.18)] md:p-8">
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-[#b9b4d7] hover:text-white"
+        >
+          <ChevronLeft size={18} />
+          Quay lại
+        </button>
+
+        <div className="mb-7">
+          <h1 className="text-2xl font-black md:text-[30px]">
+            Tạo yêu cầu hỗ trợ
+          </h1>
+          <p className="mt-2 text-sm leading-6 text-[#b9b4d7]">
+            Gửi yêu cầu bảo hành, hỗ trợ kỹ thuật, khiếu nại hoặc hoàn tiền cho sản phẩm trong đơn hàng.
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-5 md:grid-cols-2">
+          <Field label="Mã đơn hàng">
+            <input
+              value={orderId}
+              onChange={(event) => setOrderId(event.target.value)}
+              placeholder="Tự điền khi mở từ chi tiết đơn hàng"
+              className={`${fieldClass} h-[48px]`}
+              required
+            />
+          </Field>
+
+          <Field label="Mã sản phẩm trong đơn">
+            <input
+              value={orderItemId}
+              onChange={(event) => setOrderItemId(event.target.value)}
+              placeholder="Tự điền khi mở từ chi tiết đơn hàng"
+              className={`${fieldClass} h-[48px]`}
+              required
+            />
+          </Field>
+
+          <Field label="Loại yêu cầu">
+            <select
+              value={ticketType}
+              onChange={(event) => setTicketType(event.target.value as SupportTicketType)}
+              className={`${fieldClass} h-[48px]`}
             >
-              <ChevronLeft size={20} />
-            </button>
-            <h1 className="text-center text-xl font-bold leading-tight md:text-[30px]">Trung tâm hỗ trợ và bảo hành</h1>
-            <div className="w-9" aria-hidden="true" />
+              {ticketTypes.map((item) => (
+                <option key={item.value} value={item.value}>
+                  {item.label}
+                </option>
+              ))}
+            </select>
+          </Field>
+
+          <Field label="Tiêu đề">
+            <input
+              value={title}
+              onChange={(event) => setTitle(event.target.value)}
+              placeholder="Tóm tắt vấn đề cần hỗ trợ"
+              className={`${fieldClass} h-[48px]`}
+              required
+            />
+          </Field>
+
+          <div className="md:col-span-2">
+            <Field label="Mô tả chi tiết">
+              <textarea
+                value={description}
+                onChange={(event) => setDescription(event.target.value)}
+                placeholder="Mô tả lỗi, thời điểm phát sinh, thao tác trước khi lỗi xảy ra..."
+                rows={6}
+                className={`${fieldClass} min-h-[150px] resize-none py-3`}
+                required
+              />
+            </Field>
           </div>
 
-          <div className="space-y-5 md:px-8">
-            <div className="space-y-2">
-              <label htmlFor="order-code" className="block text-lg font-semibold md:text-2xl">
-                Nhập mã đơn hàng
-              </label>
-              <input
-                id="order-code"
-                value={orderCode}
-                onChange={(event) => setOrderCode(event.target.value)}
-                placeholder="Mã đơn hàng"
-                className="h-12 w-full rounded-2xl border border-slate-300 bg-white px-4 text-sm outline-none transition-colors focus:border-slate-500"
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="product-name" className="block text-lg font-semibold md:text-2xl">
-                Tên sản phẩm
-              </label>
-              <input
-                id="product-name"
-                value={productName}
-                onChange={(event) => setProductName(event.target.value)}
-                placeholder="Nhập tên sản phẩm cần hỗ trợ"
-                className="h-12 w-full rounded-2xl border border-slate-300 bg-white px-4 text-sm outline-none transition-colors focus:border-slate-500"
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="contact-info" className="block text-lg font-semibold md:text-2xl">
-                Nhập Email/ số điện thoại
-              </label>
-              <input
-                id="contact-info"
-                value={contactInfo}
-                onChange={(event) => setContactInfo(event.target.value)}
-                placeholder="Nhập email/ số điện thoại đã mua hàng"
-                className="h-12 w-full rounded-2xl border border-slate-300 bg-white px-4 text-sm outline-none transition-colors focus:border-slate-500"
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <p className="text-lg font-semibold md:text-2xl">Sản phẩm lỗi</p>
-              <div className="flex flex-wrap gap-3">
-                {(Object.keys(ISSUE_LABELS) as ProductIssueType[]).map((item) => (
-                  <button
-                    key={item}
-                    type="button"
-                    onClick={() => setIssueType(item)}
-                    className={`flex items-center gap-3 rounded-2xl border px-4 py-2 text-base transition-colors md:text-lg ${
-                      issueType === item
-                          ? 'border-[#3786EC] bg-[#EFF5FF] text-[#1E5FBF]'
-                        : 'border-slate-300 bg-white hover:border-slate-500'
-                    }`}
-                  >
-                    <span>{ISSUE_LABELS[item]}</span>
-                    <span
-                      className={`h-5 w-5 rounded-full border ${
-                          issueType === item ? 'border-[#3786EC] bg-[#3786EC]' : 'border-slate-300'
-                      }`}
-                    />
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <p className="text-lg font-semibold md:text-2xl">Mô tả chi tiết</p>
-              {!isDescriptionOpen ? (
-                <button
-                  type="button"
-                  onClick={() => setIsDescriptionOpen(true)}
-                  className="h-16 w-full rounded-xl border border-dashed border-slate-300 bg-slate-100 px-4 text-left text-sm font-medium text-slate-700 transition-colors hover:bg-slate-200"
-                >
-                  Nhấn để nhập mô tả chi tiết lỗi
-                </button>
-              ) : (
+          <div className="md:col-span-2">
+            <Field label="Link ảnh/video đính kèm">
+              <div className="relative">
+                <Link2 className="absolute left-4 top-4 h-4 w-4 text-[#8d86b6]" />
                 <textarea
-                  value={description}
-                  onChange={(event) => setDescription(event.target.value)}
-                  placeholder="Mô tả lỗi bạn gặp phải (thời điểm phát sinh, biểu hiện lỗi, thao tác trước khi lỗi xảy ra...)"
-                  className="h-32 w-full resize-none rounded-xl border border-slate-300 bg-white p-4 text-sm outline-none transition-colors focus:border-slate-500"
-                  required
+                  value={attachmentText}
+                  onChange={(event) => setAttachmentText(event.target.value)}
+                  placeholder="Mỗi dòng một URL ảnh/video. Backend hiện nhận tối đa 5 URL."
+                  rows={4}
+                  className={`${fieldClass} min-h-[110px] resize-none py-3 pl-11`}
                 />
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <p className="text-lg font-semibold md:text-2xl">Tải ảnh/ video sản phẩm lỗi</p>
-              <div className="rounded-xl border border-slate-300 bg-slate-100 p-4">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <button
-                    type="button"
-                    onClick={handlePickFiles}
-                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#3786EC] bg-white px-4 py-2 text-sm font-semibold text-[#1E5FBF] transition-colors hover:bg-[#EFF5FF]"
-                  >
-                    <FileUp size={16} />
-                    Chọn ảnh/video
-                  </button>
-                  <span className="text-xs text-slate-600">Tối đa 6 file (ảnh hoặc video)</span>
-                </div>
-
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*,video/*"
-                  multiple
-                  className="hidden"
-                  onChange={handleFilesChange}
-                />
-
-                {attachments.length > 0 && (
-                  <div className="mt-3 space-y-2">
-                    {attachments.map((item, index) => (
-                      <div
-                        key={`${item.file.name}-${index}`}
-                        className="flex items-center justify-between rounded-lg bg-white px-3 py-2 text-sm"
-                      >
-                        <span className="flex items-center gap-2 truncate text-slate-700">
-                          <Paperclip size={14} className="shrink-0" />
-                          <span className="truncate">{item.file.name}</span>
-                        </span>
-                        <div className="flex items-center gap-1.5">
-                          {item.isVideo && (
-                            <button
-                              type="button"
-                              onClick={() => setPreviewVideoUrl(item.previewUrl)}
-                              className="rounded-md border border-slate-200 px-2 py-1 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-100"
-                            >
-                              Xem video
-                            </button>
-                          )}
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveAttachment(index)}
-                            className="rounded-full p-1 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700"
-                            aria-label="Xóa file"
-                          >
-                            <X size={14} />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
               </div>
-            </div>
+              <p className="mt-2 text-xs text-[#a9a2cf]">
+                Hiện backend chưa có API upload file từ máy, nên frontend chỉ gửi được link ảnh/video.
+              </p>
+            </Field>
+          </div>
 
-            <div className="flex justify-end pt-2">
-              <button
-                type="submit"
-                className="rounded-full bg-[#3786EC] px-8 py-3 text-lg font-bold text-white transition-colors hover:bg-[#2F73CA]"
-              >
-                Gửi yêu cầu
-              </button>
-            </div>
+          {submitError && (
+            <p className="md:col-span-2 rounded-xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+              {submitError}
+            </p>
+          )}
+
+          <div className="md:col-span-2 flex justify-end">
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="inline-flex h-[48px] items-center justify-center gap-2 rounded-xl bg-[#3783EC] px-7 text-sm font-bold text-white hover:bg-[#206ed6] disabled:cursor-not-allowed disabled:bg-gray-500"
+            >
+              <Send size={18} />
+              {isSubmitting ? 'Đang gửi...' : 'Gửi yêu cầu'}
+            </button>
           </div>
         </form>
       </div>
-
-      {previewVideoUrl && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-          <div className="w-full max-w-3xl rounded-2xl bg-white p-4">
-            <div className="mb-3 flex items-center justify-between">
-              <p className="text-sm font-semibold text-slate-700">Xem lại video đã tải lên</p>
-              <button
-                type="button"
-                onClick={() => setPreviewVideoUrl(null)}
-                className="rounded-full p-1 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700"
-                aria-label="Đóng xem video"
-              >
-                <X size={16} />
-              </button>
-            </div>
-
-            <video src={previewVideoUrl} controls className="h-auto max-h-[70vh] w-full rounded-lg bg-black" />
-          </div>
-        </div>
-      )}
     </div>
+  )
+}
+
+function Field({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <label className="block">
+      <span className="mb-2 block text-sm font-semibold text-[#d9d6ee]">{label}</span>
+      {children}
+    </label>
   )
 }

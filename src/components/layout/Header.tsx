@@ -1,14 +1,24 @@
-import React, { useState, useEffect } from "react";
-import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import { Menu, X, User, ShoppingCart, Search, Bell } from "lucide-react";
-import { getStoredUserProfile } from "@/utils/profileStorage";
+import React, { useState, useEffect } from 'react'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import {
+  Bell,
+  ChevronDown,
+  LogOut,
+  Menu,
+  Search,
+  ShoppingBag,
+  ShoppingCart,
+  User,
+  X,
+} from 'lucide-react'
+import { useAuthStore } from '@/store/authStore'
 
 interface HeaderProps {
-  pageLabel?: string;
-  cartCount?: number;
-  mobileCartRef?: React.Ref<HTMLAnchorElement>;
-  desktopCartRef?: React.Ref<HTMLAnchorElement>;
-  cartIconClassName?: string;
+  pageLabel?: string
+  cartCount?: number
+  mobileCartRef?: React.Ref<HTMLAnchorElement>
+  desktopCartRef?: React.Ref<HTMLAnchorElement>
+  cartIconClassName?: string
 }
 
 export default function Header({
@@ -16,241 +26,252 @@ export default function Header({
   cartCount = 0,
   mobileCartRef,
   desktopCartRef,
-  cartIconClassName = "",
+  cartIconClassName = '',
 }: HeaderProps) {
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [searchParams] = useSearchParams();
-  const searchParamVal = searchParams.get("search") || "";
-  const [query, setQuery] = useState(searchParamVal);
-  const navigate = useNavigate();
-  const location = useLocation();
-  const isLoggedIn = !!localStorage.getItem("accessToken");
-  const isProfileSection = location.pathname.startsWith("/profile");
-  const shouldShowUserAvatar = isLoggedIn || isProfileSection;
-  const userAvatarUrl = getStoredUserProfile().avatarUrl;
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const [query, setQuery] = useState('')
+  const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const logout = useAuthStore((state) => state.logout)
+  const accessToken = useAuthStore((state) => state.accessToken)
+  const user = useAuthStore((state) => state.user)
+  const isLoggedIn = Boolean(user && accessToken)
+  const userInitial = (user?.fullname || user?.email || 'U').charAt(0).toUpperCase()
 
+  // Sync local query state with URL search param
   useEffect(() => {
-    setQuery(searchParamVal);
-  }, [searchParamVal]);
+    const queryParam = searchParams.get('search') ?? ''
+    setQuery(queryParam)
+  }, [searchParams])
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!query.trim()) return;
-    navigate(`/?search=${encodeURIComponent(query.trim())}`);
-    setMobileOpen(false);
-  };
+  const handleQueryChange = (val: string) => {
+    setQuery(val)
+    const trimmed = val.trim()
+    const isHome = window.location.pathname === '/'
+    
+    if (trimmed) {
+      if (isHome) {
+        navigate(`/?search=${encodeURIComponent(trimmed)}`, { replace: true })
+      } else {
+        navigate(`/?search=${encodeURIComponent(trimmed)}`)
+      }
+    } else {
+      navigate('/', { replace: isHome })
+    }
+  }
+
+  const handleSearch = (event: React.FormEvent) => {
+    event.preventDefault()
+    setMobileOpen(false)
+  }
+
+  const handleLogout = () => {
+    logout()
+    setMobileOpen(false)
+    navigate('/login')
+  }
 
   return (
-    <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
-      <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
-        {/* ── Main Row ── */}
-        <div className="h-16 flex items-center justify-between gap-3">
-          {/* Logo & pageLabel */}
-          <div className="flex items-center gap-1 flex-shrink-0">
-            <Link to="/" className="flex items-center gap-2 flex-shrink-0">
-              <div className="w-9 h-9 rounded-lg bg-blue-600 flex items-center justify-center shadow flex-shrink-0">
-                <span className="text-white font-black text-base">W</span>
-              </div>
-              <span className="hidden sm:block text-gray-900 font-bold text-sm lg:text-base whitespace-nowrap">
-                Hệ Thống Laptop &amp; Account
-              </span>
-              <span className="block sm:hidden text-gray-900 font-bold text-sm">
-                WebACC
-              </span>
+    <header className="sticky top-0 z-50 border-b border-white/10 bg-[#09051f] text-white shadow-[0_10px_30px_rgba(0,0,0,0.25)]">
+      <div className="hidden border-b border-white/10 bg-[#0d0828] md:block">
+        <div className="mx-auto flex h-11 max-w-[1840px] items-center justify-between px-4 text-sm text-[#b9b4d7] sm:px-6">
+          <nav className="flex items-center gap-7">
+            <Link to="/best-seller" className="hover:text-white">
+              Tin PC
+            </Link>
+            <Link to="/warranty-policy" className="hover:text-white">
+              Bảo hành
+            </Link>
+            <Link to="/purchase-guide" className="hover:text-white">
+              Hướng dẫn mua hàng
+            </Link>
+          </nav>
+          <div className="flex items-center gap-4">
+            <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-xs font-black text-yellow-300">
+              VN
+            </span>
+            <span>Tiếng Việt</span>
+            <span className="h-5 w-10 rounded-full bg-white/20 p-0.5">
+              <span className="block h-4 w-4 rounded-full bg-white" />
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div className="mx-auto max-w-[1840px] px-4 sm:px-6">
+        <div className="flex h-[76px] items-center justify-between gap-4">
+          <div className="flex min-w-0 items-center gap-7">
+            <Link to="/" className="flex shrink-0 items-baseline gap-1">
+              <span className="text-3xl font-black tracking-tight text-white">PCAcc</span>
+              <span className="text-sm font-black text-white">.com</span>
             </Link>
 
-            {pageLabel && (
-              <>
-                <div className="hidden sm:block w-[1.5px] h-6 bg-gray-300 mx-2"></div>
-                <span className="hidden sm:block text-[15px] font-semibold text-gray-800">
-                  {pageLabel}
-                </span>
-              </>
-            )}
+            <nav className="hidden items-center gap-7 text-base font-bold text-[#c8c1e8] md:flex">
+              <Link to="/laptops" className="inline-flex items-center gap-1 hover:text-white">
+                PC/Laptop <ChevronDown className="h-4 w-4" />
+              </Link>
+              <Link to="/accounts" className="hover:text-white">
+                Account
+              </Link>
+              <Link to="/best-seller" className="hover:text-white">
+                Bán chạy
+              </Link>
+              {pageLabel && <span className="text-sm text-white/60">{pageLabel}</span>}
+            </nav>
           </div>
 
-          {/* Desktop Search Bar (Permanent & Center-aligned) */}
-          <form
-            onSubmit={handleSearch}
-            className="hidden md:flex flex-1 max-w-[420px] mx-4 items-center"
-          >
-            <div className="w-full flex items-center gap-2 bg-gray-50 border border-gray-300 rounded-xl px-3.5 py-1.5 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-100 transition-all">
-              <Search className="w-4.5 h-4.5 text-gray-400 flex-shrink-0" />
+          <form onSubmit={handleSearch} className="hidden flex-1 justify-end md:flex">
+            <div className="flex h-[54px] w-full max-w-[395px] items-center gap-3 rounded-[22px] bg-[#37335f] px-5 text-[#c3bddb] ring-1 ring-white/5 focus-within:ring-[#6aa8ff]">
               <input
-                type="text"
                 value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Tìm kiếm sản phẩm, tài khoản..."
-                className="flex-1 bg-transparent text-sm text-gray-800 placeholder-gray-400 outline-none"
+                onChange={(event) => handleQueryChange(event.target.value)}
+                placeholder="Tìm PC, laptop, account..."
+                className="min-w-0 flex-1 bg-transparent text-base font-semibold text-white placeholder:text-[#9b95b8] focus:outline-none"
               />
-              {query && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setQuery("");
-                    navigate("/");
-                  }}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  <X className="w-3.5 h-3.5" />
+              {query ? (
+                <button type="button" onClick={() => handleQueryChange('')} className="text-[#c3bddb] hover:text-white">
+                  <X className="h-5 w-5" />
                 </button>
+              ) : (
+                <Search className="h-6 w-6 text-[#c3bddb]" />
               )}
             </div>
           </form>
 
-          {/* Right Actions */}
-          <div className="flex items-center gap-2 flex-shrink-0">
-            {/* Notification Bell */}
+          <div className="flex shrink-0 items-center gap-2 md:gap-4">
             <Link
-              to="/notification"
-              className="relative p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+              to={isLoggedIn ? '/notification' : '/login'}
+              className="hidden rounded-xl p-2 text-[#c8c1e8] transition-colors hover:bg-white/10 hover:text-white md:block"
               title="Thông báo"
             >
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
+              <Bell className="h-5 w-5" />
             </Link>
 
-            {/* Shopping Cart (Mobile) */}
-            <Link
-              to="/cart"
-              ref={mobileCartRef}
-              className="relative md:hidden p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
-              title="Giỏ hàng"
-            >
-              <ShoppingCart className={`w-5 h-5 ${cartIconClassName}`} />
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold px-1.5 min-w-[18px] h-[18px] rounded-full flex items-center justify-center border border-white leading-none">
-                {cartCount}
-              </span>
-            </Link>
-
-            {/* Shopping Cart (Desktop) */}
             <Link
               to="/cart"
               ref={desktopCartRef}
-              className="hidden md:relative md:block p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+              className="relative hidden rounded-xl p-2 text-white transition-colors hover:bg-white/10 md:block"
               title="Giỏ hàng"
             >
-              <ShoppingCart className={`w-5 h-5 ${cartIconClassName}`} />
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold px-1.5 min-w-[18px] h-[18px] rounded-full flex items-center justify-center border border-white leading-none">
-                {cartCount}
-              </span>
+              <ShoppingBag className={`h-7 w-7 ${cartIconClassName}`} />
+              {cartCount > 0 && (
+                <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-black text-white">
+                  {cartCount}
+                </span>
+              )}
             </Link>
 
-            {/* User Account State (Desktop) */}
-            <div className="hidden md:flex items-center gap-2 ml-1">
-              {shouldShowUserAvatar ? (
+            {isLoggedIn ? (
+              <div className="hidden items-center gap-3 md:flex">
                 <Link
                   to="/profile"
-                  className="w-9 h-9 rounded-full overflow-hidden border-2 border-gray-200 hover:border-blue-500 transition-all flex-shrink-0"
+                  className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border-2 border-white/20 bg-[#3d63ff] text-sm font-black text-white"
                 >
-                  <img
-                    src={userAvatarUrl}
-                    className="w-full h-full object-cover"
-                    alt="Avatar"
-                  />
+                  {user?.avatar ? (
+                    <img src={user.avatar} alt="Avatar" className="h-full w-full object-cover" />
+                  ) : (
+                    userInitial
+                  )}
                 </Link>
-              ) : (
-                <>
-                  <Link
-                    to="/login"
-                    className="text-sm font-medium text-gray-700 hover:text-blue-600 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-all"
-                  >
-                    Đăng nhập
-                  </Link>
-                  <Link
-                    to="/register"
-                    className="text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 px-4 py-1.5 rounded-lg transition-all shadow-sm"
-                  >
-                    Đăng ký
-                  </Link>
-                </>
-              )}
-            </div>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="inline-flex h-10 items-center gap-2 rounded-xl bg-white/10 px-3 text-sm font-black text-[#d9d4f2] transition-colors hover:bg-white/15 hover:text-white"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Đăng xuất
+                </button>
+              </div>
+            ) : (
+              <div className="hidden items-center gap-1 text-base font-black text-[#d9d4f2] md:flex">
+                <Link to="/login" className="hover:text-white">
+                  Đăng nhập
+                </Link>
+                <span>/</span>
+                <Link to="/register" className="hover:text-white">
+                  Đăng ký
+                </Link>
+              </div>
+            )}
 
-            {/* Mobile Hamburger Button */}
+            <Link
+              to="/cart"
+              ref={mobileCartRef}
+              className="relative rounded-xl p-2 text-white md:hidden"
+              title="Giỏ hàng"
+            >
+              <ShoppingCart className={`h-5 w-5 ${cartIconClassName}`} />
+              {cartCount > 0 && (
+                <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-black text-white">
+                  {cartCount}
+                </span>
+              )}
+            </Link>
+
             <button
-              onClick={() => setMobileOpen((v) => !v)}
-              className="md:hidden p-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+              type="button"
+              onClick={() => setMobileOpen((value) => !value)}
+              className="rounded-xl p-2 text-white hover:bg-white/10 md:hidden"
               aria-label="Mở menu"
             >
-              {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
           </div>
         </div>
 
-        {/* ── Mobile Dropdown ── */}
         {mobileOpen && (
-          <div className="md:hidden border-t border-gray-100 pb-4">
-            {/* Search Input (Mobile) */}
-            <form onSubmit={handleSearch} className="pt-3 px-1">
-              <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 transition-all">
-                <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
+          <div className="border-t border-white/10 pb-4 md:hidden">
+            <form onSubmit={handleSearch} className="py-3">
+              <div className="flex h-12 items-center gap-3 rounded-2xl bg-[#37335f] px-4">
                 <input
-                  type="text"
                   value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Tìm kiếm sản phẩm, tài khoản..."
-                  className="flex-1 bg-transparent text-sm text-gray-800 placeholder-gray-400 outline-none"
+                  onChange={(event) => handleQueryChange(event.target.value)}
+                  placeholder="Tìm PC, laptop, account..."
+                  className="min-w-0 flex-1 bg-transparent text-sm font-semibold text-white placeholder:text-[#9b95b8] focus:outline-none"
                 />
+                {query ? (
+                  <button type="button" onClick={() => handleQueryChange('')} className="text-[#c3bddb] hover:text-white">
+                    <X className="h-4 w-4" />
+                  </button>
+                ) : (
+                  <Search className="h-5 w-5 text-[#c3bddb]" />
+                )}
               </div>
             </form>
 
-            {/* Quick Links */}
-            <div className="pt-3 flex flex-col gap-0.5">
-              <Link
-                to="/"
-                onClick={() => setMobileOpen(false)}
-                className="px-3 py-2.5 text-sm text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors font-medium"
-              >
+            <div className="grid gap-2 text-sm font-bold text-[#c8c1e8]">
+              <Link to="/" onClick={() => setMobileOpen(false)} className="rounded-xl px-3 py-2 hover:bg-white/10">
                 Trang chủ
               </Link>
-              <Link
-                to="/best-seller"
-                onClick={() => setMobileOpen(false)}
-                className="px-3 py-2.5 text-sm text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors font-medium"
-              >
-                Sản phẩm bán chạy
+              <Link to="/laptops" onClick={() => setMobileOpen(false)} className="rounded-xl px-3 py-2 hover:bg-white/10">
+                PC / Laptop
               </Link>
-              <Link
-                to="/accounts"
-                onClick={() => setMobileOpen(false)}
-                className="px-3 py-2.5 text-sm text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors font-medium"
-              >
-                Tài khoản Account
+              <Link to="/accounts" onClick={() => setMobileOpen(false)} className="rounded-xl px-3 py-2 hover:bg-white/10">
+                Account
               </Link>
-              <Link
-                to="/laptops"
-                onClick={() => setMobileOpen(false)}
-                className="px-3 py-2.5 text-sm text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors font-medium"
-              >
-                Laptop / PC
-              </Link>
-            </div>
-
-            {/* Auth Buttons (Mobile) */}
-            <div className="pt-3 mt-1 border-t border-gray-100 flex gap-2">
-              {shouldShowUserAvatar ? (
-                <Link
-                  to="/profile"
-                  onClick={() => setMobileOpen(false)}
-                  className="flex-1 flex items-center justify-center gap-2 py-2 text-sm text-gray-700 bg-gray-50 hover:bg-blue-50 hover:text-blue-600 rounded-lg border border-gray-200"
-                >
-                  <User className="w-4 h-4" /> Cá nhân
-                </Link>
+              {isLoggedIn ? (
+                <>
+                  <Link to="/profile" onClick={() => setMobileOpen(false)} className="rounded-xl px-3 py-2 hover:bg-white/10">
+                    <span className="inline-flex items-center gap-2">
+                      <User className="h-4 w-4" /> Tài khoản
+                    </span>
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="rounded-xl px-3 py-2 text-left hover:bg-white/10"
+                  >
+                    <span className="inline-flex items-center gap-2">
+                      <LogOut className="h-4 w-4" /> Đăng xuất
+                    </span>
+                  </button>
+                </>
               ) : (
                 <>
-                  <Link
-                    to="/login"
-                    onClick={() => setMobileOpen(false)}
-                    className="flex-1 py-2 text-sm text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 text-center"
-                  >
+                  <Link to="/login" onClick={() => setMobileOpen(false)} className="rounded-xl px-3 py-2 hover:bg-white/10">
                     Đăng nhập
                   </Link>
-                  <Link
-                    to="/register"
-                    onClick={() => setMobileOpen(false)}
-                    className="flex-1 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-lg text-center font-semibold"
-                  >
+                  <Link to="/register" onClick={() => setMobileOpen(false)} className="rounded-xl px-3 py-2 hover:bg-white/10">
                     Đăng ký
                   </Link>
                 </>
@@ -260,5 +281,5 @@ export default function Header({
         )}
       </div>
     </header>
-  );
+  )
 }

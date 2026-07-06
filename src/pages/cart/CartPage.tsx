@@ -1,403 +1,362 @@
-import { useState } from "react";
-import Header from "../../components/layout/Header";
-import Footer from "../../components/layout/Footer";
-import { useNavigate } from "react-router-dom";
+import { useMemo, useState, useEffect } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
 
-interface CartItem {
-  id: string;
-  name: string;
-  description: string;
-  originalPrice?: number;
-  price: number;
-  discountLabel?: string;
-  quantity: number;
-  image: string;
-  checked: boolean;
+import Header from '@/components/layout/Header'
+import Footer from '@/components/layout/Footer'
+import { useCart } from '@/hooks/useCart'
+import type { CartItem } from '@/services/cart.service'
+
+function getPrice(item: CartItem) {
+  return item.sale_price ?? item.product?.base_price ?? 0
+}
+
+function getTotal(item: CartItem) {
+  return getPrice(item) * item.quantity
+}
+
+function getCartItemId(item: CartItem) {
+  return item._id ?? item.cart_item_id
+}
+
+function getProductName(item: CartItem) {
+  return item.product?.name ?? item.product_name ?? 'Sản phẩm'
+}
+
+function getProductId(item: CartItem) {
+  return item.product?._id ?? item.product_id
+}
+
+function getProductLink(item: CartItem) {
+  const productId = getProductId(item)
+  if (!productId) return ''
+
+  return item.product_type === 'digital'
+    ? `/accounts/${productId}`
+    : `/laptops/${productId}`
+}
+
+function getProductImage(item: CartItem) {
+  return item.product?.thumbnail ?? item.product?.images?.[0] ?? ''
+}
+
+interface QuantityInputProps {
+  quantity: number
+  cartItemId: string
+  onUpdate: (cartItemId: string, quantity: number) => void
+  disabled?: boolean
+}
+
+function QuantityInput({ quantity, cartItemId, onUpdate, disabled }: QuantityInputProps) {
+  const [localVal, setLocalVal] = useState(String(quantity))
+
+  useEffect(() => {
+    setLocalVal(String(quantity))
+  }, [quantity])
+
+  const handleBlur = () => {
+    const parsed = parseInt(localVal, 10)
+    if (isNaN(parsed) || parsed <= 0) {
+      setLocalVal(String(quantity))
+    } else if (parsed !== quantity) {
+      onUpdate(cartItemId, parsed)
+    }
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleBlur()
+    }
+  }
+
+  return (
+    <div className="flex overflow-hidden rounded-lg border border-white/15 bg-[#171233] text-white">
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() => onUpdate(cartItemId, quantity - 1)}
+        className="h-8 w-8 hover:bg-[#2b2450] disabled:opacity-50"
+      >
+        −
+      </button>
+
+      <input
+        type="text"
+        disabled={disabled}
+        value={localVal}
+        onChange={(e) => {
+          const val = e.target.value
+          if (/^\d*$/.test(val)) {
+            setLocalVal(val)
+          }
+        }}
+        onBlur={handleBlur}
+        onKeyDown={handleKeyDown}
+        className="h-8 w-12 border-none bg-transparent text-center text-sm focus:outline-none"
+      />
+
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() => onUpdate(cartItemId, quantity + 1)}
+        className="h-8 w-8 hover:bg-[#2b2450] disabled:opacity-50"
+      >
+        +
+      </button>
+    </div>
+  )
 }
 
 export default function CartPage() {
   const navigate = useNavigate()
 
-  const [cartItems, setCartItems] = useState<CartItem[]>([
-    {
-      id: "1",
-      name: "Dell XPS 13",
-      description: "Core i7, 16GB RAM, 512GB SSD",
-      originalPrice: 28000000,
-      price: 25000000,
-      discountLabel: "-10%",
-      quantity: 1,
-      image:
-        "https://images.unsplash.com/photo-1593642632823-8f785ba67e45?w=200",
-      checked: true,
-    },
-    {
-      id: "2",
-      name: "Microsoft 365 Premium",
-      description: "Account bản quyền chính chủ 1 năm",
-      price: 1500000,
-      quantity: 1,
-      image:
-        "https://images.unsplash.com/photo-1633419461186-7d40a38105ec?w=200",
-      checked: true,
-    },
-    {
-      id: "3",
-      name: "Adobe Creative Cloud",
-      description: "Full App Premium • 1 năm",
-      originalPrice: 2000000,
-      price: 1500000,
-      discountLabel: "-25%",
-      quantity: 1,
-      image:
-        "https://images.unsplash.com/photo-1626785774573-4b799315345d?w=200",
-      checked: false,
-    },
-  ]);
+  const {
+    items,
+    totalItems,
+    isLoading,
+    removeFromCart,
+    updateQuantity,
+  } = useCart()
 
-  const handleToggleCheckbox = (id: string) => {
-    setCartItems((prev) =>
-      prev.map((item) =>
-        item.id === id
-          ? { ...item, checked: !item.checked }
-          : item
-      )
-    );
-  };
+  const cartAmount = useMemo(() => {
+    return items.reduce((sum, item) => sum + getTotal(item), 0)
+  }, [items])
 
-  const handleSelectAll = () => {
-    const allChecked = cartItems.every(
-      (item) => item.checked
-    );
+  const handleDeleteItem = async (cartItemId: string) => {
+    await removeFromCart(cartItemId)
+  }
 
-    setCartItems((prev) =>
-      prev.map((item) => ({
-        ...item,
-        checked: !allChecked,
-      }))
-    );
-  };
+  const handleCheckout = () => {
+    if (items.length === 0) {
+      toast.warning('Giỏ hàng đang trống.')
+      return
+    }
 
-  const updateQuantity = (
-    id: string,
-    delta: number
-  ) => {
-    setCartItems((prev) =>
-      prev
-        .map((item) =>
-          item.id === id
-            ? {
-                ...item,
-                quantity: item.quantity + delta,
-              }
-            : item
-        )
-        .filter((item) => item.quantity > 0)
-    );
-  };
-
-  const handleDeleteItem = (id: string) => {
-    setCartItems((prev) =>
-      prev.filter((item) => item.id !== id)
-    );
-  };
-
-  const totalAmount = cartItems.reduce(
-    (sum, item) => {
-      return item.checked
-        ? sum + item.price * item.quantity
-        : sum;
-    },
-    0
-  );
-
-  const selectedCount = cartItems.filter(
-    (item) => item.checked
-  ).length;
+    navigate('/checkout')
+  }
 
   return (
-    <div className="w-full min-h-screen flex flex-col bg-[#F5F5F5]">
-      <Header pageLabel="Giỏ Hàng" cartCount={cartItems.length} />
+    <div className="flex min-h-screen w-full flex-col bg-[#09051f] text-white">
+      <Header pageLabel="Giỏ hàng" cartCount={totalItems} />
 
-      {/* ================= BODY ================= */}
-      <main className="w-full max-w-[1200px] mx-auto py-6 px-4 flex-1">
-        {/* DESKTOP TABLE */}
-        <div className="hidden md:flex bg-white rounded-xl shadow-sm flex-col overflow-hidden">
-          {/* HEADER */}
-          <div className="flex items-center py-4 px-4 border-b font-medium text-[14px] text-gray-500">
-            <div className="flex-1 pl-[50px]">
-              Sản Phẩm
-            </div>
+      <main className="mx-auto w-full max-w-[1840px] flex-1 px-4 py-6">
+        <h1 className="mb-6 text-3xl font-bold">Giỏ hàng</h1>
 
-            <div className="w-[140px] text-center">
-              Đơn Giá
-            </div>
+        {isLoading && items.length === 0 ? (
+          <div className="py-20 text-center text-[#b9b4d7]">Đang tải giỏ hàng...</div>
+        ) : items.length === 0 ? (
+          <div className="rounded-[22px] bg-[#211b42] p-10 text-center shadow-[0_18px_40px_rgba(0,0,0,0.18)]">
+            <h2 className="text-xl font-semibold">Giỏ hàng đang trống</h2>
 
-            <div className="w-[130px] text-center">
-              Số Lượng
-            </div>
-
-            <div className="w-[130px] text-center">
-              Số Tiền
-            </div>
-
-            <div className="w-[80px] text-center">
-              Thao Tác
-            </div>
-          </div>
-
-          {/* ITEMS */}
-          {cartItems.map((item) => (
-            <div
-              key={item.id}
-              className="flex items-center py-5 px-4 border-b hover:bg-gray-50 transition-colors"
+            <button
+              type="button"
+              onClick={() => navigate('/laptops')}
+              className="mt-6 h-12 rounded-xl bg-[#3783EC] px-8 font-semibold text-white hover:bg-[#206ed6]"
             >
-              <div className="w-[50px] flex justify-center">
-                <input
-                  type="checkbox"
-                  checked={item.checked}
-                  onChange={() =>
-                    handleToggleCheckbox(item.id)
-                  }
-                  className="accent-[#3783EC] w-4 h-4"
-                />
+              Tiếp tục mua sắm
+            </button>
+          </div>
+        ) : (
+          <>
+            <div className="hidden flex-col overflow-hidden rounded-[22px] bg-[#211b42] shadow-[0_18px_40px_rgba(0,0,0,0.18)] md:flex">
+              <div className="flex items-center border-b border-white/10 p-4 font-semibold text-[#b9b4d7]">
+                <div className="flex-1">Sản phẩm</div>
+                <div className="w-[150px] text-center">Đơn giá</div>
+                <div className="w-[150px] text-center">Số lượng</div>
+                <div className="w-[150px] text-center">Thành tiền</div>
+                <div className="w-[100px] text-center">Thao tác</div>
               </div>
 
-              <div className="flex-1 flex gap-4 items-center">
-                <img
-                  src={item.image}
-                  alt=""
-                  className="w-[80px] h-[80px] object-cover rounded-lg border"
-                />
+              {items.map((item) => {
+                const price = getPrice(item)
+                const total = getTotal(item)
+                const productLink = getProductLink(item)
+                const productImage = getProductImage(item)
+                const cartItemId = getCartItemId(item)
 
-                <div>
-                  <h3 className="text-[15px] font-semibold text-gray-800">
-                    {item.name}
-                  </h3>
-
-                  <p className="text-[13px] text-gray-500 mt-1">
-                    {item.description}
-                  </p>
-                </div>
-              </div>
-
-              <div className="w-[140px] text-center">
-                {item.originalPrice && (
-                  <p className="line-through text-gray-400 text-[12px]">
-                    {item.originalPrice.toLocaleString()}đ
-                  </p>
-                )}
-
-                <div className="font-semibold text-gray-800">
-                  {item.price.toLocaleString()}đ
-
-                  {item.discountLabel && (
-                    <span className="text-red-500 text-[11px] ml-1">
-                      {item.discountLabel}
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              <div className="w-[130px] flex justify-center">
-                <div className="flex border rounded-lg overflow-hidden">
-                  <button
-                    onClick={() =>
-                      updateQuantity(item.id, -1)
-                    }
-                    className="w-8 h-8 hover:bg-gray-100"
+                return (
+                  <div
+                    key={cartItemId ?? item.item_id}
+                    className="flex items-center border-b border-white/10 p-4 text-[#d9d6ee] transition-colors hover:bg-[#2b2450]"
                   >
-                    −
-                  </button>
+                    <div className="flex flex-1 items-center gap-4">
+                      {productLink ? (
+                        <Link
+                          to={productLink}
+                          className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-[#171233] transition-transform hover:scale-[1.03]"
+                        >
+                          {productImage ? (
+                            <img src={productImage} alt={getProductName(item)} className="h-full w-full object-cover" />
+                          ) : (
+                            <span className="text-2xl">📦</span>
+                          )}
+                        </Link>
+                      ) : (
+                        <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-[#171233]">
+                          <span className="text-2xl">📦</span>
+                        </div>
+                      )}
 
-                  <input
-                    type="text"
-                    value={item.quantity}
-                    readOnly
-                    className="w-10 text-center border-x text-[14px]"
-                  />
+                      <div>
+                        {productLink ? (
+                          <Link
+                            to={productLink}
+                            className="font-semibold text-white underline-offset-4 hover:text-[#6aa8ff] hover:underline"
+                          >
+                            {getProductName(item)}
+                          </Link>
+                        ) : (
+                          <h3 className="font-semibold text-white">{getProductName(item)}</h3>
+                        )}
 
-                  <button
-                    onClick={() =>
-                      updateQuantity(item.id, 1)
-                    }
-                    className="w-8 h-8 hover:bg-gray-100"
-                  >
-                    +
-                  </button>
+                        <p className="mt-1 text-sm text-[#b9b4d7]">
+                          {item.product?.description || `Mã item: ${item.item_id}`}
+                        </p>
+
+                        <p className="mt-1 text-xs text-[#8d86b6]">
+                          Loại: {item.product_type === 'physical' ? 'Laptop' : 'Account'}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="w-[150px] text-center font-semibold text-[#d9d6ee]">
+                      {price.toLocaleString('vi-VN')}đ
+                    </div>
+
+                    <div className="flex w-[150px] justify-center">
+                      {cartItemId ? (
+                        <QuantityInput
+                          quantity={item.quantity}
+                          cartItemId={cartItemId}
+                          onUpdate={updateQuantity}
+                          disabled={isLoading}
+                        />
+                      ) : (
+                        <span className="text-sm text-gray-400">{item.quantity}</span>
+                      )}
+                    </div>
+
+                    <div className="w-[150px] text-center font-bold text-[#3783EC]">
+                      {total.toLocaleString('vi-VN')}đ
+                    </div>
+
+                    <div className="w-[100px] text-center">
+                      <button
+                        type="button"
+                        onClick={() => cartItemId && handleDeleteItem(cartItemId)}
+                        className="font-semibold text-red-400 hover:text-red-300 hover:underline"
+                      >
+                        Xóa
+                      </button>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+
+            <div className="flex flex-col gap-4 md:hidden">
+              {items.map((item) => {
+                const price = getPrice(item)
+                const productLink = getProductLink(item)
+                const productImage = getProductImage(item)
+                const cartItemId = getCartItemId(item)
+
+                return (
+                  <div key={cartItemId ?? item.item_id} className="rounded-[22px] bg-[#211b42] p-4 shadow-[0_18px_40px_rgba(0,0,0,0.18)]">
+                    <div className="flex gap-3">
+                      {productLink ? (
+                        <Link
+                          to={productLink}
+                          className="flex h-[90px] w-[90px] shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-[#171233]"
+                        >
+                          {productImage ? (
+                            <img src={productImage} alt={getProductName(item)} className="h-full w-full object-cover" />
+                          ) : (
+                            <span className="text-2xl">📦</span>
+                          )}
+                        </Link>
+                      ) : (
+                        <div className="flex h-[90px] w-[90px] shrink-0 items-center justify-center rounded-xl border border-white/10 bg-[#171233]">
+                          <span className="text-2xl">📦</span>
+                        </div>
+                      )}
+
+                      <div className="flex-1">
+                        {productLink ? (
+                          <Link to={productLink} className="line-clamp-2 text-sm font-semibold text-white hover:text-[#6aa8ff]">
+                            {getProductName(item)}
+                          </Link>
+                        ) : (
+                          <h3 className="line-clamp-2 text-sm font-semibold text-white">
+                            {getProductName(item)}
+                          </h3>
+                        )}
+
+                        <p className="mt-1 line-clamp-2 text-xs text-[#b9b4d7]">
+                          {item.product?.description || `Mã item: ${item.item_id}`}
+                        </p>
+
+                        <p className="mt-2 font-bold text-[#3783EC]">
+                          {price.toLocaleString('vi-VN')}đ
+                        </p>
+
+                        <div className="mt-3 flex items-center justify-between">
+                          {cartItemId ? (
+                            <QuantityInput
+                              quantity={item.quantity}
+                              cartItemId={cartItemId}
+                              onUpdate={updateQuantity}
+                              disabled={isLoading}
+                            />
+                          ) : (
+                            <span className="text-sm text-gray-400">{item.quantity}</span>
+                          )}
+
+                          <button
+                            type="button"
+                            onClick={() => cartItemId && handleDeleteItem(cartItemId)}
+                            className="text-[13px] font-semibold text-red-400 hover:text-red-300"
+                          >
+                            Xóa
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+
+            <div className="mt-6 flex flex-col gap-5 rounded-[22px] bg-[#211b42] p-4 shadow-[0_18px_40px_rgba(0,0,0,0.18)] md:p-6 lg:flex-row lg:items-center lg:justify-between">
+              <div className="text-[15px] text-[#b9b4d7]">
+                Thanh toán toàn bộ {items.length} sản phẩm trong giỏ hàng.
+              </div>
+
+              <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
+                <div className="flex items-center gap-3">
+                  <span className="text-[#b9b4d7]">
+                    Tổng ({items.length}):
+                  </span>
+
+                  <span className="text-[28px] font-bold text-[#3783EC]">
+                    {cartAmount.toLocaleString('vi-VN')}đ
+                  </span>
                 </div>
-              </div>
 
-              <div className="w-[130px] text-center font-bold text-[#3783EC]">
-                {(
-                  item.price * item.quantity
-                ).toLocaleString()}
-                đ
-              </div>
-
-              <div className="w-[80px] text-center">
                 <button
-                  onClick={() =>
-                    handleDeleteItem(item.id)
-                  }
-                  className="text-red-500 hover:underline"
+                  type="button"
+                  onClick={handleCheckout}
+                  className="h-[46px] w-full rounded-xl bg-[#3783EC] px-10 font-bold text-white transition-colors hover:bg-[#206ed6] sm:w-auto"
                 >
-                  Xóa
+                  MUA HÀNG
                 </button>
               </div>
             </div>
-          ))}
-        </div>
-
-        {/* MOBILE */}
-        <div className="flex flex-col gap-4 md:hidden">
-          {cartItems.map((item) => (
-            <div
-              key={item.id}
-              className="bg-white rounded-2xl shadow-sm p-4"
-            >
-              <div className="flex gap-3">
-                <input
-                  type="checkbox"
-                  checked={item.checked}
-                  onChange={() =>
-                    handleToggleCheckbox(item.id)
-                  }
-                  className="accent-[#3783EC] w-4 h-4 mt-1"
-                />
-
-                <img
-                  src={item.image}
-                  alt=""
-                  className="w-[90px] h-[90px] rounded-lg object-cover border"
-                />
-
-                <div className="flex-1">
-                  <h3 className="text-[14px] font-semibold line-clamp-2">
-                    {item.name}
-                  </h3>
-
-                  <p className="text-[12px] text-gray-500 mt-1 line-clamp-2">
-                    {item.description}
-                  </p>
-
-                  <div className="mt-2">
-                    {item.originalPrice && (
-                      <p className="line-through text-gray-400 text-[11px]">
-                        {item.originalPrice.toLocaleString()}đ
-                      </p>
-                    )}
-
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-[#3783EC]">
-                        {item.price.toLocaleString()}đ
-                      </span>
-
-                      {item.discountLabel && (
-                        <span className="text-red-500 text-[10px] font-bold">
-                          {item.discountLabel}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between mt-3">
-                    <div className="flex border rounded-lg overflow-hidden">
-                      <button
-                        onClick={() =>
-                          updateQuantity(item.id, -1)
-                        }
-                        className="w-8 h-8"
-                      >
-                        −
-                      </button>
-
-                      <input
-                        type="text"
-                        value={item.quantity}
-                        readOnly
-                        className="w-10 text-center border-x text-[14px]"
-                      />
-
-                      <button
-                        onClick={() =>
-                          updateQuantity(item.id, 1)
-                        }
-                        className="w-8 h-8"
-                      >
-                        +
-                      </button>
-                    </div>
-
-                    <button
-                      onClick={() =>
-                        handleDeleteItem(item.id)
-                      }
-                      className="text-red-500 text-[13px]"
-                    >
-                      Xóa
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* PAYMENT */}
-        <div className="bg-white rounded-2xl shadow-sm mt-6 p-4 md:p-6 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
-          <div className="flex items-center gap-3">
-            <input
-              type="checkbox"
-              checked={
-                cartItems.length > 0 &&
-                cartItems.every(
-                  (item) => item.checked
-                )
-              }
-              onChange={handleSelectAll}
-              className="accent-[#3783EC] w-4 h-4"
-            />
-
-            <span className="text-[15px]">
-              Chọn tất cả ({cartItems.length})
-            </span>
-          </div>
-
-          <div className="flex flex-col sm:flex-row sm:items-center gap-5">
-            <div className="flex items-center gap-3">
-              <span className="text-gray-600">
-                Tổng ({selectedCount}):
-              </span>
-
-              <span className="text-[28px] font-bold text-[#3783EC]">
-                {totalAmount.toLocaleString()}đ
-              </span>
-            </div>
-
-            <button
-              onClick={() => {
-                const selectedItems = cartItems.filter((item) => item.checked)
-
-                if (selectedItems.length === 0) {
-                  alert('Vui lòng chọn ít nhất 1 sản phẩm')
-                  return
-                }
-
-                navigate('/checkout', {
-                  state: {
-                    selectedItems,
-                  },
-                })
-              }}
-              className="w-full sm:w-auto h-[46px] px-10 bg-[#3783EC] text-white font-bold rounded-xl hover:bg-[#206ed6] transition-colors"
-            >
-              MUA HÀNG
-            </button>
-          </div>
-        </div>
+          </>
+        )}
       </main>
+
       <Footer />
     </div>
-  );
+  )
 }

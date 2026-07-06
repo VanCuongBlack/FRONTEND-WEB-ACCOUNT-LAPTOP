@@ -1,22 +1,22 @@
-import { useState, useEffect, useRef } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useEffect, useRef, useState } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { ChevronLeft, Loader2, Mail, ShieldCheck } from 'lucide-react'
 import { toast } from 'sonner'
-import { verifyEmail, sendOtp } from '@/services/auth.service'
+import { sendOtp, verifyEmail } from '@/services/auth.service'
 import { verifyEmailSchema, type VerifyEmailFormValues } from '@/utils/validators'
 
 export default function VerifyEmailPage() {
   const navigate = useNavigate()
   const location = useLocation()
-  const emailFromState = (location.state as { email?: string })?.email ?? ''
+  const queryParams = new URLSearchParams(location.search)
+  const emailFromQuery = queryParams.get('email') ?? ''
+  const emailFromState = (location.state as { email?: string })?.email ?? emailFromQuery
 
   const [cooldown, setCooldown] = useState(0)
   const [isSending, setIsSending] = useState(false)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
-
-  // OTP input refs for auto-focus
   const [otpDigits, setOtpDigits] = useState(['', '', '', '', '', ''])
   const inputRefs = useRef<(HTMLInputElement | null)[]>([])
 
@@ -29,7 +29,6 @@ export default function VerifyEmailPage() {
     defaultValues: { email: emailFromState, otp: '' },
   })
 
-  // Redirect if no email passed
   useEffect(() => {
     if (!emailFromState) {
       toast.error('Không tìm thấy email. Vui lòng đăng ký lại.')
@@ -37,48 +36,45 @@ export default function VerifyEmailPage() {
     }
   }, [emailFromState, navigate])
 
-  // Cooldown timer
   useEffect(() => {
     if (cooldown <= 0) return
     timerRef.current = setInterval(() => {
-      setCooldown((c) => {
-        if (c <= 1) {
-          clearInterval(timerRef.current!)
+      setCooldown((current) => {
+        if (current <= 1) {
+          if (timerRef.current) clearInterval(timerRef.current)
           return 0
         }
-        return c - 1
+        return current - 1
       })
     }, 1000)
-    return () => clearInterval(timerRef.current!)
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current)
+    }
   }, [cooldown])
 
-  // Sync OTP digits to form value
   const handleOtpChange = (index: number, value: string) => {
     const digit = value.replace(/\D/g, '').slice(-1)
     const next = [...otpDigits]
     next[index] = digit
     setOtpDigits(next)
     setValue('otp', next.join(''))
-
-    if (digit && index < 5) {
-      inputRefs.current[index + 1]?.focus()
-    }
+    if (digit && index < 5) inputRefs.current[index + 1]?.focus()
   }
 
-  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Backspace' && !otpDigits[index] && index > 0) {
+  const handleOtpKeyDown = (index: number, event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Backspace' && !otpDigits[index] && index > 0) {
       inputRefs.current[index - 1]?.focus()
     }
   }
 
-  const handleOtpPaste = (e: React.ClipboardEvent) => {
-    const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6)
+  const handleOtpPaste = (event: React.ClipboardEvent) => {
+    const pasted = event.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6)
     if (!pasted) return
     const next = pasted.split('').concat(Array(6).fill('')).slice(0, 6)
     setOtpDigits(next)
     setValue('otp', next.join(''))
     inputRefs.current[Math.min(pasted.length, 5)]?.focus()
-    e.preventDefault()
+    event.preventDefault()
   }
 
   const onSubmit = async (data: VerifyEmailFormValues) => {
@@ -88,7 +84,7 @@ export default function VerifyEmailPage() {
         toast.error(res.data.message || 'Mã OTP không hợp lệ.')
         return
       }
-      toast.success('Xác thực email thành công! Vui lòng đăng nhập.')
+      toast.success('Xác thực email thành công. Vui lòng đăng nhập.')
       navigate('/login')
     } catch (err: unknown) {
       const message =
@@ -108,7 +104,7 @@ export default function VerifyEmailPage() {
         return
       }
       toast.success('Đã gửi lại OTP. Vui lòng kiểm tra email.')
-      setCooldown(60) // 1 minute cooldown
+      setCooldown(60)
     } catch (err: unknown) {
       const message =
         (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
@@ -120,92 +116,90 @@ export default function VerifyEmailPage() {
   }
 
   return (
-    <div className="w-full max-w-[1440px] min-h-screen mx-auto bg-white font-['Inter',_sans-serif] flex flex-col items-center justify-center py-10">
-      <div className="flex flex-col items-center w-full max-w-[480px] px-6">
-        {/* Back */}
-        <div className="w-full flex items-center gap-3 mb-10">
+    <div className="min-h-screen bg-[#09051f] text-white">
+      <header className="mx-auto flex h-20 w-full max-w-[1840px] items-center justify-between px-4 sm:px-6">
+        <Link to="/" className="flex items-baseline gap-1">
+          <span className="text-3xl font-black">PCAcc</span>
+          <span className="text-sm font-black">.com</span>
+        </Link>
+        <Link to="/login" className="rounded-2xl bg-white/10 px-4 py-2 text-sm font-black text-[#d9d4f2] hover:bg-white/15">
+          Đăng nhập
+        </Link>
+      </header>
+
+      <main className="mx-auto flex min-h-[calc(100vh-80px)] w-full max-w-[1840px] items-center justify-center px-4 pb-10 sm:px-6">
+        <section className="w-full max-w-[560px] rounded-[26px] border border-[#3d63ff]/20 bg-[#211b42] p-5 text-center shadow-[0_24px_80px_rgba(0,0,0,0.35)] sm:p-8">
           <button
             type="button"
             onClick={() => navigate('/register')}
-            className="flex items-center justify-center text-black cursor-pointer hover:opacity-70 transition-opacity"
-            aria-label="Quay lại đăng ký"
+            className="mb-6 flex items-center gap-2 text-sm font-bold text-[#b9b4d7] hover:text-white"
           >
-            <ChevronLeft size={24} strokeWidth={2} />
+            <ChevronLeft className="h-4 w-4" />
+            Quay lại đăng ký
           </button>
-          <span className="text-sm text-gray-500">Quay lại đăng ký</span>
-        </div>
 
-        {/* Icon */}
-        <div className="w-20 h-20 rounded-full bg-blue-50 flex items-center justify-center mb-6">
-          <Mail className="w-10 h-10 text-[#3783EC]" />
-        </div>
-
-        {/* Heading */}
-        <h1 className="text-[28px] font-bold text-black text-center mb-2">Xác thực Email</h1>
-        <p className="text-[15px] text-gray-500 text-center mb-1">
-          Chúng tôi đã gửi mã OTP gồm 6 chữ số đến
-        </p>
-        <p className="text-[15px] font-semibold text-[#3783EC] text-center mb-8 break-all">
-          {emailFromState}
-        </p>
-
-        {/* OTP Form */}
-        <form onSubmit={handleSubmit(onSubmit)} className="w-full flex flex-col items-center gap-8">
-          {/* OTP digit inputs */}
-          <div className="flex gap-3" onPaste={handleOtpPaste}>
-            {otpDigits.map((digit, i) => (
-              <input
-                key={i}
-                ref={(el) => { inputRefs.current[i] = el }}
-                type="text"
-                inputMode="numeric"
-                maxLength={1}
-                value={digit}
-                onChange={(e) => handleOtpChange(i, e.target.value)}
-                onKeyDown={(e) => handleOtpKeyDown(i, e)}
-                className="w-[60px] h-[70px] rounded-[16px] border border-black/20 text-center text-[24px] font-bold text-black bg-transparent focus:outline-none focus:border-[#3783EC] focus:ring-2 focus:ring-[#3783EC]/20 transition-all caret-transparent"
-                aria-label={`Chữ số OTP thứ ${i + 1}`}
-              />
-            ))}
+          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-[#171233]">
+            <Mail className="h-10 w-10 text-[#79a7ff]" />
           </div>
 
-          {/* Submit */}
-          <button
-            type="submit"
-            disabled={isSubmitting || otpDigits.join('').length < 6}
-            className="w-full h-[57px] rounded-[84px] bg-[#3783EC]/58 hover:bg-[#3783EC]/83 active:bg-[#3783EC] disabled:opacity-50 disabled:cursor-not-allowed text-black font-normal text-[18px] transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                Đang xác thực...
-              </>
-            ) : (
-              <>
-                <ShieldCheck className="w-5 h-5" />
-                Xác thực
-              </>
-            )}
-          </button>
-        </form>
+          <h1 className="text-3xl font-black text-white">Xác thực email</h1>
+          <p className="mt-3 text-sm leading-6 text-[#b9b4d7]">
+            Chúng tôi đã gửi mã OTP gồm 6 chữ số đến
+          </p>
+          <p className="mt-1 break-all text-sm font-black text-[#79a7ff]">{emailFromState}</p>
 
-        {/* Resend OTP */}
-        <div className="mt-6 flex flex-col items-center gap-2">
-          <p className="text-[14px] text-gray-500">Không nhận được mã?</p>
-          <button
-            type="button"
-            onClick={handleResend}
-            disabled={cooldown > 0 || isSending}
-            className="text-[14px] font-semibold text-[#3783EC] hover:underline disabled:opacity-50 disabled:cursor-not-allowed transition-opacity cursor-pointer"
-          >
-            {isSending
-              ? 'Đang gửi...'
-              : cooldown > 0
-              ? `Gửi lại sau ${cooldown}s`
-              : 'Gửi lại mã OTP'}
-          </button>
-        </div>
-      </div>
+          <form onSubmit={handleSubmit(onSubmit)} className="mt-8 flex flex-col items-center gap-7">
+            <div className="grid w-full grid-cols-6 gap-2 sm:gap-3" onPaste={handleOtpPaste}>
+              {otpDigits.map((digit, index) => (
+                <input
+                  key={index}
+                  ref={(element) => {
+                    inputRefs.current[index] = element
+                  }}
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={1}
+                  value={digit}
+                  onChange={(event) => handleOtpChange(index, event.target.value)}
+                  onKeyDown={(event) => handleOtpKeyDown(index, event)}
+                  className="h-14 rounded-2xl border border-[#3d63ff]/25 bg-[#171233] text-center text-xl font-black text-white outline-none transition-all focus:border-[#79a7ff] focus:ring-2 focus:ring-[#79a7ff]/20 sm:h-[70px] sm:text-2xl"
+                  aria-label={`Chữ số OTP thứ ${index + 1}`}
+                />
+              ))}
+            </div>
+
+            <button
+              type="submit"
+              disabled={isSubmitting || otpDigits.join('').length < 6}
+              className="flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[#1677ff] text-sm font-black text-white transition-colors hover:bg-[#0f66df] disabled:cursor-not-allowed disabled:bg-[#625b84]"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Đang xác thực...
+                </>
+              ) : (
+                <>
+                  <ShieldCheck className="h-4 w-4" />
+                  Xác thực
+                </>
+              )}
+            </button>
+          </form>
+
+          <div className="mt-6 flex flex-col items-center gap-2">
+            <p className="text-sm text-[#b9b4d7]">Không nhận được mã?</p>
+            <button
+              type="button"
+              onClick={handleResend}
+              disabled={cooldown > 0 || isSending}
+              className="text-sm font-black text-[#79a7ff] hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {isSending ? 'Đang gửi...' : cooldown > 0 ? `Gửi lại sau ${cooldown}s` : 'Gửi lại mã OTP'}
+            </button>
+          </div>
+        </section>
+      </main>
     </div>
   )
 }
