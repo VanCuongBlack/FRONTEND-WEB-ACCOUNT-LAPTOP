@@ -28,14 +28,16 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             'border border-black/34',
             'px-5',
             // Typography
-            'text-base font-normal text-black',
-            // Placeholder
-            'placeholder-[#ADA2A2] placeholder-opacity-100',
+            'text-base font-normal text-black dark:text-white',
+            // Placeholder (dark-friendly)
+            'placeholder-[#ADA2A2] placeholder-opacity-100 dark:placeholder-white/60',
             // Spacing and focus
             'focus:outline-none focus:ring-2 focus:ring-[#3783EC] focus:ring-opacity-58',
             // Transition
             'transition-all duration-200',
             error && 'border-red-500 border-2',
+            // Borders adapt to dark mode
+            'border border-black/34 dark:border-white/10',
             className
           )}
           {...props}

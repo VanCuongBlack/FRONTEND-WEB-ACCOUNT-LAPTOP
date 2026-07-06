@@ -1,11 +1,11 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { CheckCircle2, Eye, EyeOff, Loader2, Lock, Mail, Phone, User } from 'lucide-react'
-import { toast } from 'sonner'
 import { registerSchema, type RegisterFormValues } from '@/utils/validators'
 import { useAuth } from '@/hooks/useAuth'
+import { loadGoogleSdk, initGoogleAuth, triggerGoogleLogin } from '@/utils/googleAuth'
 
 export default function RegisterForm() {
   const navigate = useNavigate()
@@ -13,6 +13,17 @@ export default function RegisterForm() {
   const [showPass, setShowPass] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
   const [success, setSuccess] = useState(false)
+
+  useEffect(() => {
+    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '1035252877685-placeholder.apps.googleusercontent.com'
+    loadGoogleSdk()
+      .then(() => {
+        initGoogleAuth(clientId, (accessToken) => {
+          navigate(`/auth/google/success?googleToken=${accessToken}`)
+        })
+      })
+      .catch((err) => console.error('Lỗi khi tải Google SDK:', err))
+  }, [navigate])
 
   const {
     register: field,
@@ -136,7 +147,7 @@ export default function RegisterForm() {
           onClick={() => setShowPass((value) => !value)}
           className="shrink-0 text-[#8d86b6] hover:text-white"
         >
-          {showPass ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+          {showPass ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5" />}
         </button>
       </Field>
 
@@ -154,7 +165,7 @@ export default function RegisterForm() {
           onClick={() => setShowConfirm((value) => !value)}
           className="shrink-0 text-[#8d86b6] hover:text-white"
         >
-          {showConfirm ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+          {showConfirm ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5" />}
         </button>
       </Field>
 
@@ -181,7 +192,7 @@ export default function RegisterForm() {
 
       <button
         type="button"
-        onClick={() => toast.info('Google OAuth chưa được tích hợp.')}
+        onClick={triggerGoogleLogin}
         className="flex h-12 w-full items-center justify-center gap-3 rounded-2xl border border-[#3d63ff]/25 bg-[#171233] text-sm font-black text-white hover:border-[#79a7ff]"
       >
         G

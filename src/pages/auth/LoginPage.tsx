@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import * as z from 'zod'
 import { Eye, EyeOff, Lock, Mail, ShieldCheck, Sparkles, Zap } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
+import { loadGoogleSdk, initGoogleAuth, triggerGoogleLogin } from '@/utils/googleAuth'
 
 const loginSchema = z.object({
   email: z.string().min(1, 'Email không được để trống').email('Email không hợp lệ'),
@@ -18,6 +19,17 @@ export default function LoginPage() {
   const navigate = useNavigate()
   const { login, isLoading } = useAuth()
   const [showPassword, setShowPassword] = useState(false)
+
+  useEffect(() => {
+    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '1035252877685-placeholder.apps.googleusercontent.com'
+    loadGoogleSdk()
+      .then(() => {
+        initGoogleAuth(clientId, (accessToken) => {
+          navigate(`/auth/google/success?googleToken=${accessToken}`)
+        })
+      })
+      .catch((err) => console.error('Lỗi khi tải Google SDK:', err))
+  }, [navigate])
 
   const {
     register,
@@ -141,7 +153,7 @@ export default function LoginPage() {
                   className="text-[#8d86b6] hover:text-white"
                   title={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
                 >
-                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  {showPassword ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5" />}
                 </button>
               </div>
               {errors.password && <span className="pl-2 text-xs font-semibold text-[#ff7b8f]">{errors.password.message}</span>}
@@ -171,6 +183,7 @@ export default function LoginPage() {
 
             <button
               type="button"
+              onClick={triggerGoogleLogin}
               className="flex h-12 w-full items-center justify-center rounded-2xl border border-[#3d63ff]/25 bg-[#171233] text-sm font-black text-white hover:border-[#79a7ff]"
             >
               Đăng nhập bằng Google

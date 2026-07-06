@@ -10,7 +10,9 @@ import { verifyEmailSchema, type VerifyEmailFormValues } from '@/utils/validator
 export default function VerifyEmailPage() {
   const navigate = useNavigate()
   const location = useLocation()
-  const emailFromState = (location.state as { email?: string })?.email ?? ''
+  const queryParams = new URLSearchParams(location.search)
+  const emailFromQuery = queryParams.get('email') ?? ''
+  const emailFromState = (location.state as { email?: string })?.email ?? emailFromQuery
 
   const [cooldown, setCooldown] = useState(0)
   const [isSending, setIsSending] = useState(false)

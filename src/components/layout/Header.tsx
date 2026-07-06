@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import React, { useState, useEffect } from 'react'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import {
   Bell,
   ChevronDown,
@@ -31,17 +31,37 @@ export default function Header({
   const [mobileOpen, setMobileOpen] = useState(false)
   const [query, setQuery] = useState('')
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const logout = useAuthStore((state) => state.logout)
   const accessToken = useAuthStore((state) => state.accessToken)
   const user = useAuthStore((state) => state.user)
   const isLoggedIn = Boolean(user && accessToken)
   const userInitial = (user?.fullname || user?.email || 'U').charAt(0).toUpperCase()
 
+  // Sync local query state with URL search param
+  useEffect(() => {
+    const queryParam = searchParams.get('search') ?? ''
+    setQuery(queryParam)
+  }, [searchParams])
+
+  const handleQueryChange = (val: string) => {
+    setQuery(val)
+    const trimmed = val.trim()
+    const isHome = window.location.pathname === '/'
+    
+    if (trimmed) {
+      if (isHome) {
+        navigate(`/?search=${encodeURIComponent(trimmed)}`, { replace: true })
+      } else {
+        navigate(`/?search=${encodeURIComponent(trimmed)}`)
+      }
+    } else {
+      navigate('/', { replace: isHome })
+    }
+  }
+
   const handleSearch = (event: React.FormEvent) => {
     event.preventDefault()
-    const value = query.trim()
-    if (!value) return
-    navigate(`/laptops?search=${encodeURIComponent(value)}`)
     setMobileOpen(false)
   }
 
@@ -104,12 +124,12 @@ export default function Header({
             <div className="flex h-[54px] w-full max-w-[395px] items-center gap-3 rounded-[22px] bg-[#37335f] px-5 text-[#c3bddb] ring-1 ring-white/5 focus-within:ring-[#6aa8ff]">
               <input
                 value={query}
-                onChange={(event) => setQuery(event.target.value)}
+                onChange={(event) => handleQueryChange(event.target.value)}
                 placeholder="Tìm PC, laptop, account..."
                 className="min-w-0 flex-1 bg-transparent text-base font-semibold text-white placeholder:text-[#9b95b8] focus:outline-none"
               />
               {query ? (
-                <button type="button" onClick={() => setQuery('')} className="text-[#c3bddb] hover:text-white">
+                <button type="button" onClick={() => handleQueryChange('')} className="text-[#c3bddb] hover:text-white">
                   <X className="h-5 w-5" />
                 </button>
               ) : (
@@ -205,11 +225,17 @@ export default function Header({
               <div className="flex h-12 items-center gap-3 rounded-2xl bg-[#37335f] px-4">
                 <input
                   value={query}
-                  onChange={(event) => setQuery(event.target.value)}
+                  onChange={(event) => handleQueryChange(event.target.value)}
                   placeholder="Tìm PC, laptop, account..."
                   className="min-w-0 flex-1 bg-transparent text-sm font-semibold text-white placeholder:text-[#9b95b8] focus:outline-none"
                 />
-                <Search className="h-5 w-5 text-[#c3bddb]" />
+                {query ? (
+                  <button type="button" onClick={() => handleQueryChange('')} className="text-[#c3bddb] hover:text-white">
+                    <X className="h-4 w-4" />
+                  </button>
+                ) : (
+                  <Search className="h-5 w-5 text-[#c3bddb]" />
+                )}
               </div>
             </form>
 
