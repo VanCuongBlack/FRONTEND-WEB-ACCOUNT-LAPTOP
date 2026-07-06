@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 
@@ -40,6 +40,73 @@ function getProductImage(item: CartItem) {
   return item.product?.thumbnail ?? item.product?.images?.[0] ?? ''
 }
 
+interface QuantityInputProps {
+  quantity: number
+  cartItemId: string
+  onUpdate: (cartItemId: string, quantity: number) => void
+  disabled?: boolean
+}
+
+function QuantityInput({ quantity, cartItemId, onUpdate, disabled }: QuantityInputProps) {
+  const [localVal, setLocalVal] = useState(String(quantity))
+
+  useEffect(() => {
+    setLocalVal(String(quantity))
+  }, [quantity])
+
+  const handleBlur = () => {
+    const parsed = parseInt(localVal, 10)
+    if (isNaN(parsed) || parsed <= 0) {
+      setLocalVal(String(quantity))
+    } else if (parsed !== quantity) {
+      onUpdate(cartItemId, parsed)
+    }
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleBlur()
+    }
+  }
+
+  return (
+    <div className="flex overflow-hidden rounded-lg border border-white/15 bg-[#171233] text-white">
+      <button
+        type="button"
+        disabled={disabled || quantity <= 1}
+        onClick={() => onUpdate(cartItemId, quantity - 1)}
+        className="h-8 w-8 hover:bg-[#2b2450] disabled:opacity-50"
+      >
+        −
+      </button>
+
+      <input
+        type="text"
+        disabled={disabled}
+        value={localVal}
+        onChange={(e) => {
+          const val = e.target.value
+          if (/^\d*$/.test(val)) {
+            setLocalVal(val)
+          }
+        }}
+        onBlur={handleBlur}
+        onKeyDown={handleKeyDown}
+        className="h-8 w-12 border-none bg-transparent text-center text-sm focus:outline-none"
+      />
+
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() => onUpdate(cartItemId, quantity + 1)}
+        className="h-8 w-8 hover:bg-[#2b2450] disabled:opacity-50"
+      >
+        +
+      </button>
+    </div>
+  )
+}
+
 export default function CartPage() {
   const navigate = useNavigate()
 
@@ -64,7 +131,6 @@ export default function CartPage() {
       toast.warning('Giỏ hàng đang trống.')
       return
     }
-
     navigate('/checkout')
   }
 
@@ -80,7 +146,6 @@ export default function CartPage() {
         ) : items.length === 0 ? (
           <div className="rounded-[22px] bg-[#211b42] p-10 text-center shadow-[0_18px_40px_rgba(0,0,0,0.18)]">
             <h2 className="text-xl font-semibold">Giỏ hàng đang trống</h2>
-
             <button
               type="button"
               onClick={() => navigate('/laptops')}
@@ -91,6 +156,7 @@ export default function CartPage() {
           </div>
         ) : (
           <>
+            {/* Desktop View */}
             <div className="hidden flex-col overflow-hidden rounded-[22px] bg-[#211b42] shadow-[0_18px_40px_rgba(0,0,0,0.18)] md:flex">
               <div className="flex items-center border-b border-white/10 p-4 font-semibold text-[#b9b4d7]">
                 <div className="flex-1">Sản phẩm</div>
@@ -157,27 +223,16 @@ export default function CartPage() {
                     </div>
 
                     <div className="flex w-[150px] justify-center">
-                      <div className="flex overflow-hidden rounded-lg border border-white/15 bg-[#171233] text-white">
-                        <button
-                          type="button"
-                          onClick={() => cartItemId && updateQuantity(cartItemId, item.quantity - 1)}
-                          className="h-8 w-8 hover:bg-[#2b2450]"
-                        >
-                          −
-                        </button>
-
-                        <div className="flex h-8 w-10 items-center justify-center border-x border-white/15 text-sm">
-                          {item.quantity}
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={() => cartItemId && updateQuantity(cartItemId, item.quantity + 1)}
-                          className="h-8 w-8 hover:bg-[#2b2450]"
-                        >
-                          +
-                        </button>
-                      </div>
+                      {cartItemId ? (
+                        <QuantityInput
+                          quantity={item.quantity}
+                          cartItemId={cartItemId}
+                          onUpdate={updateQuantity}
+                          disabled={isLoading}
+                        />
+                      ) : (
+                        <span className="text-sm text-gray-400">{item.quantity}</span>
+                      )}
                     </div>
 
                     <div className="w-[150px] text-center font-bold text-[#3783EC]">
@@ -198,6 +253,7 @@ export default function CartPage() {
               })}
             </div>
 
+            {/* Mobile View */}
             <div className="flex flex-col gap-4 md:hidden">
               {items.map((item) => {
                 const price = getPrice(item)
@@ -245,27 +301,16 @@ export default function CartPage() {
                         </p>
 
                         <div className="mt-3 flex items-center justify-between">
-                          <div className="flex overflow-hidden rounded-lg border border-white/15 bg-[#171233] text-white">
-                            <button
-                              type="button"
-                              onClick={() => cartItemId && updateQuantity(cartItemId, item.quantity - 1)}
-                              className="h-8 w-8 hover:bg-[#2b2450]"
-                            >
-                              −
-                            </button>
-
-                            <div className="flex h-8 w-10 items-center justify-center border-x border-white/15 text-sm">
-                              {item.quantity}
-                            </div>
-
-                            <button
-                              type="button"
-                              onClick={() => cartItemId && updateQuantity(cartItemId, item.quantity + 1)}
-                              className="h-8 w-8 hover:bg-[#2b2450]"
-                            >
-                              +
-                            </button>
-                          </div>
+                          {cartItemId ? (
+                            <QuantityInput
+                              quantity={item.quantity}
+                              cartItemId={cartItemId}
+                              onUpdate={updateQuantity}
+                              disabled={isLoading}
+                            />
+                          ) : (
+                            <span className="text-sm text-gray-400">{item.quantity}</span>
+                          )}
 
                           <button
                             type="button"
@@ -282,6 +327,7 @@ export default function CartPage() {
               })}
             </div>
 
+            {/* Checkout Summary */}
             <div className="mt-6 flex flex-col gap-5 rounded-[22px] bg-[#211b42] p-4 shadow-[0_18px_40px_rgba(0,0,0,0.18)] md:p-6 lg:flex-row lg:items-center lg:justify-between">
               <div className="text-[15px] text-[#b9b4d7]">
                 Thanh toán toàn bộ {items.length} sản phẩm trong giỏ hàng.
@@ -289,10 +335,7 @@ export default function CartPage() {
 
               <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
                 <div className="flex items-center gap-3">
-                  <span className="text-[#b9b4d7]">
-                    Tổng ({items.length}):
-                  </span>
-
+                  <span className="text-[#b9b4d7]">Tổng ({items.length}):</span>
                   <span className="text-[28px] font-bold text-[#3783EC]">
                     {cartAmount.toLocaleString('vi-VN')}đ
                   </span>

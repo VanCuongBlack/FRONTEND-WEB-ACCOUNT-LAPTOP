@@ -1,5 +1,15 @@
 import { Link } from 'react-router-dom'
-import { Bell, Settings, ChevronDown } from 'lucide-react'
+import { Bell, Settings } from 'lucide-react'
+import { useAuthStore } from '@/store/authStore'
+
+function getRoleName(role: unknown) {
+  if (typeof role === 'string') return role
+  if (role && typeof role === 'object' && 'name' in role) {
+    const roleName = (role as { name?: unknown }).name
+    return typeof roleName === 'string' ? roleName : null
+  }
+  return null
+}
 
 // ─── Props ─────────────────────────────────────────────────────────────────────
 
@@ -22,6 +32,10 @@ export default function AdminTopbar({
   adminName = 'Admin',
   rightSlot,
 }: Props) {
+  const user = useAuthStore((state) => state.user)
+  const role = getRoleName(user?.role)
+  const settingsPath = role === 'admin' ? '/admin/settings' : '/staff/settings'
+
   return (
     <header className="bg-white border-b border-gray-200 px-4 sm:px-6 h-14 flex items-center justify-between flex-shrink-0 gap-4">
 
@@ -46,22 +60,21 @@ export default function AdminTopbar({
 
         {/* Settings */}
         <Link
-          to="/admin/settings"
+          to={settingsPath}
           className="p-2 text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
         >
           <Settings className="w-5 h-5" />
         </Link>
 
-        {/* Admin dropdown */}
-        <button className="flex items-center gap-2 pl-2 pr-3 py-1.5 border border-gray-200 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+        {/* Admin profile */}
+        <div className="flex items-center gap-2 pl-2 pr-3 py-1.5 border border-gray-200 rounded-lg text-sm text-gray-700">
           <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
             <span className="text-white text-[10px] font-bold">
               {adminName.charAt(0).toUpperCase()}
             </span>
           </div>
           <span className="hidden sm:block">{adminName}</span>
-          <ChevronDown className="w-3.5 h-3.5 text-gray-400 hidden sm:block" />
-        </button>
+        </div>
 
       </div>
     </header>

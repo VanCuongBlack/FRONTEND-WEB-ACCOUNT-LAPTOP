@@ -1,3 +1,8 @@
+Dưới đây là file cấu hình định tuyến `AppRoutes` sau khi đã được dọn dẹp sạch sẽ các ký tự xung đột merge Git (`<<<<<<<`, `=======`, `>>>>>>>`).
+
+Tôi chọn **giữ lại route `/staff/settings` từ nhánh `feature-hung**` để đảm bảo nhân viên (`staff`) không bị thiếu trang cấu hình cá nhân hoặc cài đặt hệ thống của họ.
+
+```tsx
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import ProtectedRoute from '@/components/common/ProtectedRoute'
 
@@ -45,15 +50,18 @@ import InventoryManagementPage from '@/pages/staff/InventoryManagementPage'
 import OrderManagementPage from '@/pages/staff/OrderManagementPage'
 import CustomerManagementPage from '@/pages/staff/CustomerManagementPage'
 import WarrantyManagementPage from '@/pages/staff/WarrantyManagementPage'
+import StaffSettingsPage from '@/pages/staff/StaffSettingsPage'
 
 export default function AppRoutes() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Public Routes */}
         <Route path="/" element={<LandingPage />} />
         <Route path="/warranty-policy" element={<WarrantyPolicyPage />} />
         <Route path="/purchase-guide" element={<PurchaseGuidePage />} />
 
+        {/* Auth Routes */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/verify-email" element={<VerifyEmailPage />} />
@@ -63,17 +71,20 @@ export default function AppRoutes() {
         <Route path="/auth/google" element={<GoogleAuthPage />} />
         <Route path="/auth/google/success" element={<GoogleAuthSuccessPage />} />
 
+        {/* Product Routes */}
         <Route path="/laptops" element={<LaptopListPage />} />
         <Route path="/laptops/:id" element={<LaptopDetailPage />} />
         <Route path="/accounts" element={<AccountListPage />} />
         <Route path="/accounts/:id" element={<AccountDetailPage />} />
         <Route path="/best-seller" element={<BestSellerPage />} />
 
+        {/* Customer Protected Routes */}
         <Route path="/cart" element={<ProtectedRoute requiredRoles={['customer']}><CartPage /></ProtectedRoute>} />
         <Route path="/checkout" element={<ProtectedRoute requiredRoles={['customer']}><CheckoutPage /></ProtectedRoute>} />
         <Route path="/order-success" element={<ProtectedRoute requiredRoles={['customer']}><OrderSuccessPage /></ProtectedRoute>} />
         <Route path="/notification" element={<ProtectedRoute requiredRoles={['customer']}><NotificationPage /></ProtectedRoute>} />
 
+        {/* Profile & History Routes */}
         <Route path="/profile" element={<ProtectedRoute requiredRoles={['customer']}><ProfilePage /></ProtectedRoute>} />
         <Route path="/profile/edit" element={<ProtectedRoute requiredRoles={['customer']}><EditProfilePage /></ProtectedRoute>} />
         <Route path="/profile/history" element={<ProtectedRoute requiredRoles={['customer']}><HistoryPage /></ProtectedRoute>} />
@@ -83,12 +94,14 @@ export default function AppRoutes() {
         <Route path="/profile/history/support/:type/:id" element={<ProtectedRoute requiredRoles={['customer']}><SupportRequestPage /></ProtectedRoute>} />
         <Route path="/profile/support/:ticketId" element={<ProtectedRoute requiredRoles={['customer']}><SupportRequestDetailPage /></ProtectedRoute>} />
 
+        {/* Admin Routes */}
         <Route path="/admin" element={<ProtectedRoute requiredRoles={['admin']}><AdminDashboard /></ProtectedRoute>} />
         <Route path="/admin/employees" element={<ProtectedRoute requiredRoles={['admin']}><EmployeeManagementPage /></ProtectedRoute>} />
         <Route path="/admin/customers" element={<ProtectedRoute requiredRoles={['admin']}><CustomerManagementPage /></ProtectedRoute>} />
         <Route path="/admin/reports" element={<ProtectedRoute requiredRoles={['admin']}><ReportsPage /></ProtectedRoute>} />
         <Route path="/admin/settings" element={<ProtectedRoute requiredRoles={['admin']}><SystemSettingsPage /></ProtectedRoute>} />
 
+        {/* Staff & Admin Routes */}
         <Route path="/staff" element={<ProtectedRoute requiredRoles={['staff', 'admin']}><StaffDashboard /></ProtectedRoute>} />
         <Route path="/staff/products" element={<ProtectedRoute requiredRoles={['staff', 'admin']}><ProductManagementPage /></ProtectedRoute>} />
         <Route path="/staff/inventory" element={<ProtectedRoute requiredRoles={['staff', 'admin']}><InventoryManagementPage /></ProtectedRoute>} />
@@ -96,9 +109,13 @@ export default function AppRoutes() {
         <Route path="/staff/customers" element={<ProtectedRoute requiredRoles={['admin']}><CustomerManagementPage /></ProtectedRoute>} />
         <Route path="/staff/warranty" element={<ProtectedRoute requiredRoles={['staff', 'admin']}><WarrantyManagementPage /></ProtectedRoute>} />
         <Route path="/staff/tickets" element={<ProtectedRoute requiredRoles={['staff', 'admin']}><WarrantyManagementPage /></ProtectedRoute>} />
+        <Route path="/staff/settings" element={<ProtectedRoute requiredRoles={['staff', 'admin']}><StaffSettingsPage /></ProtectedRoute>} />
 
+        {/* 404 Route */}
         <Route path="*" element={<div>404 Not Found</div>} />
       </Routes>
     </BrowserRouter>
   )
 }
+
+```

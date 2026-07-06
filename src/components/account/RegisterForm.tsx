@@ -44,7 +44,8 @@ export default function RegisterForm() {
     })
 
     if (response.success) {
-      setSuccess(true)
+      navigate('/verify-email', { state: { email: data.email.trim().toLowerCase() } })
+
       return
     }
 
