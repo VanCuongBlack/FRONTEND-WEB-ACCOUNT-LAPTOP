@@ -73,7 +73,7 @@ function QuantityInput({ quantity, cartItemId, onUpdate, disabled }: QuantityInp
     <div className="flex overflow-hidden rounded-lg border border-white/15 bg-[#171233] text-white">
       <button
         type="button"
-        disabled={disabled}
+        disabled={disabled || quantity <= 1}
         onClick={() => onUpdate(cartItemId, quantity - 1)}
         className="h-8 w-8 hover:bg-[#2b2450] disabled:opacity-50"
       >
@@ -131,7 +131,6 @@ export default function CartPage() {
       toast.warning('Giỏ hàng đang trống.')
       return
     }
-
     navigate('/checkout')
   }
 
@@ -142,12 +141,11 @@ export default function CartPage() {
       <main className="mx-auto w-full max-w-[1840px] flex-1 px-4 py-6">
         <h1 className="mb-6 text-3xl font-bold">Giỏ hàng</h1>
 
-        {isLoading && items.length === 0 ? (
+        {isLoading ? (
           <div className="py-20 text-center text-[#b9b4d7]">Đang tải giỏ hàng...</div>
         ) : items.length === 0 ? (
           <div className="rounded-[22px] bg-[#211b42] p-10 text-center shadow-[0_18px_40px_rgba(0,0,0,0.18)]">
             <h2 className="text-xl font-semibold">Giỏ hàng đang trống</h2>
-
             <button
               type="button"
               onClick={() => navigate('/laptops')}
@@ -158,6 +156,7 @@ export default function CartPage() {
           </div>
         ) : (
           <>
+            {/* Desktop View */}
             <div className="hidden flex-col overflow-hidden rounded-[22px] bg-[#211b42] shadow-[0_18px_40px_rgba(0,0,0,0.18)] md:flex">
               <div className="flex items-center border-b border-white/10 p-4 font-semibold text-[#b9b4d7]">
                 <div className="flex-1">Sản phẩm</div>
@@ -254,6 +253,7 @@ export default function CartPage() {
               })}
             </div>
 
+            {/* Mobile View */}
             <div className="flex flex-col gap-4 md:hidden">
               {items.map((item) => {
                 const price = getPrice(item)
@@ -327,6 +327,7 @@ export default function CartPage() {
               })}
             </div>
 
+            {/* Checkout Summary */}
             <div className="mt-6 flex flex-col gap-5 rounded-[22px] bg-[#211b42] p-4 shadow-[0_18px_40px_rgba(0,0,0,0.18)] md:p-6 lg:flex-row lg:items-center lg:justify-between">
               <div className="text-[15px] text-[#b9b4d7]">
                 Thanh toán toàn bộ {items.length} sản phẩm trong giỏ hàng.
@@ -334,10 +335,7 @@ export default function CartPage() {
 
               <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
                 <div className="flex items-center gap-3">
-                  <span className="text-[#b9b4d7]">
-                    Tổng ({items.length}):
-                  </span>
-
+                  <span className="text-[#b9b4d7]">Tổng ({items.length}):</span>
                   <span className="text-[28px] font-bold text-[#3783EC]">
                     {cartAmount.toLocaleString('vi-VN')}đ
                   </span>

@@ -57,6 +57,7 @@ export default function LoginPage() {
     const response = await login(values.email, values.password)
 
     if (!response.success) {
+
       if (
         response.error?.toLowerCase().includes('chưa được xác thực') ||
         response.error?.toLowerCase().includes('chưa xác thực')
@@ -64,6 +65,7 @@ export default function LoginPage() {
         navigate('/verify-email', { state: { email: values.email.trim().toLowerCase() } })
         return
       }
+
       setError('password', {
         message: response.error || 'Email hoặc mật khẩu không đúng',
       })

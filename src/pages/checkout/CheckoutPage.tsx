@@ -1,3 +1,8 @@
+Dưới đây là mã nguồn đã được giải quyết triệt để các xung đột Git (conflict markers `<<<<<<<`, `=======`, `>>>>>>>`).
+
+Tôi đã chọn giải pháp **giữ lại tính năng nâng cao từ nhánh `feature-hung**`: Tách địa chỉ thành các trường Tỉnh/Thành phố (dùng `select` từ danh sách `PROVINCES`), Quận/Huyện, và Địa chỉ chi tiết, đồng thời tự động bóc tách (parse) chuỗi địa chỉ cũ từ dữ liệu `user.address` để điền vào form một cách thông minh.
+
+```tsx
 import { useEffect, useMemo, useState } from 'react'
 import { ChevronLeft, CreditCard, Landmark, MapPin } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
@@ -132,6 +137,7 @@ export default function CheckoutPage() {
   const hasPhysicalItems = cartItems.some((item) => item.product_type === 'physical')
   const hasDigitalOnlyItems = cartItems.length > 0 && !hasPhysicalItems
 
+  // Tự động phân tách chuỗi địa chỉ của User (nếu có) thành Tỉnh/Thành, Quận/Huyện, Địa chỉ chi tiết
   useEffect(() => {
     if (user?.address) {
       const addr = user.address.trim()
@@ -164,6 +170,7 @@ export default function CheckoutPage() {
     }
   }, [user?.address])
 
+  // Gộp các trường địa chỉ đơn lẻ thành chuỗi shippingAddress hoàn chỉnh
   useEffect(() => {
     const combined = [
       exactAddress.trim(),
@@ -175,6 +182,7 @@ export default function CheckoutPage() {
     setShippingAddress(combined)
   }, [selectedProvince, selectedDistrict, exactAddress])
 
+  // Chuyển phương thức về Chuyển khoản nếu giỏ hàng chỉ toàn hàng Digital/Account
   useEffect(() => {
     if (hasDigitalOnlyItems && paymentMethod === 'cod') {
       setPaymentMethod('bank_transfer')
@@ -202,7 +210,6 @@ export default function CheckoutPage() {
       setPaymentMethod('bank_transfer')
       return
     }
-
     setPaymentMethod(method)
   }
 
@@ -491,3 +498,5 @@ export default function CheckoutPage() {
     </div>
   )
 }
+
+```
