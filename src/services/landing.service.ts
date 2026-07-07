@@ -1,4 +1,5 @@
 import api from './api'
+import { getActiveBanners, type BannerRecord } from './banner.service'
 
 export interface Banner {
   id: string
@@ -31,6 +32,8 @@ export interface Product {
   imageUrl?: string
   icon?: string
   category?: string
+  product_type?: 'physical' | 'digital' | string
+  brand?: string
   badge?: 'HOT' | 'NEW' | 'SALE' | 'OUT'
   isActive: boolean
   tag?: string
@@ -56,6 +59,8 @@ export interface LandingData {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function normalizeProduct(raw: any): Product {
   const productType = raw.product_type ?? raw.category
+  const firstImage = raw.images?.[0]
+  const firstImageUrl = typeof firstImage === 'string' ? firstImage : firstImage?.url
 
   return {
     id: raw._id ?? raw.id,
@@ -64,10 +69,12 @@ function normalizeProduct(raw: any): Product {
     price: raw.price ?? raw.sale_price ?? raw.base_price ?? 0,
     originalPrice: raw.originalPrice,
     stock: raw.stock ?? raw.stock_quantity,
-    imageUrl: raw.imageUrl ?? raw.image ?? raw.thumbnail ?? raw.images?.[0],
+    imageUrl: raw.imageUrl ?? raw.image ?? raw.thumbnail ?? firstImageUrl,
     icon: raw.icon,
     category:
       productType === 'physical' ? 'laptop' : productType === 'digital' ? 'account' : productType,
+    product_type: raw.product_type,
+    brand: raw.brand,
     badge: raw.badge,
     isActive: raw.isActive ?? raw.is_active ?? true,
     tag: raw.tag ?? raw.category ?? raw.product_type,
@@ -168,11 +175,37 @@ export const getProducts = async (): Promise<Product[]> => {
   }
 }
 
+function normalizeBanner(raw: BannerRecord): Banner {
+  return {
+    id: raw._id,
+    imageUrl: raw.image?.url,
+    imageGradient: 'from-[#0d47a1] via-[#1565c0] to-[#1976d2]',
+    title: raw.title,
+    subtitle: '',
+    ctaText: 'Xem ngay',
+    ctaLink: raw.link_url || '/',
+    isActive: raw.is_active,
+    order: raw.display_order ?? 0,
+    tag: raw.position,
+  }
+}
+
+export const getBanners = async (): Promise<Banner[]> => {
+  try {
+    const res = await getActiveBanners('home_top')
+    const items = Array.isArray(res.data.data) ? res.data.data : []
+    return items.length ? items.map(normalizeBanner) : marketingBanners
+  } catch (error) {
+    console.error('Error fetching banners from API:', error)
+    return marketingBanners
+  }
+}
+
 export const getLandingData = async (): Promise<LandingData> => {
-  const [products] = await Promise.all([getProducts()])
+  const [products, banners] = await Promise.all([getProducts(), getBanners()])
 
   return {
-    banners: marketingBanners,
+    banners,
     categories: [],
     products,
     promoBanners: marketingPromoBanners,

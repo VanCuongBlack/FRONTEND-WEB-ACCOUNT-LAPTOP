@@ -19,17 +19,34 @@ export default function LoginPage() {
   const navigate = useNavigate()
   const { login, isLoading } = useAuth()
   const [showPassword, setShowPassword] = useState(false)
+  const [googleError, setGoogleError] = useState('')
+  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
+  const isGoogleConfigured =
+    Boolean(googleClientId) &&
+    String(googleClientId).endsWith('.apps.googleusercontent.com') &&
+    !String(googleClientId).includes('placeholder')
 
   useEffect(() => {
-    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '1035252877685-placeholder.apps.googleusercontent.com'
+    if (!isGoogleConfigured) return
+
     loadGoogleSdk()
       .then(() => {
-        initGoogleAuth(clientId, (accessToken) => {
+        initGoogleAuth(googleClientId, (accessToken) => {
           navigate(`/auth/google/success?googleToken=${accessToken}`)
         })
       })
       .catch((err) => console.error('Lỗi khi tải Google SDK:', err))
-  }, [navigate])
+  }, [googleClientId, isGoogleConfigured, navigate])
+
+  const handleGoogleLogin = () => {
+    if (!isGoogleConfigured) {
+      setGoogleError('Đăng nhập Google chưa được cấu hình. Cần thêm VITE_GOOGLE_CLIENT_ID hợp lệ vào file .env FE.')
+      return
+    }
+
+    setGoogleError('')
+    triggerGoogleLogin()
+  }
 
   const {
     register,
@@ -192,11 +209,17 @@ export default function LoginPage() {
 
             <button
               type="button"
-              onClick={triggerGoogleLogin}
+              onClick={handleGoogleLogin}
               className="flex h-12 w-full items-center justify-center rounded-2xl border border-[#3d63ff]/25 bg-[#171233] text-sm font-black text-white hover:border-[#79a7ff]"
             >
               Đăng nhập bằng Google
             </button>
+
+            {googleError && (
+              <p className="rounded-2xl bg-[#ffb020]/10 px-4 py-3 text-center text-xs font-semibold text-[#ffd28a]">
+                {googleError}
+              </p>
+            )}
 
             <p className="text-center text-sm text-[#b9b4d7]">
               Chưa có tài khoản?{' '}

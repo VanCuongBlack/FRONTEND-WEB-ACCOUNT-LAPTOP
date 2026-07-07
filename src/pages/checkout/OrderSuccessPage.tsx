@@ -1,81 +1,101 @@
-import { CheckCircle2, Home, ReceiptText, ShoppingBag } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { CheckCircle2, Clock3, Home, ReceiptText, ShoppingBag } from 'lucide-react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
+import type { Order } from '@/services/order.service'
+import type { Payment } from '@/services/payment.service'
 
-function formatPrice(price: number) {
-  return `${price.toLocaleString('vi-VN')}đ`
+interface SuccessState {
+  order?: Order
+  payment?: Payment
+}
+
+function formatPrice(price?: number) {
+  return `${(price ?? 0).toLocaleString('vi-VN')}đ`
+}
+
+function formatDate(value?: string) {
+  if (!value) return new Date().toLocaleString('vi-VN')
+  return new Date(value).toLocaleString('vi-VN')
+}
+
+function paymentLabel(method?: string) {
+  if (method === 'cod') return 'Thanh toán khi nhận hàng'
+  if (method === 'bank_transfer') return 'Chuyển khoản ngân hàng'
+  return method || 'Chưa xác định'
+}
+
+function statusText(order?: Order, payment?: Payment) {
+  if (order?.payment_method === 'cod') {
+    if (order.status === 'completed') return 'COD đã xác nhận'
+    return 'Chờ nhân viên xác nhận COD'
+  }
+
+  if (payment?.status === 'paid' || order?.status === 'confirmed' || order?.status === 'completed') {
+    return 'Đã thanh toán'
+  }
+
+  if (order?.status === 'cancelled') return 'Đã hủy'
+  if (order?.status === 'failed') return 'Thanh toán thất bại'
+  return 'Chờ chuyển khoản'
 }
 
 export default function OrderSuccessPage() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const { order, payment } = (location.state ?? {}) as SuccessState
 
-  const order = {
-    code: '#DH12345',
-    total: 475000,
-    paymentMethod: 'VNPay QR',
-    status: 'Đã thanh toán',
-    createdAt: '03/06/2026 14:30',
-  }
+  const isCOD = order?.payment_method === 'cod'
+  const isPaid = payment?.status === 'paid' || order?.status === 'confirmed' || order?.status === 'completed'
+  const title = isCOD ? 'Đặt hàng thành công' : isPaid ? 'Thanh toán thành công' : 'Đã tạo đơn hàng'
+  const description = isCOD
+    ? 'Đơn hàng COD đã được ghi nhận. Nhân viên sẽ gọi xác nhận trước khi giao hàng.'
+    : isPaid
+      ? 'Cảm ơn bạn đã mua hàng. Đơn hàng đã được xác nhận thanh toán.'
+      : 'Đơn hàng đã được tạo. Vui lòng chuyển khoản đúng nội dung thanh toán để hệ thống xác nhận.'
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#F5F5F5] font-sans text-black">
+    <div className="flex min-h-screen flex-col bg-[#09051f] font-sans text-white">
       <Header />
 
       <main className="mx-auto flex w-full max-w-[1200px] flex-1 items-center justify-center px-4 py-10">
-        <section className="w-full max-w-[760px] rounded-2xl bg-white p-6 text-center shadow-sm sm:p-10">
-          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-[#27AE60]/10">
-            <CheckCircle2 size={48} className="text-[#27AE60]" />
+        <section className="w-full max-w-[760px] rounded-[22px] border border-[#3d63ff]/20 bg-[#211b42] p-6 text-center shadow-[0_18px_45px_rgba(0,0,0,0.28)] sm:p-10">
+          <div className={`mx-auto flex h-20 w-20 items-center justify-center rounded-full ${isPaid || isCOD ? 'bg-emerald-500/12' : 'bg-amber-400/12'}`}>
+            {isPaid || isCOD ? (
+              <CheckCircle2 size={48} className="text-emerald-400" />
+            ) : (
+              <Clock3 size={48} className="text-amber-300" />
+            )}
           </div>
 
-          <h1 className="mt-6 text-[28px] font-bold text-black">
-            Thanh toán thành công
-          </h1>
+          <h1 className="mt-6 text-[28px] font-black text-white">{title}</h1>
 
-          <p className="mx-auto mt-3 max-w-[520px] text-sm leading-6 text-gray-500">
-            Cảm ơn bạn đã mua hàng. Đơn hàng của bạn đã được xác nhận và đang
-            được hệ thống xử lý.
+          <p className="mx-auto mt-3 max-w-[540px] text-sm leading-6 text-[#c8c1e8]">
+            {description}
           </p>
 
-          <div className="mt-8 rounded-2xl bg-[#F8FAFC] p-5 text-left">
-            <h2 className="mb-4 text-lg font-bold text-black">
-              Thông tin đơn hàng
-            </h2>
+          <div className="mt-8 rounded-2xl bg-[#151033] p-5 text-left">
+            <h2 className="mb-4 text-lg font-black text-white">Thông tin đơn hàng</h2>
 
             <div className="space-y-3 text-sm">
-              <div className="flex items-center justify-between gap-4">
-                <span className="text-gray-500">Mã đơn hàng</span>
-                <span className="font-semibold text-black">{order.code}</span>
-              </div>
+              <InfoRow label="Mã đơn hàng" value={order?._id ? `#${order._id.slice(-8).toUpperCase()}` : 'Đơn vừa tạo'} />
+              <InfoRow label="Ngày đặt" value={formatDate(order?.createdAt)} />
+              <InfoRow label="Phương thức thanh toán" value={paymentLabel(order?.payment_method)} />
 
               <div className="flex items-center justify-between gap-4">
-                <span className="text-gray-500">Ngày đặt</span>
-                <span className="font-semibold text-black">
-                  {order.createdAt}
+                <span className="text-[#b9b4d7]">Trạng thái</span>
+                <span className={`rounded-full px-3 py-1 text-xs font-black ${
+                  isPaid || isCOD ? 'bg-emerald-500/15 text-emerald-300' : 'bg-amber-400/15 text-amber-200'
+                }`}>
+                  {statusText(order, payment)}
                 </span>
               </div>
 
-              <div className="flex items-center justify-between gap-4">
-                <span className="text-gray-500">Phương thức thanh toán</span>
-                <span className="font-semibold text-black">
-                  {order.paymentMethod}
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between gap-4">
-                <span className="text-gray-500">Trạng thái</span>
-                <span className="rounded-full bg-[#27AE60]/10 px-3 py-1 text-xs font-semibold text-[#27AE60]">
-                  {order.status}
-                </span>
-              </div>
-
-              <div className="border-t border-gray-200 pt-3">
+              <div className="border-t border-[#3d63ff]/20 pt-3">
                 <div className="flex items-center justify-between gap-4">
-                  <span className="font-semibold text-gray-700">
-                    Tổng thanh toán
-                  </span>
-                  <span className="text-xl font-bold text-[#27AE60]">
-                    {formatPrice(order.total)}
+                  <span className="font-semibold text-[#d9d6ee]">Tổng thanh toán</span>
+                  <span className="text-xl font-black text-[#ffd84d]">
+                    {formatPrice(order?.total_amount ?? payment?.amount)}
                   </span>
                 </div>
               </div>
@@ -85,8 +105,8 @@ export default function OrderSuccessPage() {
           <div className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-3">
             <button
               type="button"
-              onClick={() => navigate('/profile')}
-              className="flex h-[48px] items-center justify-center gap-2 rounded-xl border border-[#3783EC] text-sm font-semibold text-[#3783EC] transition-all hover:bg-[#3783EC] hover:text-white"
+              onClick={() => navigate('/profile/history')}
+              className="flex h-[48px] items-center justify-center gap-2 rounded-xl bg-[#3783EC] text-sm font-bold text-white transition-all hover:bg-[#206ed6]"
             >
               <ReceiptText size={18} />
               Xem đơn hàng
@@ -95,7 +115,7 @@ export default function OrderSuccessPage() {
             <button
               type="button"
               onClick={() => navigate('/')}
-              className="flex h-[48px] items-center justify-center gap-2 rounded-xl border border-gray-300 text-sm font-semibold text-gray-700 transition-all hover:bg-gray-100"
+              className="flex h-[48px] items-center justify-center gap-2 rounded-xl border border-[#5a5480] text-sm font-bold text-[#d9d6ee] transition-all hover:bg-[#151033] hover:text-white"
             >
               <Home size={18} />
               Về trang chủ
@@ -104,7 +124,7 @@ export default function OrderSuccessPage() {
             <button
               type="button"
               onClick={() => navigate('/laptops')}
-              className="flex h-[48px] items-center justify-center gap-2 rounded-xl bg-[#3783EC] text-sm font-semibold text-white transition-all hover:bg-[#206ed6]"
+              className="flex h-[48px] items-center justify-center gap-2 rounded-xl bg-[#3783EC] text-sm font-bold text-white transition-all hover:bg-[#206ed6]"
             >
               <ShoppingBag size={18} />
               Tiếp tục mua
@@ -114,6 +134,15 @@ export default function OrderSuccessPage() {
       </main>
 
       <Footer />
+    </div>
+  )
+}
+
+function InfoRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between gap-4">
+      <span className="text-[#b9b4d7]">{label}</span>
+      <span className="text-right font-semibold text-white">{value}</span>
     </div>
   )
 }

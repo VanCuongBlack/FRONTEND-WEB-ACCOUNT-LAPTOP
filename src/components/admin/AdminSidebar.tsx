@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router-dom'
 import {
   FileText,
+  Images,
   LayoutDashboard,
   LogOut,
   Settings,
@@ -39,6 +40,12 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
     label: 'Quản lý khách hàng',
     href: '/admin/customers',
     icon: Users,
+  },
+  {
+    key: 'banners',
+    label: 'Quản lý banner',
+    href: '/admin/banners',
+    icon: Images,
   },
   {
     key: 'settings',

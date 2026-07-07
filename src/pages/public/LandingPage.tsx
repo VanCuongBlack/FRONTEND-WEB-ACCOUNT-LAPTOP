@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { getLandingData } from '@/services/landing.service'
 import type { Banner, Product } from '@/services/landing.service'
 import { getProducts } from '@/services/product.service'
@@ -12,12 +12,9 @@ import NewsletterCTA from '@/components/landing/NewsletterCTA'
 import Footer from '@/components/layout/Footer'
 
 const marketplaceTabs = [
-  'Bán chạy',
-  'PC Gaming',
-  'Laptop văn phòng',
-  'MacBook',
-  'Account AI',
-  'Account giải trí',
+  { label: 'Bán chạy', href: '/best-seller' },
+  { label: 'Laptop / PC', href: '/laptops' },
+  { label: 'Account số', href: '/accounts' },
 ]
 
 export default function LandingPage() {
@@ -111,17 +108,17 @@ export default function LandingPage() {
       <section className="w-full px-4 pb-5 sm:px-6">
         <div className="flex gap-3 overflow-x-auto py-2">
           {marketplaceTabs.map((tab, index) => (
-            <button
-              key={tab}
-              type="button"
+            <Link
+              key={tab.label}
+              to={tab.href}
               className={`h-12 shrink-0 rounded-[22px] px-7 text-base font-black transition-colors ${
                 index === 0
                   ? 'border border-[#3f75ff] bg-transparent text-white'
                   : 'bg-[#44405f] text-white hover:bg-[#565176]'
               }`}
             >
-              {tab}
-            </button>
+              {tab.label}
+            </Link>
           ))}
         </div>
       </section>
@@ -143,6 +140,7 @@ export default function LandingPage() {
               title="Sản phẩm bán chạy"
               viewMoreUrl="/best-seller"
               accent="hot"
+              showEyebrow={false}
             />
 
             <FeaturedProducts

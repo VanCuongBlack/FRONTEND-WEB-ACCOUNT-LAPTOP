@@ -26,6 +26,13 @@ export interface OrderItemProduct {
   base_price?: number
 }
 
+export interface OrderUser {
+  _id?: string
+  fullname?: string
+  email?: string
+  phone?: string
+}
+
 export interface OrderItem {
   _id?: string
   item_id?: string
@@ -42,7 +49,7 @@ export interface OrderItem {
 
 export interface Order {
   _id: string
-  user_id?: string
+  user_id?: string | OrderUser
   items: OrderItem[]
   total_amount: number
   status: OrderStatus
@@ -58,6 +65,7 @@ export interface OrdersResponse {
   total?: number
   page?: number
   limit?: number
+  totalPages?: number
 }
 
 export interface CreateOrderPayload {
@@ -115,4 +123,25 @@ export function extractOrders(data: OrdersResponse | Order[] | undefined) {
 
 export function extractCreatedOrder(data: CreateOrderResponse | undefined) {
   return data?.order ?? null
+}
+
+export interface StaffOrderStatistic {
+  _id: OrderStatus
+  total: number
+}
+
+export const getStaffOrders = (params?: GetOrdersParams) => {
+  return api.get<ApiResponse<OrdersResponse>>('/staff/orders', { params })
+}
+
+export const getStaffOrderById = (orderId: string) => {
+  return api.get<ApiResponse<Order>>(`/staff/orders/${orderId}`)
+}
+
+export const updateStaffOrderStatus = (orderId: string, status: OrderStatus) => {
+  return api.patch<ApiResponse<Order>>(`/staff/orders/${orderId}/status`, { status })
+}
+
+export const getStaffOrderStatistics = () => {
+  return api.get<ApiResponse<StaffOrderStatistic[]>>('/staff/orders/statistics')
 }

@@ -83,7 +83,7 @@ export default function VerifyResetOtpPage() {
         return
       }
       toast.success('Xác thực OTP thành công. Vui lòng đặt mật khẩu mới.')
-      navigate('/reset-password', { state: { email: emailFromState } })
+      navigate('/reset-password', { state: { email: emailFromState, otp: data.otp } })
     } catch (err: unknown) {
       const message =
         (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||

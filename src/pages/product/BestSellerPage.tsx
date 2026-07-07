@@ -12,6 +12,7 @@ import {
   normalizeProductDetail,
   type Product,
 } from '@/services/product.service'
+import { getReport } from '@/services/admin.service'
 import { useCart } from '@/hooks/useCart'
 import { useAuthStore } from '@/store/authStore'
 import { toast } from 'sonner'
@@ -25,14 +26,40 @@ interface FlyingItem {
   deltaY: number
 }
 
+type BestSellerProduct = Product & {
+  total_sold?: number
+  total_revenue?: number
+}
+
+function getRoleName(role: unknown) {
+  if (typeof role === 'string') return role
+  if (role && typeof role === 'object' && 'name' in role) {
+    const roleName = (role as { name?: unknown }).name
+    return typeof roleName === 'string' ? roleName : null
+  }
+  return null
+}
+
+function getSoldCount(product: BestSellerProduct) {
+  return product.total_sold ?? 0
+}
+
+function getSoldText(product: BestSellerProduct) {
+  const count = getSoldCount(product)
+  if (count > 0) return `Đã bán ${count.toLocaleString('vi-VN')}`
+  return 'Đang cập nhật lượt bán'
+}
+
 export default function BestSellerPage() {
   const navigate = useNavigate()
   const { totalItems, addToCart } = useCart()
   const user = useAuthStore((state) => state.user)
   const accessToken = useAuthStore((state) => state.accessToken)
   const isAuthenticated = Boolean(user && accessToken)
+  const role = getRoleName(user?.role)
+  const canReadSalesReport = role === 'admin' || role === 'staff'
 
-  const [products, setProducts] = useState<Product[]>([])
+  const [products, setProducts] = useState<BestSellerProduct[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -57,10 +84,67 @@ export default function BestSellerPage() {
 
         const res = await getProducts({
           is_active: true,
-          limit: 12,
+          limit: 100,
         })
 
-        setProducts(res.data.data?.products ?? [])
+        let baseProducts: BestSellerProduct[] = res.data.data?.products ?? []
+
+        if (canReadSalesReport) {
+          try {
+            const now = new Date()
+            const from = new Date(now)
+            from.setDate(now.getDate() - 30)
+            const reportRes = await getReport({
+              type: 'products',
+              from: from.toISOString(),
+              to: now.toISOString(),
+            })
+            const reportRows = reportRes.data.data?.data ?? []
+            const reportMap = new Map(
+              reportRows.map((row, index) => [
+                String(row._id),
+                {
+                  index,
+                  total_sold: row.total_sold ?? 0,
+                  total_revenue: row.total_revenue ?? 0,
+                },
+              ])
+            )
+
+            baseProducts = baseProducts
+              .map((product) => ({
+                ...product,
+                total_sold: reportMap.get(product._id)?.total_sold ?? 0,
+                total_revenue: reportMap.get(product._id)?.total_revenue ?? 0,
+              }))
+              .sort((a, b) => {
+                const aReport = reportMap.get(a._id)
+                const bReport = reportMap.get(b._id)
+                if (aReport && bReport) return aReport.index - bReport.index
+                if (aReport) return -1
+                if (bReport) return 1
+                return getSoldCount(b) - getSoldCount(a)
+              })
+          } catch {
+            baseProducts = [...baseProducts].sort((a, b) => getSoldCount(b) - getSoldCount(a))
+          }
+        } else {
+          baseProducts = [...baseProducts].sort((a, b) => getSoldCount(b) - getSoldCount(a))
+        }
+
+        const detailedProducts = await Promise.all(
+          baseProducts.slice(0, 12).map(async (product) => {
+            try {
+              const detailResponse = await getProductById(product._id)
+              const detail = normalizeProductDetail(detailResponse.data?.data)
+              return detail ? { ...product, ...detail } : product
+            } catch {
+              return product
+            }
+          })
+        )
+
+        setProducts(detailedProducts)
       } catch (err) {
         console.error(err)
         setError('Không thể tải sản phẩm bán chạy.')
@@ -74,7 +158,7 @@ export default function BestSellerPage() {
     return () => {
       timeoutIdsRef.current.forEach((id) => window.clearTimeout(id))
     }
-  }, [])
+  }, [canReadSalesReport])
 
   const toggleValue = (
     value: string,
@@ -428,11 +512,15 @@ export default function BestSellerPage() {
                           {item.name}
                         </h3>
 
-                        <p className="mt-2 line-clamp-2 min-h-[36px] text-[12px] text-[#b9b4d7]">
-                          {item.description || 'Chưa có mô tả sản phẩm'}
-                        </p>
+                    <p className="mt-2 line-clamp-2 min-h-[36px] text-[12px] text-[#b9b4d7]">
+                      {item.description || 'Chưa có mô tả sản phẩm'}
+                    </p>
 
-                        <div className="mt-4 flex items-center justify-between">
+                    <p className="mt-3 inline-flex rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-bold text-emerald-300">
+                      {getSoldText(item)}
+                    </p>
+
+                    <div className="mt-4 flex items-center justify-between">
                           <span className="text-[16px] font-bold text-[#27AE60]">
                             {formatPrice(price)}
                           </span>

@@ -1,8 +1,3 @@
-Dưới đây là mã nguồn đã được giải quyết triệt để các xung đột Git (conflict markers `<<<<<<<`, `=======`, `>>>>>>>`).
-
-Tôi đã chọn giải pháp **giữ lại tính năng nâng cao từ nhánh `feature-hung**`: Tách địa chỉ thành các trường Tỉnh/Thành phố (dùng `select` từ danh sách `PROVINCES`), Quận/Huyện, và Địa chỉ chi tiết, đồng thời tự động bóc tách (parse) chuỗi địa chỉ cũ từ dữ liệu `user.address` để điền vào form một cách thông minh.
-
-```tsx
 import { useEffect, useMemo, useState } from 'react'
 import { ChevronLeft, CreditCard, Landmark, MapPin } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
@@ -98,6 +93,68 @@ const PROVINCES = [
   'Yên Bái'
 ]
 
+const DISTRICTS_BY_PROVINCE: Record<string, string[]> = {
+  'TP. Hồ Chí Minh': [
+    'Quận 1',
+    'Quận 3',
+    'Quận 4',
+    'Quận 5',
+    'Quận 6',
+    'Quận 7',
+    'Quận 8',
+    'Quận 10',
+    'Quận 11',
+    'Quận 12',
+    'Quận Bình Tân',
+    'Quận Bình Thạnh',
+    'Quận Gò Vấp',
+    'Quận Phú Nhuận',
+    'Quận Tân Bình',
+    'Quận Tân Phú',
+    'Thành phố Thủ Đức',
+    'Huyện Bình Chánh',
+    'Huyện Cần Giờ',
+    'Huyện Củ Chi',
+    'Huyện Hóc Môn',
+    'Huyện Nhà Bè',
+  ],
+  'Hà Nội': [
+    'Quận Ba Đình',
+    'Quận Hoàn Kiếm',
+    'Quận Hai Bà Trưng',
+    'Quận Đống Đa',
+    'Quận Tây Hồ',
+    'Quận Cầu Giấy',
+    'Quận Thanh Xuân',
+    'Quận Hoàng Mai',
+    'Quận Long Biên',
+    'Quận Hà Đông',
+    'Quận Nam Từ Liêm',
+    'Quận Bắc Từ Liêm',
+    'Huyện Thanh Trì',
+    'Huyện Gia Lâm',
+    'Huyện Đông Anh',
+    'Huyện Sóc Sơn',
+  ],
+  'Đà Nẵng': ['Quận Hải Châu', 'Quận Thanh Khê', 'Quận Sơn Trà', 'Quận Ngũ Hành Sơn', 'Quận Liên Chiểu', 'Quận Cẩm Lệ', 'Huyện Hòa Vang'],
+  'Hải Phòng': ['Quận Hồng Bàng', 'Quận Ngô Quyền', 'Quận Lê Chân', 'Quận Hải An', 'Quận Kiến An', 'Quận Đồ Sơn', 'Huyện An Dương', 'Huyện Thủy Nguyên'],
+  'Cần Thơ': ['Quận Ninh Kiều', 'Quận Bình Thủy', 'Quận Cái Răng', 'Quận Ô Môn', 'Quận Thốt Nốt', 'Huyện Phong Điền', 'Huyện Cờ Đỏ'],
+  'Bình Dương': ['Thành phố Thủ Dầu Một', 'Thành phố Dĩ An', 'Thành phố Thuận An', 'Thành phố Tân Uyên', 'Huyện Bàu Bàng', 'Huyện Dầu Tiếng'],
+  'Đồng Nai': ['Thành phố Biên Hòa', 'Thành phố Long Khánh', 'Huyện Nhơn Trạch', 'Huyện Long Thành', 'Huyện Trảng Bom', 'Huyện Vĩnh Cửu'],
+  'Bà Rịa - Vũng Tàu': ['Thành phố Vũng Tàu', 'Thành phố Bà Rịa', 'Thị xã Phú Mỹ', 'Huyện Long Điền', 'Huyện Đất Đỏ', 'Huyện Xuyên Mộc'],
+  'Khánh Hòa': ['Thành phố Nha Trang', 'Thành phố Cam Ranh', 'Thị xã Ninh Hòa', 'Huyện Diên Khánh', 'Huyện Cam Lâm'],
+  'Lâm Đồng': ['Thành phố Đà Lạt', 'Thành phố Bảo Lộc', 'Huyện Đức Trọng', 'Huyện Di Linh', 'Huyện Lâm Hà'],
+}
+
+function getDistrictOptions(province: string) {
+  if (!province) return []
+  return DISTRICTS_BY_PROVINCE[province] ?? [
+    `Thành phố ${province}`,
+    `Thị xã ${province}`,
+    'Huyện trung tâm',
+  ]
+}
+
 function formatPrice(price: number) {
   return `${price.toLocaleString('vi-VN')}đ`
 }
@@ -136,6 +193,11 @@ export default function CheckoutPage() {
 
   const hasPhysicalItems = cartItems.some((item) => item.product_type === 'physical')
   const hasDigitalOnlyItems = cartItems.length > 0 && !hasPhysicalItems
+  const districtOptions = useMemo(() => {
+    const options = getDistrictOptions(selectedProvince)
+    if (!selectedDistrict || options.includes(selectedDistrict)) return options
+    return [selectedDistrict, ...options]
+  }, [selectedProvince, selectedDistrict])
 
   // Tự động phân tách chuỗi địa chỉ của User (nếu có) thành Tỉnh/Thành, Quận/Huyện, Địa chỉ chi tiết
   useEffect(() => {
@@ -225,7 +287,7 @@ export default function CheckoutPage() {
         return
       }
       if (!selectedDistrict.trim()) {
-        showNotice('Vui lòng nhập Quận/Huyện giao hàng.')
+        showNotice('Vui lòng chọn Quận/Huyện giao hàng.')
         return
       }
       if (!exactAddress.trim()) {
@@ -296,7 +358,10 @@ export default function CheckoutPage() {
                     <div className="relative">
                       <select
                         value={selectedProvince}
-                        onChange={(e) => setSelectedProvince(e.target.value)}
+                        onChange={(e) => {
+                          setSelectedProvince(e.target.value)
+                          setSelectedDistrict('')
+                        }}
                         className="w-full h-[46px] rounded-xl border border-[#3d63ff]/30 bg-[#151033] px-4 pr-10 text-sm text-white outline-none focus:border-[#3783EC] appearance-none cursor-pointer"
                         style={{
                           backgroundImage: `url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%23b9b4d7' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3E%3C/svg%3E")`,
@@ -320,13 +385,29 @@ export default function CheckoutPage() {
                     <label className="mb-2 block text-sm font-semibold text-[#d9d6ee]">
                       Quận / Huyện
                     </label>
-                    <input
-                      type="text"
-                      value={selectedDistrict}
-                      onChange={(e) => setSelectedDistrict(e.target.value)}
-                      placeholder="Ví dụ: Quận 5"
-                      className="w-full h-[46px] rounded-xl border border-[#3d63ff]/30 bg-[#151033] px-4 text-sm text-white outline-none placeholder:text-[#8d86b6] focus:border-[#3783EC]"
-                    />
+                    <div className="relative">
+                      <select
+                        value={selectedDistrict}
+                        disabled={!selectedProvince}
+                        onChange={(e) => setSelectedDistrict(e.target.value)}
+                        className="w-full h-[46px] rounded-xl border border-[#3d63ff]/30 bg-[#151033] px-4 pr-10 text-sm text-white outline-none focus:border-[#3783EC] appearance-none cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+                        style={{
+                          backgroundImage: `url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%23b9b4d7' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3E%3C/svg%3E")`,
+                          backgroundPosition: 'right 1rem center',
+                          backgroundSize: '1.25rem',
+                          backgroundRepeat: 'no-repeat'
+                        }}
+                      >
+                        <option value="" disabled className="bg-[#151033] text-[#8d86b6]">
+                          {selectedProvince ? '-- Chọn Quận / Huyện --' : '-- Chọn Tỉnh / Thành phố trước --'}
+                        </option>
+                        {districtOptions.map((district) => (
+                          <option key={district} value={district} className="bg-[#151033] text-white">
+                            {district}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
                   <div>
                     <label className="mb-2 block text-sm font-semibold text-[#d9d6ee]">
@@ -499,4 +580,3 @@ export default function CheckoutPage() {
   )
 }
 
-```

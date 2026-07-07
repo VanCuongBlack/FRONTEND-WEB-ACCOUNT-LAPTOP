@@ -10,6 +10,7 @@ interface Props {
   title?: string
   viewMoreUrl?: string
   accent?: Accent
+  showEyebrow?: boolean
 }
 
 function fmt(n: number) {
@@ -91,6 +92,7 @@ export default function FeaturedProducts({
   title = 'Sản phẩm bán chạy',
   viewMoreUrl = '/best-seller',
   accent = 'hot',
+  showEyebrow = true,
 }: Props) {
   const active = products.filter((product) => product.isActive)
 
@@ -98,10 +100,12 @@ export default function FeaturedProducts({
     <section id="products" className="w-full px-4 pb-7 sm:px-6">
       <div className="mb-4 flex items-center justify-between gap-4">
         <div>
-          <p className="text-sm font-black uppercase text-[#76a7ff]">
-            {accent === 'account' ? 'Account số' : accent === 'laptop' ? 'PC / Laptop' : 'Hot deal'}
-          </p>
-          <h2 className="mt-1 text-2xl font-black text-white">{title}</h2>
+          {showEyebrow && (
+            <p className="text-sm font-black uppercase text-[#76a7ff]">
+              {accent === 'account' ? 'Account số' : accent === 'laptop' ? 'PC / Laptop' : 'Hot deal'}
+            </p>
+          )}
+          <h2 className={`${showEyebrow ? 'mt-1' : ''} text-2xl font-black text-white`}>{title}</h2>
         </div>
         <Link
           to={viewMoreUrl}

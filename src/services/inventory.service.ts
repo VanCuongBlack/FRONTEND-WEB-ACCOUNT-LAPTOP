@@ -22,11 +22,20 @@ export interface StockSummaryItem {
   total?: number
   min_sale_price?: number
   max_sale_price?: number
+  base_price?: number
+  stock?: {
+    available?: number
+    reserved?: number
+    sold?: number
+    expired?: number
+    total?: number
+  }
 }
 
 export interface StockSummaryResponse {
   items?: StockSummaryItem[]
   data?: StockSummaryItem[]
+  products?: StockSummaryItem[]
   total?: number
   page?: number
   limit?: number
@@ -44,7 +53,7 @@ export interface LowStockResponse {
 
 export interface InventoryLog {
   _id: string
-  product_id?: string
+  product_id?: string | { _id?: string; name?: string; product_type?: 'physical' | 'digital' }
   product_type?: 'physical' | 'digital'
   action?: string
   status_before?: string | null
@@ -63,7 +72,7 @@ export interface InventoryLogsResponse {
 
 export interface StockInPhysicalPayload {
   serial_number: string
-  images_urls?: string[]
+  images_urls?: Array<{ url: string; public_id: string }>
   sale_price: number
   status?: 'available' | 'reserved' | 'sold'
   note?: string

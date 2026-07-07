@@ -223,13 +223,14 @@ export const useAuth = () => {
   )
 
   const resetPassword = useCallback(
-    async (email: string, newPassword: string) => {
+    async (email: string, otp: string, newPassword: string) => {
       try {
         setLoading(true)
         setError(null)
 
         const response = await authService.resetPassword({
           email,
+          otp,
           newPassword,
         })
 
