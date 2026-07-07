@@ -39,9 +39,12 @@ function getDateRange(range: RangeType) {
     from.setDate(1)
   }
 
+  from.setHours(0, 0, 0, 0)
+  now.setHours(23, 59, 59, 999)
+
   return {
-    from: from.toISOString().slice(0, 10),
-    to: now.toISOString().slice(0, 10),
+    from: from.toISOString(),
+    to: now.toISOString(),
   }
 }
 

@@ -41,6 +41,7 @@ export default function LandingPage() {
           loading={productsLoading}
           title="Sản phẩm bán chạy"
           viewMoreUrl="/best-seller"
+          showEyebrow={false}
         />
 
         {/* Section 2: Tài khoản Account riêng */}

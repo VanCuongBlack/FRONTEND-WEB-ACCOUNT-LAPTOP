@@ -186,6 +186,15 @@ export default function EmployeeManagementPage() {
     }
   }
 
+  const copyStaffId = async (staffId: string) => {
+    try {
+      await navigator.clipboard.writeText(staffId)
+      setError('')
+    } catch {
+      setError('Không thể copy mã nhân viên.')
+    }
+  }
+
   return (
     <AdminLayout title="Quản lý nhân viên">
       <section className="mx-auto max-w-[1840px] space-y-6 font-sans">
@@ -229,9 +238,10 @@ export default function EmployeeManagementPage() {
           {error && <p className="mb-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">{error}</p>}
 
           <div className="overflow-x-auto">
-            <div className="min-w-[980px] overflow-hidden rounded-2xl border border-gray-100">
-              <div className="grid grid-cols-[1.2fr_1.7fr_140px_150px_120px_220px] bg-gray-100 px-5 py-4 text-sm font-bold">
+            <div className="min-w-[1120px] overflow-hidden rounded-2xl border border-gray-100">
+              <div className="grid grid-cols-[1.2fr_1.4fr_1.6fr_130px_130px_120px_220px] bg-gray-100 px-5 py-4 text-sm font-bold">
                 <span>Tên</span>
+                <span>Mã NV</span>
                 <span>Email</span>
                 <span>SĐT</span>
                 <span>Quyền</span>
@@ -245,8 +255,16 @@ export default function EmployeeManagementPage() {
                 <div className="py-10 text-center text-sm text-gray-500">Không tìm thấy nhân viên.</div>
               ) : (
                 filteredStaffs.map((staff) => (
-                  <div key={staff._id} className="grid grid-cols-[1.2fr_1.7fr_140px_150px_120px_220px] items-center border-t border-gray-100 px-5 py-4 text-sm">
+                  <div key={staff._id} className="grid grid-cols-[1.2fr_1.4fr_1.6fr_130px_130px_120px_220px] items-center border-t border-gray-100 px-5 py-4 text-sm">
                     <span className="font-semibold">{staff.fullname || '-'}</span>
+                    <button
+                      type="button"
+                      onClick={() => copyStaffId(staff._id)}
+                      title="Bấm để copy mã nhân viên"
+                      className="w-fit max-w-[180px] truncate rounded-lg bg-slate-100 px-2.5 py-1 text-left font-mono text-xs font-bold text-slate-600 hover:bg-blue-50 hover:text-blue-700"
+                    >
+                      {staff._id}
+                    </button>
                     <span className="break-all text-gray-600">{staff.email}</span>
                     <span className="text-gray-600">{staff.phone || '-'}</span>
                     <span className="font-semibold text-blue-600">{roleName(staff.role)}</span>
@@ -269,6 +287,7 @@ export default function EmployeeManagementPage() {
         <AppModal open={openViewModal} title="Thông tin nhân viên" onClose={() => setOpenViewModal(false)}>
           {selectedStaff && (
             <div className="space-y-3 text-sm">
+              <p><strong>Mã nhân viên:</strong> <span className="font-mono">{selectedStaff._id}</span></p>
               <p><strong>Tên:</strong> {selectedStaff.fullname}</p>
               <p><strong>Email:</strong> {selectedStaff.email}</p>
               <p><strong>SĐT:</strong> {selectedStaff.phone || '-'}</p>

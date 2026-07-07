@@ -35,6 +35,7 @@ export default function AdminTopbar({
   const user = useAuthStore((state) => state.user)
   const role = getRoleName(user?.role)
   const settingsPath = role === 'admin' ? '/admin/settings' : '/staff/settings'
+  const notificationPath = role === 'admin' ? '/admin' : '/staff/tickets'
 
   return (
     <header className="bg-white border-b border-gray-200 px-4 sm:px-6 h-14 flex items-center justify-between flex-shrink-0 gap-4">
@@ -51,12 +52,16 @@ export default function AdminTopbar({
         {rightSlot}
 
         {/* Notification bell */}
-        <button className="relative p-2 text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors">
+        <Link
+          to={notificationPath}
+          className="relative p-2 text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+          title="Xem việc cần xử lý"
+        >
           <Bell className="w-5 h-5" />
           {notificationCount > 0 && (
             <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full" />
           )}
-        </button>
+        </Link>
 
         {/* Settings */}
         <Link

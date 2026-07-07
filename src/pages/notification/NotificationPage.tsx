@@ -15,20 +15,17 @@ export default function NotificationPage() {
               Thông báo
             </h1>
             <p className="mt-2 text-sm text-[#b9b4d7]">
-              Backend hiện chưa có API thông báo, nên FE không hiển thị dữ liệu
-              mẫu.
+              Các cập nhật về đơn hàng, bảo hành và hỗ trợ sẽ hiển thị tại đây.
             </p>
           </div>
 
           <div className="flex min-h-[280px] flex-col items-center justify-center rounded-[20px] border border-dashed border-[#3d63ff]/30 bg-[#171233] p-8 text-center">
             <Info className="h-10 w-10 text-[#79a7ff]" />
             <h2 className="mt-4 text-lg font-black text-white">
-              Chưa có thông báo từ backend
+              Chưa có thông báo mới
             </h2>
             <p className="mt-2 max-w-[560px] text-sm leading-6 text-[#b9b4d7]">
-              Khi backend bổ sung route notification, màn này có thể kết nối
-              trực tiếp để hiển thị thông báo đơn hàng, bảo hành, khuyến mãi và
-              hệ thống theo tài khoản đăng nhập.
+              Khi đơn hàng hoặc yêu cầu hỗ trợ có cập nhật, bạn có thể theo dõi trong lịch sử đơn hàng và trang hỗ trợ.
             </p>
           </div>
         </section>

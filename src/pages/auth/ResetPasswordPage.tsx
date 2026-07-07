@@ -15,15 +15,16 @@ export default function ResetPasswordPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const email = location.state?.email || ''
+  const otp = location.state?.otp || ''
   const [isLoading, setIsLoading] = useState(false)
   const [showNewPassword, setShowNewPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   useEffect(() => {
-    if (!email) {
+    if (!email || !otp) {
       navigate('/forgot-password', { replace: true })
     }
-  }, [email, navigate])
+  }, [email, otp, navigate])
 
   const {
     register,
@@ -58,6 +59,7 @@ export default function ResetPasswordPage() {
       setIsLoading(true)
       const res = await resetPassword({
         email,
+        otp,
         newPassword: values.newPassword,
       })
       if (res.data?.success === false) {

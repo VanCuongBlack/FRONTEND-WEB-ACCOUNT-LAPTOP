@@ -42,6 +42,11 @@ export interface SupportTicket {
   attachments?: string[]
   status: SupportTicketStatus
   priority?: 'low' | 'medium' | 'high' | 'urgent'
+  assigned_to?: string | {
+    _id?: string
+    fullname?: string
+    email?: string
+  } | null
   resolution_note?: string
   createdAt?: string
   updatedAt?: string

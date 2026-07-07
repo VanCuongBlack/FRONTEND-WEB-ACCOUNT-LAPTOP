@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { Edit3, EyeOff, Plus, Search, Settings2, Trash2 } from 'lucide-react'
 import AppModal from '@/components/common/AppModal'
+import ImageUploadField from '@/components/common/ImageUploadField'
 import StaffLayout from '@/layouts/StaffLayout'
 import { getProductById, type ProductItem } from '@/services/product.service'
+import type { UploadedImage } from '@/services/upload.service'
 import {
   createDigitalProduct,
   createPhysicalProduct,
@@ -50,6 +52,7 @@ interface ProductForm {
   importantPrice: string
   serialNumber: string
   imageUrls: string
+  imageAssets: UploadedImage[]
   physicalSalePrice: string
   platform: string
   category: string
@@ -66,6 +69,7 @@ interface ItemForm {
   productType: ProductType
   serialNumber: string
   imageUrls: string
+  imageAssets: UploadedImage[]
   physicalStatus: 'available' | 'reserved' | 'sold'
   accountEmail: string
   accountPassword: string
@@ -93,6 +97,7 @@ const emptyProductForm: ProductForm = {
   importantPrice: '',
   serialNumber: '',
   imageUrls: '',
+  imageAssets: [],
   physicalSalePrice: '',
   platform: '',
   category: '',
@@ -109,6 +114,7 @@ const emptyItemForm: ItemForm = {
   productType: 'physical',
   serialNumber: '',
   imageUrls: '',
+  imageAssets: [],
   physicalStatus: 'available',
   accountEmail: '',
   accountPassword: '',
@@ -136,6 +142,20 @@ function splitUrls(value: string) {
     .split('\n')
     .map((url) => url.trim())
     .filter(Boolean)
+}
+
+function normalizeImageAssets(images?: Array<string | UploadedImage>): UploadedImage[] {
+  return (images ?? [])
+    .map((image) => {
+      if (typeof image === 'string') return { url: image, public_id: `manual-${image}` }
+      return image
+    })
+    .filter((image): image is UploadedImage => Boolean(image?.url))
+}
+
+function buildImagePayload(imageUrls: string, imageAssets: UploadedImage[]) {
+  const uploadedByUrl = new Map(imageAssets.filter((image) => image.url).map((image) => [image.url, image]))
+  return splitUrls(imageUrls).map((url) => uploadedByUrl.get(url) ?? { url, public_id: `manual-${url}` })
 }
 
 function toDateInput(value?: string | null) {
@@ -278,12 +298,14 @@ export default function ProductManagementPage() {
       const firstItem = detailItems[0]
       setItems(detailItems)
       setSelectedProduct(product)
+      const imageAssets = normalizeImageAssets(firstItem?.images_urls)
       setItemForm({
         ...emptyItemForm,
         productType: product.type,
         itemId: firstItem?._id ?? '',
         serialNumber: firstItem?.serial_number ?? '',
-        imageUrls: firstItem?.images_urls?.join('\n') ?? '',
+        imageUrls: imageAssets.map((image) => image.url).join('\n'),
+        imageAssets,
         physicalStatus:
           firstItem?.status === 'reserved' || firstItem?.status === 'sold'
             ? firstItem.status
@@ -312,11 +334,13 @@ export default function ProductManagementPage() {
       return
     }
 
+    const imageAssets = normalizeImageAssets(item.images_urls)
     setItemForm((prev) => ({
       ...prev,
       itemId,
       serialNumber: item.serial_number ?? '',
-      imageUrls: item.images_urls?.join('\n') ?? '',
+      imageUrls: imageAssets.map((image) => image.url).join('\n'),
+      imageAssets,
       physicalStatus:
         item.status === 'reserved' || item.status === 'sold' ? item.status : 'available',
       accountEmail: item.account_email ?? '',
@@ -396,6 +420,7 @@ export default function ProductManagementPage() {
         }
       } else if (productForm.productType === 'physical') {
         const urls = splitUrls(productForm.imageUrls)
+        const images = buildImagePayload(productForm.imageUrls, productForm.imageAssets)
         const numbers = {
           weight_kg: toNumber(productForm.weightKg),
           display_inches: toNumber(productForm.displayInches),
@@ -454,7 +479,8 @@ export default function ProductManagementPage() {
           },
           itemData: {
             serial_number: productForm.serialNumber.trim(),
-            images_urls: urls,
+            images_urls: images,
+            images,
             status: 'available',
             sale_price: numbers.sale_price,
           },
@@ -529,6 +555,7 @@ export default function ProductManagementPage() {
     try {
       if (itemForm.productType === 'physical') {
         const urls = splitUrls(itemForm.imageUrls)
+        const images = buildImagePayload(itemForm.imageUrls, itemForm.imageAssets)
         if (hasInvalidUrl(urls)) {
           setError('Link ảnh phải là URL hợp lệ, mỗi dòng một URL.')
           return
@@ -536,7 +563,7 @@ export default function ProductManagementPage() {
 
         await updatePhysicalProductItem(itemForm.itemId.trim(), {
           ...(itemForm.serialNumber.trim() ? { serial_number: itemForm.serialNumber.trim() } : {}),
-          images_urls: urls,
+          images_urls: images,
           status: itemForm.physicalStatus,
           sale_price: salePrice,
         })
@@ -933,7 +960,13 @@ function ItemModal({
             </Field>
             <div className="md:col-span-2">
               <Field label="Link ảnh sản phẩm">
-                <textarea value={form.imageUrls} onChange={(event) => updateForm({ imageUrls: event.target.value })} rows={4} placeholder="Mỗi dòng một URL hợp lệ" className={textareaClass} />
+                <ImageUploadField
+                  value={form.imageUrls}
+                  images={form.imageAssets}
+                  rows={4}
+                  textareaClassName={textareaClass}
+                  onChange={(imageUrls, imageAssets) => updateForm({ imageUrls, imageAssets })}
+                />
               </Field>
             </div>
           </div>
@@ -1050,7 +1083,13 @@ function PhysicalFields({
             <Field label="Giá bán"><input type="number" min="0" value={form.physicalSalePrice} onChange={(event) => updateForm({ physicalSalePrice: event.target.value })} className={inputClass} /></Field>
             <div className="md:col-span-2">
               <Field label="Link ảnh sản phẩm">
-                <textarea value={form.imageUrls} onChange={(event) => updateForm({ imageUrls: event.target.value })} rows={3} placeholder="Mỗi dòng một URL" className={textareaClass} />
+                <ImageUploadField
+                  value={form.imageUrls}
+                  images={form.imageAssets}
+                  rows={3}
+                  textareaClassName={textareaClass}
+                  onChange={(imageUrls, imageAssets) => updateForm({ imageUrls, imageAssets })}
+                />
               </Field>
             </div>
           </>

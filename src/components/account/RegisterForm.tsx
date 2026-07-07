@@ -13,17 +13,23 @@ export default function RegisterForm() {
   const [showPass, setShowPass] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
   const [success, setSuccess] = useState(false)
+  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
+  const isGoogleConfigured =
+    Boolean(googleClientId) &&
+    String(googleClientId).endsWith('.apps.googleusercontent.com') &&
+    !String(googleClientId).includes('placeholder')
 
   useEffect(() => {
-    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '1035252877685-placeholder.apps.googleusercontent.com'
+    if (!isGoogleConfigured) return
+
     loadGoogleSdk()
       .then(() => {
-        initGoogleAuth(clientId, (accessToken) => {
+        initGoogleAuth(googleClientId, (accessToken) => {
           navigate(`/auth/google/success?googleToken=${accessToken}`)
         })
       })
       .catch((err) => console.error('Lỗi khi tải Google SDK:', err))
-  }, [navigate])
+  }, [googleClientId, isGoogleConfigured, navigate])
 
   const {
     register: field,
@@ -44,6 +50,7 @@ export default function RegisterForm() {
     })
 
     if (response.success) {
+      setSuccess(true)
       navigate('/verify-email', { state: { email: data.email.trim().toLowerCase() } })
 
       return
@@ -63,6 +70,18 @@ export default function RegisterForm() {
       type: 'server',
       message: response.error || 'Đăng ký thất bại',
     })
+  }
+
+  const handleGoogleRegister = () => {
+    if (!isGoogleConfigured) {
+      setError('root', {
+        type: 'manual',
+        message: 'Đăng ký Google chưa được cấu hình. Cần thêm VITE_GOOGLE_CLIENT_ID hợp lệ vào file .env FE.',
+      })
+      return
+    }
+
+    triggerGoogleLogin()
   }
 
   if (success) {
@@ -193,7 +212,7 @@ export default function RegisterForm() {
 
       <button
         type="button"
-        onClick={triggerGoogleLogin}
+        onClick={handleGoogleRegister}
         className="flex h-12 w-full items-center justify-center gap-3 rounded-2xl border border-[#3d63ff]/25 bg-[#171233] text-sm font-black text-white hover:border-[#79a7ff]"
       >
         G

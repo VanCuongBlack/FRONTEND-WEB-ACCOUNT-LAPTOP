@@ -227,7 +227,7 @@ export default function HistoryPage() {
                   Phương thức thanh toán:{' '}
                   {paymentLabels[selectedOrder.payment_method ?? ''] ?? selectedOrder.payment_method ?? 'Chưa có'}
                 </p>
-                <p>Địa chỉ giao hàng: {selectedOrder.shipping_address ?? 'Không áp dụng'}</p>
+                <p>Địa chỉ giao hàng: {selectedOrder.shipping_address || 'Không áp dụng'}</p>
                 <p>Ghi chú: {selectedOrder.note ?? 'Không có'}</p>
                 <p className="mt-3 text-lg font-black text-[#ffd84d]">
                   Tổng thanh toán: {formatPrice(selectedOrder.total_amount)}

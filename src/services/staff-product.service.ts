@@ -1,5 +1,6 @@
 import api from './api'
 import type { ProductQuery, ProductsResponse } from './product.service'
+import type { UploadedImage } from './upload.service'
 
 export interface ApiResponse<T = unknown> {
   success: boolean
@@ -40,7 +41,8 @@ export interface DigitalData {
 
 export interface PhysicalItemData {
   serial_number: string
-  images_urls?: string[]
+  images_urls?: Array<string | UploadedImage>
+  images?: Array<string | UploadedImage>
   status?: 'available' | 'reserved' | 'sold'
   sale_price: number
 }

@@ -1,8 +1,3 @@
-Dưới đây là file cấu hình định tuyến `AppRoutes` sau khi đã được dọn dẹp sạch sẽ các ký tự xung đột merge Git (`<<<<<<<`, `=======`, `>>>>>>>`).
-
-Tôi chọn **giữ lại route `/staff/settings` từ nhánh `feature-hung**` để đảm bảo nhân viên (`staff`) không bị thiếu trang cấu hình cá nhân hoặc cài đặt hệ thống của họ.
-
-```tsx
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import ProtectedRoute from '@/components/common/ProtectedRoute'
 
@@ -43,6 +38,7 @@ import AdminDashboard from '@/pages/admin/AdminDashboard'
 import SystemSettingsPage from '@/pages/admin/SystemSettingsPage'
 import EmployeeManagementPage from '@/pages/admin/EmployeeManagementPage'
 import ReportsPage from '@/pages/admin/ReportsPage'
+import BannerManagementPage from '@/pages/admin/BannerManagementPage'
 
 import StaffDashboard from '@/pages/staff/StaffDashboard'
 import ProductManagementPage from '@/pages/staff/ProductManagementPage'
@@ -98,6 +94,7 @@ export default function AppRoutes() {
         <Route path="/admin" element={<ProtectedRoute requiredRoles={['admin']}><AdminDashboard /></ProtectedRoute>} />
         <Route path="/admin/employees" element={<ProtectedRoute requiredRoles={['admin']}><EmployeeManagementPage /></ProtectedRoute>} />
         <Route path="/admin/customers" element={<ProtectedRoute requiredRoles={['admin']}><CustomerManagementPage /></ProtectedRoute>} />
+        <Route path="/admin/banners" element={<ProtectedRoute requiredRoles={['admin']}><BannerManagementPage /></ProtectedRoute>} />
         <Route path="/admin/reports" element={<ProtectedRoute requiredRoles={['admin']}><ReportsPage /></ProtectedRoute>} />
         <Route path="/admin/settings" element={<ProtectedRoute requiredRoles={['admin']}><SystemSettingsPage /></ProtectedRoute>} />
 
@@ -118,4 +115,3 @@ export default function AppRoutes() {
   )
 }
 
-```

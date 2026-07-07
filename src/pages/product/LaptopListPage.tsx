@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { ChevronLeft, Search } from 'lucide-react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { toast } from 'sonner'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import ProductCard from '@/components/product/ProductCard'
@@ -151,10 +150,10 @@ export default function LaptopListPage() {
 
           <button
             type="button"
-            onClick={() => toast.info('Hotline hỗ trợ: 1900 xxxx')}
+            onClick={() => { window.location.href = 'tel:19001234' }}
             className="rounded-full bg-[#4a4568] px-5 py-3 font-bold text-[#79a7ff] hover:bg-[#5a5378]"
           >
-            Hotline: 1900 xxxx
+            Hotline: 1900 1234
           </button>
         </nav>
 
