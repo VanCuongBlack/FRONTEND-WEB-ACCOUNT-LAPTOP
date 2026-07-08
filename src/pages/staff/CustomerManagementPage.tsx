@@ -303,6 +303,7 @@ export default function CustomerManagementPage() {
           open={openHistoryModal}
           title="Lịch sử đơn hàng"
           onClose={() => setOpenHistoryModal(false)}
+          maxWidthClassName="max-w-[760px]"
         >
           <div className="space-y-3 text-sm">
             {(selectedCustomer?.order_history ?? []).length === 0 ? (
@@ -334,6 +335,7 @@ export default function CustomerManagementPage() {
         <AppModal
           open={isOrderLoading || Boolean(selectedOrder)}
           title="Chi tiết đơn hàng"
+          maxWidthClassName="max-w-[720px]"
           onClose={() => {
             setSelectedOrder(null)
             setIsOrderLoading(false)

@@ -4,7 +4,6 @@ import {
   Package,
   Warehouse,
   ShoppingCart,
-  Users,
   Shield,
   Headphones,
   LogOut,
@@ -35,12 +34,6 @@ export const STAFF_NAV_ITEMS: StaffNavItem[] = [
     label: 'Quản lý đơn hàng',
     href: '/staff/orders',
     icon: ShoppingCart,
-  },
-  {
-    key: 'customers',
-    label: 'Quản lý khách hàng',
-    href: '/staff/customers',
-    icon: Users,
   },
   {
     key: 'warranty',
@@ -91,7 +84,7 @@ export default function StaffSidebar({ activeKey }: Props) {
               STAFF PANEL
             </p>
             <p className="text-white/40 text-[10px] mt-0.5 truncate">
-              Employee Management
+              Quản lý nhân viên
             </p>
           </div>
         )}

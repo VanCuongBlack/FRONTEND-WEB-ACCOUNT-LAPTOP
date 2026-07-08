@@ -9,6 +9,63 @@ import { getProducts } from '@/services/product.service'
 
 type AccountTab = '' | 'ChatGPT' | 'Canva' | 'Netflix' | 'Adobe' | 'Spotify'
 
+function normalizeText(value: unknown) {
+  return String(value ?? '').toLowerCase().trim()
+}
+
+function getAccountText(item: any) {
+  return [
+    item.name,
+    item.description,
+    item.platform,
+    item.category,
+    item.digital?.platform,
+    item.digital?.category,
+    item.digitalData?.platform,
+    item.digitalData?.category,
+  ]
+    .map(normalizeText)
+    .join(' ')
+}
+
+function getAccountPlatformLabel(item: any) {
+  return (
+    item.platform ||
+    item.digital?.platform ||
+    item.digitalData?.platform ||
+    item.category ||
+    item.digital?.category ||
+    item.digitalData?.category ||
+    'Account'
+  )
+}
+
+function getAccountDuration(item: any) {
+  return (
+    item.duration_months ??
+    item.digital?.duration_months ??
+    item.digitalData?.duration_months ??
+    item.duration ??
+    'N/A'
+  )
+}
+
+function matchesPlatform(item: any, platform: string) {
+  const text = getAccountText(item)
+  const value = normalizeText(platform)
+  const aliases: Record<string, string[]> = {
+    openai: ['openai', 'chatgpt', 'gpt'],
+    chatgpt: ['openai', 'chatgpt', 'gpt'],
+    canva: ['canva'],
+    netflix: ['netflix'],
+    steam: ['steam'],
+    adobe: ['adobe'],
+    spotify: ['spotify'],
+  }
+
+  return (aliases[value] ?? [value]).some((alias) => text.includes(alias))
+}
+
 export default function AccountListPage() {
   const navigate = useNavigate()
   const [search, setSearch] = useState('')
@@ -57,15 +114,15 @@ export default function AccountListPage() {
   const filteredProducts = useMemo(() => {
     return products.filter((item) => {
       const keyword = search.toLowerCase().trim()
+      const accountText = getAccountText(item)
 
       const matchSearch =
         !keyword ||
-        item.name.toLowerCase().includes(keyword) ||
-        (item.platform && item.platform.toLowerCase().includes(keyword))
+        accountText.includes(keyword)
 
       const matchPlatform =
         selectedPlatforms.length === 0 ||
-        (item.platform && selectedPlatforms.includes(item.platform))
+        selectedPlatforms.some((platform) => matchesPlatform(item, platform))
 
       const matchPrice =
         selectedPrices.length === 0 ||
@@ -202,7 +259,7 @@ export default function AccountListPage() {
                       id={item._id}
                       name={item.name}
                       price={item.base_price}
-                      subtitle={`${item.platform || 'N/A'} • ${item.duration_months || 'N/A'} tháng`}
+                      subtitle={`${getAccountPlatformLabel(item)} • ${getAccountDuration(item)} tháng`}
                       to="/accounts"
                     />
                   ))

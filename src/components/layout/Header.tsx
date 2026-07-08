@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import {
   Bell,
@@ -12,6 +12,7 @@ import {
   X,
 } from 'lucide-react'
 import { useAuthStore } from '@/store/authStore'
+import { getUnreadNotificationCount } from '@/services/notification.service'
 
 interface HeaderProps {
   pageLabel?: string
@@ -30,6 +31,7 @@ export default function Header({
 }: HeaderProps) {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [query, setQuery] = useState('')
+  const [unreadNotifications, setUnreadNotifications] = useState(0)
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const logout = useAuthStore((state) => state.logout)
@@ -38,23 +40,28 @@ export default function Header({
   const isLoggedIn = Boolean(user && accessToken)
   const userInitial = (user?.fullname || user?.email || 'U').charAt(0).toUpperCase()
 
-  // Sync local query state with URL search param
   useEffect(() => {
-    const queryParam = searchParams.get('search') ?? ''
-    setQuery(queryParam)
+    setQuery(searchParams.get('search') ?? '')
   }, [searchParams])
 
-  const handleQueryChange = (val: string) => {
-    setQuery(val)
-    const trimmed = val.trim()
+  useEffect(() => {
+    if (!isLoggedIn) {
+      setUnreadNotifications(0)
+      return
+    }
+
+    getUnreadNotificationCount()
+      .then((res) => setUnreadNotifications(res.data?.data?.unread_count ?? 0))
+      .catch(() => setUnreadNotifications(0))
+  }, [isLoggedIn])
+
+  const handleQueryChange = (value: string) => {
+    setQuery(value)
+    const trimmed = value.trim()
     const isHome = window.location.pathname === '/'
-    
+
     if (trimmed) {
-      if (isHome) {
-        navigate(`/?search=${encodeURIComponent(trimmed)}`, { replace: true })
-      } else {
-        navigate(`/?search=${encodeURIComponent(trimmed)}`)
-      }
+      navigate(`/?search=${encodeURIComponent(trimmed)}`, { replace: isHome })
     } else {
       navigate('/', { replace: isHome })
     }
@@ -141,10 +148,15 @@ export default function Header({
           <div className="flex shrink-0 items-center gap-2 md:gap-4">
             <Link
               to={isLoggedIn ? '/notification' : '/login'}
-              className="hidden rounded-xl p-2 text-[#c8c1e8] transition-colors hover:bg-white/10 hover:text-white md:block"
+              className="relative hidden rounded-xl p-2 text-[#c8c1e8] transition-colors hover:bg-white/10 hover:text-white md:block"
               title="Thông báo"
             >
               <Bell className="h-5 w-5" />
+              {unreadNotifications > 0 && (
+                <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-black text-white">
+                  {unreadNotifications > 9 ? '9+' : unreadNotifications}
+                </span>
+              )}
             </Link>
 
             <Link
@@ -251,6 +263,16 @@ export default function Header({
               </Link>
               {isLoggedIn ? (
                 <>
+                  <Link to="/notification" onClick={() => setMobileOpen(false)} className="rounded-xl px-3 py-2 hover:bg-white/10">
+                    <span className="inline-flex items-center gap-2">
+                      <Bell className="h-4 w-4" /> Thông báo
+                      {unreadNotifications > 0 && (
+                        <span className="rounded-full bg-red-500 px-2 py-0.5 text-[10px] text-white">
+                          {unreadNotifications > 9 ? '9+' : unreadNotifications}
+                        </span>
+                      )}
+                    </span>
+                  </Link>
                   <Link to="/profile" onClick={() => setMobileOpen(false)} className="rounded-xl px-3 py-2 hover:bg-white/10">
                     <span className="inline-flex items-center gap-2">
                       <User className="h-4 w-4" /> Tài khoản

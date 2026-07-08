@@ -85,6 +85,11 @@ function getErrorMessage(error: unknown, fallback: string) {
   return fallback
 }
 
+function getApiMessage(error: unknown) {
+  const apiMessage = (error as any)?.response?.data?.message
+  return typeof apiMessage === 'string' ? apiMessage : ''
+}
+
 export const useCartStore = create<CartStore>()(
   persist(
     (set) => ({
@@ -135,6 +140,32 @@ export const useCartStore = create<CartStore>()(
             set(getCartTotals(res.data.data))
           }
         } catch (error) {
+          const apiMessage = getApiMessage(error)
+
+          if (apiMessage.toLowerCase().includes('đã có trong giỏ')) {
+            const cartRes = await cartService.getCart()
+            const cartTotals = getCartTotals(cartRes.data.data)
+            const existingItem = cartTotals.items.find(
+              (item) => String(item.item_id) === String(itemId)
+            )
+
+            set(cartTotals)
+
+            if (productType === 'physical' && existingItem) {
+              const updateRes = await cartService.updateCartItem(existingItem._id, {
+                quantity: existingItem.quantity + quantity,
+              })
+
+              if (updateRes.data?.success && updateRes.data?.data) {
+                set(getCartTotals(updateRes.data.data))
+              }
+
+              return
+            }
+
+            throw new Error(apiMessage)
+          }
+
           set({
             error: getErrorMessage(error, 'Không thể thêm sản phẩm vào giỏ'),
           })

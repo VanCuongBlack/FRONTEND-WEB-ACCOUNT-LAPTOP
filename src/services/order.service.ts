@@ -18,6 +18,8 @@ export type OrderStatus =
   | 'completed'
   | 'failed'
   | 'cancelled'
+  | 'partially_refunded'
+  | 'refunded'
 
 export interface OrderItemProduct {
   _id?: string
@@ -45,6 +47,9 @@ export interface OrderItem {
   item_type_ref?: 'PhysicalProductItem' | 'DigitalProductItem'
   total?: number
   product?: OrderItemProduct
+  is_refunded?: boolean
+  refunded_at?: string
+  refund_amount?: number
 }
 
 export interface Order {

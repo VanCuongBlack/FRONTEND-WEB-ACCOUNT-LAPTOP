@@ -1,5 +1,3 @@
-import axios from 'axios'
-
 declare global {
   interface Window {
     google: any
@@ -23,33 +21,28 @@ export const loadGoogleSdk = (): Promise<void> => {
   })
 }
 
-// Initialize OAuth2 Token Client
-let tokenClient: any = null
+let googleClientReady = false
 
-export const initGoogleAuth = (clientId: string, onSuccess: (accessToken: string) => void) => {
+export const initGoogleAuth = (clientId: string, onSuccess: (idToken: string) => void) => {
   if (!window.google || !window.google.accounts) return
-  tokenClient = window.google.accounts.oauth2.initTokenClient({
+
+  window.google.accounts.id.initialize({
     client_id: clientId,
-    scope: 'openid email profile',
     callback: (response: any) => {
-      if (response.access_token) {
-        onSuccess(response.access_token)
+      if (response.credential) {
+        onSuccess(response.credential)
       }
     },
+    cancel_on_tap_outside: false,
   })
+
+  googleClientReady = true
 }
 
-// Trigger Google Login popup
 export const triggerGoogleLogin = () => {
-  if (tokenClient) {
-    tokenClient.requestAccessToken()
+  if (googleClientReady && window.google?.accounts?.id) {
+    window.google.accounts.id.prompt()
   } else {
     console.error('Google Auth has not been initialized')
   }
-}
-
-// Fetch user info from Google's UserInfo API
-export const fetchGoogleUserInfo = async (accessToken: string) => {
-  const res = await axios.get(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${accessToken}`)
-  return res.data // { email, name, picture, sub }
 }

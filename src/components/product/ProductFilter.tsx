@@ -17,8 +17,8 @@ export default function ProductFilter({
 }: ProductFilterProps) {
   const categories =
     type === 'laptop'
-      ? ['ASUS', 'MSI', 'Acer', 'Apple']
-      : ['OpenAI', 'Canva', 'Netflix']
+      ? ['Dell', 'Apple', 'ASUS', 'MSI', 'Acer', 'Lenovo']
+      : ['OpenAI', 'Canva', 'Netflix', 'Steam', 'Adobe', 'Spotify']
 
   const priceOptions =
     type === 'laptop'

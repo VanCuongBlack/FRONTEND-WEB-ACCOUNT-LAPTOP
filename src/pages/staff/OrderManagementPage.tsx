@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 import StaffLayout from '@/layouts/StaffLayout'
 import { confirmCOD } from '@/services/payment.service'
+import { getRefundsByOrder, processRefund, type RefundRecord } from '@/services/refund.service'
 import {
   getStaffOrderById,
   getStaffOrders,
@@ -32,6 +33,17 @@ const statusOptions: Array<{ value: OrderStatus; label: string }> = [
   { value: 'failed', label: 'Thất bại' },
 ]
 
+const statusLabels: Record<OrderStatus, string> = {
+  pending: 'Chờ xử lý',
+  confirmed: 'Đã xác nhận',
+  processing: 'Đang xử lý',
+  completed: 'Hoàn tất',
+  cancelled: 'Đã hủy',
+  failed: 'Thất bại',
+  partially_refunded: 'Đã hoàn một phần',
+  refunded: 'Đã hoàn tiền',
+}
+
 function formatPrice(price?: number) {
   return `${(price ?? 0).toLocaleString('vi-VN')}đ`
 }
@@ -48,12 +60,13 @@ function formatPaymentMethod(method?: string) {
 }
 
 function getStatusLabel(status?: string) {
-  return statusOptions.find((item) => item.value === status)?.label ?? status ?? '-'
+  return statusLabels[status as OrderStatus] ?? status ?? '-'
 }
 
 function getStatusBadgeClass(status?: string) {
   if (status === 'completed' || status === 'confirmed') return 'bg-emerald-50 text-emerald-700'
   if (status === 'processing') return 'bg-blue-50 text-blue-700'
+  if (status === 'partially_refunded' || status === 'refunded') return 'bg-purple-50 text-purple-700'
   if (status === 'cancelled' || status === 'failed') return 'bg-rose-50 text-rose-700'
   return 'bg-amber-50 text-amber-700'
 }
@@ -74,6 +87,10 @@ function isWaitingBankTransfer(order: Order) {
   return order.payment_method === 'bank_transfer' && order.status === 'pending'
 }
 
+function canProcessRefund(order: Order) {
+  return ['confirmed', 'processing', 'completed'].includes(order.status)
+}
+
 function canMarkProcessingOrder(order: Order) {
   return !isWaitingBankTransfer(order) && canMarkProcessing(order.status)
 }
@@ -83,6 +100,9 @@ function canMarkDeliveredOrder(order: Order) {
 }
 
 function getStatusOptionsForOrder(order: Order) {
+  if (order.status === 'refunded' || order.status === 'partially_refunded') {
+    return [{ value: order.status, label: getStatusLabel(order.status) }]
+  }
   if (!isWaitingBankTransfer(order)) return statusOptions
   return statusOptions.filter((status) => ['pending', 'cancelled', 'failed'].includes(status.value))
 }
@@ -99,6 +119,11 @@ export default function OrderManagementPage() {
   const [isActionLoading, setIsActionLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
+  const [refundHistory, setRefundHistory] = useState<RefundRecord[]>([])
+  const [refundReason, setRefundReason] = useState('')
+  const [refundMethod, setRefundMethod] = useState<'original_payment' | 'bank_transfer' | 'store_credit'>('original_payment')
+  const [refundRestockPhysical, setRefundRestockPhysical] = useState(false)
+  const [refundSelectedItemIds, setRefundSelectedItemIds] = useState<string[]>([])
 
   const statisticMap = useMemo(() => {
     return statistics.reduce<Record<string, number>>((map, item) => {
@@ -135,8 +160,15 @@ export default function OrderManagementPage() {
 
   const refreshSelectedOrder = async (orderId: string) => {
     try {
-      const res = await getStaffOrderById(orderId)
-      setSelectedOrder(res.data.data ?? null)
+      const [orderRes, refundsRes] = await Promise.all([
+        getStaffOrderById(orderId),
+        getRefundsByOrder(orderId),
+      ])
+      setSelectedOrder(orderRes.data.data ?? null)
+      setRefundHistory(Array.isArray(refundsRes.data.data) ? refundsRes.data.data : [])
+      setRefundReason('')
+      setRefundRestockPhysical(false)
+      setRefundSelectedItemIds([])
     } catch {
       // Giữ chi tiết hiện tại nếu refresh nền lỗi tạm thời.
     }
@@ -166,8 +198,12 @@ export default function OrderManagementPage() {
     setMessage('')
 
     try {
-      const res = await getStaffOrderById(orderId)
-      setSelectedOrder(res.data.data ?? null)
+      const [orderRes, refundsRes] = await Promise.all([
+        getStaffOrderById(orderId),
+        getRefundsByOrder(orderId),
+      ])
+      setSelectedOrder(orderRes.data.data ?? null)
+      setRefundHistory(Array.isArray(refundsRes.data.data) ? refundsRes.data.data : [])
     } catch (err: any) {
       setError(err?.response?.data?.message || err?.message || 'Không thể tải chi tiết đơn hàng.')
     } finally {
@@ -212,6 +248,46 @@ export default function OrderManagementPage() {
     setStatusFilter(status)
     setPage(1)
     setSelectedOrder(null)
+    setRefundHistory([])
+    setRefundSelectedItemIds([])
+  }
+
+  const handleProcessRefund = async (order: Order) => {
+    const reason = refundReason.trim()
+    if (reason.length < 10) {
+      setError('Lý do hoàn tiền cần ít nhất 10 ký tự.')
+      setMessage('')
+      return
+    }
+
+    setIsActionLoading(true)
+    setError('')
+    setMessage('')
+
+    try {
+      await processRefund(order._id, {
+        ...(refundSelectedItemIds.length ? { order_item_ids: refundSelectedItemIds } : {}),
+        reason,
+        refund_method: refundMethod,
+        restock_physical: refundRestockPhysical,
+      })
+      setMessage('Đã gửi yêu cầu hoàn tiền đơn hàng sang BE.')
+      setRefundReason('')
+      setRefundSelectedItemIds([])
+      await Promise.all([loadOrders(page, statusFilter), handleSelectOrder(order._id)])
+    } catch (err: any) {
+      setError(err?.response?.data?.message || err?.message || 'Không thể xử lý hoàn tiền đơn hàng.')
+    } finally {
+      setIsActionLoading(false)
+    }
+  }
+
+  const toggleRefundItem = (itemId: string) => {
+    setRefundSelectedItemIds((current) =>
+      current.includes(itemId)
+        ? current.filter((id) => id !== itemId)
+        : [...current, itemId]
+    )
   }
 
   return (
@@ -493,21 +569,144 @@ export default function OrderManagementPage() {
                 <table className="min-w-full divide-y divide-slate-100">
                   <thead className="bg-slate-50">
                     <tr>
+                      <TableHead>Hoàn</TableHead>
                       <TableHead>Sản phẩm</TableHead>
                       <TableHead>Loại</TableHead>
                       <TableHead>Giá bán</TableHead>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
-                    {selectedOrder.items.map((item) => (
-                      <tr key={item._id ?? item.item_id}>
-                        <TableCell className="font-semibold text-slate-900">{item.product_name}</TableCell>
-                        <TableCell>{item.product_type === 'physical' ? 'PC/Laptop' : 'Account'}</TableCell>
-                        <TableCell className="font-bold">{formatPrice(item.sale_price)}</TableCell>
-                      </tr>
-                    ))}
+                    {selectedOrder.items.map((item) => {
+                      const itemId = item._id ?? ''
+                      const isRefunded = Boolean(item.is_refunded)
+                      return (
+                        <tr key={item._id ?? item.item_id}>
+                          <TableCell>
+                            {itemId ? (
+                              <input
+                                type="checkbox"
+                                checked={refundSelectedItemIds.includes(itemId)}
+                                disabled={isRefunded || !canProcessRefund(selectedOrder)}
+                                onChange={() => toggleRefundItem(itemId)}
+                                className="h-4 w-4 accent-emerald-600 disabled:opacity-40"
+                                title={isRefunded ? 'Sản phẩm này đã được hoàn' : 'Chọn sản phẩm cần hoàn'}
+                              />
+                            ) : (
+                              '-'
+                            )}
+                          </TableCell>
+                          <TableCell className="font-semibold text-slate-900">
+                            {item.product_name}
+                            {isRefunded && (
+                              <span className="ml-2 rounded-full bg-purple-50 px-2 py-1 text-[11px] font-black text-purple-700">
+                                Đã hoàn
+                              </span>
+                            )}
+                          </TableCell>
+                          <TableCell>{item.product_type === 'physical' ? 'PC/Laptop' : 'Account'}</TableCell>
+                          <TableCell className="font-bold">{formatPrice(item.sale_price)}</TableCell>
+                        </tr>
+                      )
+                    })}
                   </tbody>
                 </table>
+              </div>
+
+              <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50/70 p-5">
+                <div className="flex flex-col gap-1">
+                  <h3 className="text-base font-black text-amber-950">Hoàn tiền đơn hàng</h3>
+                  <p className="text-sm leading-6 text-amber-800">
+                    Chỉ áp dụng cho đơn đã xác nhận, đang xử lý hoặc hoàn tất. Chọn sản phẩm cần hoàn; nếu không chọn sản phẩm nào, BE sẽ hoàn toàn bộ đơn.
+                  </p>
+                </div>
+
+                {!canProcessRefund(selectedOrder) && (
+                  <p className="mt-4 rounded-xl border border-amber-200 bg-white px-4 py-3 text-sm font-semibold text-amber-800">
+                    Đơn đang ở trạng thái "{getStatusLabel(selectedOrder.status)}" nên BE chưa cho phép hoàn tiền.
+                  </p>
+                )}
+
+                <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_260px]">
+                  <label className="block text-sm font-bold text-slate-800">
+                    Lý do hoàn tiền
+                    <textarea
+                      value={refundReason}
+                      onChange={(event) => setRefundReason(event.target.value)}
+                      className="mt-2 min-h-[96px] w-full rounded-xl border border-amber-200 bg-white p-3 text-sm focus:border-amber-500 focus:outline-none"
+                      placeholder="Nhập lý do hoàn tiền..."
+                    />
+                  </label>
+
+                  <div className="space-y-3">
+                    <label className="block text-sm font-bold text-slate-800">
+                      Phương thức hoàn
+                      <select
+                        value={refundMethod}
+                        onChange={(event) => setRefundMethod(event.target.value as typeof refundMethod)}
+                        className="mt-2 h-11 w-full rounded-xl border border-amber-200 bg-white px-3 text-sm font-semibold focus:border-amber-500 focus:outline-none"
+                      >
+                        <option value="original_payment">Theo phương thức gốc</option>
+                        <option value="bank_transfer">Chuyển khoản</option>
+                        <option value="store_credit">Điểm cửa hàng</option>
+                      </select>
+                    </label>
+
+                    <label className="flex items-center gap-2 text-sm font-bold text-slate-700">
+                      <input
+                        type="checkbox"
+                        checked={refundRestockPhysical}
+                        onChange={(event) => setRefundRestockPhysical(event.target.checked)}
+                      />
+                      Nhập lại kho hàng vật lý
+                    </label>
+
+                    <button
+                      type="button"
+                      disabled={isActionLoading || !canProcessRefund(selectedOrder)}
+                      onClick={() => handleProcessRefund(selectedOrder)}
+                      className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 text-sm font-bold text-white hover:bg-emerald-500 disabled:opacity-60"
+                    >
+                      {isActionLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
+                      {refundSelectedItemIds.length > 0
+                        ? `Hoàn ${refundSelectedItemIds.length} sản phẩm`
+                        : 'Hoàn toàn bộ đơn'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                <div className="flex flex-col gap-1">
+                  <h3 className="text-base font-black text-slate-950">Lịch sử hoàn tiền</h3>
+                  <p className="text-sm text-slate-600">Dữ liệu lấy từ API hoàn tiền của BE theo mã đơn hiện tại.</p>
+                </div>
+
+                <div className="mt-4 space-y-3">
+                  {refundHistory.length === 0 ? (
+                    <p className="rounded-xl bg-white px-4 py-3 text-sm text-slate-500">
+                      Chưa có bản ghi hoàn tiền cho đơn này.
+                    </p>
+                  ) : (
+                    refundHistory.map((refund) => (
+                      <div key={refund._id} className="rounded-xl border border-slate-200 bg-white p-4">
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                          <div>
+                            <p className="break-all text-sm font-black text-slate-900">{refund._id}</p>
+                            <p className="mt-1 text-xs text-slate-500">
+                              {formatDate(refund.createdAt)} • {refund.refund_method ?? 'original_payment'} • {refund.status ?? 'completed'}
+                            </p>
+                          </div>
+                          <p className="text-sm font-black text-emerald-700">
+                            {formatPrice(refund.total_refund_amount ?? refund.amount)}
+                          </p>
+                        </div>
+                        {refund.reason && (
+                          <p className="mt-3 whitespace-pre-line text-sm leading-6 text-slate-700">{refund.reason}</p>
+                        )}
+                      </div>
+                    ))
+                  )}
+                </div>
               </div>
             </section>
           </div>

@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { ArrowLeft, Loader2, ShieldCheck, Sparkles, Zap } from 'lucide-react'
+import { ArrowLeft, ShieldCheck, Sparkles, Zap } from 'lucide-react'
 
 export default function GoogleAuthPage() {
   const navigate = useNavigate()
@@ -12,26 +12,8 @@ export default function GoogleAuthPage() {
 
   const redirectToGoogle = () => {
     setIsRedirecting(true)
-    // Use dynamic API base URL (VITE_API_URL or relative path fallback)
-    const apiBase = import.meta.env.VITE_API_URL || '/api/v1'
-    
-    let googleUrl = apiBase.startsWith('http')
-      ? `${apiBase}/auth/google`
-      : `${window.location.origin}${apiBase}/auth/google`
-      
-    // Append the mode (login/register) so the backend knows the authentication purpose
-    googleUrl += `?mode=${mode}`
-    
-    window.location.href = googleUrl
+    navigate(isRegisterMode ? '/register' : '/login', { replace: true })
   }
-
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      redirectToGoogle()
-    }, 600)
-
-    return () => window.clearTimeout(timer)
-  }, [mode])
 
   return (
     <div className="min-h-screen bg-[#09051f] text-white">
@@ -62,8 +44,8 @@ export default function GoogleAuthPage() {
             </h1>
             <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-[#b9b4d7] sm:text-base">
               {isRegisterMode
-                ? 'Bạn sẽ được chuyển sang Google để xác thực và hoàn tất quá trình đăng ký tài khoản.'
-                : 'Bạn sẽ được chuyển sang Google để xác thực và tiếp tục đăng nhập vào tài khoản của mình.'}
+                ? 'Bấm tiếp tục để quay về form đăng ký và mở cửa sổ xác thực Google.'
+                : 'Bấm tiếp tục để quay về form đăng nhập và mở cửa sổ xác thực Google.'}
             </p>
           </div>
 
@@ -84,8 +66,7 @@ export default function GoogleAuthPage() {
           >
             {isRedirecting ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Đang chuyển hướng...
+                Đang mở form...
               </>
             ) : (
               'Tiếp tục với Google'

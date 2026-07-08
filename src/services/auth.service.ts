@@ -89,6 +89,10 @@ export const login = (data: LoginPayload) => {
   return api.post<ApiResponse<AuthResponseData>>('/auth/login', data)
 }
 
+export const googleLogin = (idToken: string) => {
+  return api.post<ApiResponse<AuthResponseData>>('/auth/google', { idToken })
+}
+
 export const refreshToken = (data: RefreshTokenPayload) => {
   return api.post<ApiResponse<TokenResponseData>>('/auth/refresh-token', data)
 }

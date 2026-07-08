@@ -19,7 +19,11 @@ export interface Payment {
     amount?: number
     transfer_content?: string
     expires_at?: string
+    qr_url?: string
+    qrUrl?: string
   }
+  qr_url?: string
+  qrUrl?: string
   sepay_transaction_id?: string
   sepay_reference_code?: string
   created_at?: string

@@ -9,6 +9,7 @@ import {
 } from '@/services/product.service'
 import type { ProductType } from '@/services/cart.service'
 import { useCartStore } from '@/store/cartStore'
+import { useAuthStore } from '@/store/authStore'
 
 interface ProductCardProps {
   id: string
@@ -22,9 +23,13 @@ interface ProductCardProps {
 }
 
 function getErrorMessage(error: unknown) {
+  const status = (error as any)?.response?.status
   const apiMessage = (error as any)?.response?.data?.message
+  if (status === 401) return 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.'
+  if (status === 403) return 'Chỉ tài khoản khách hàng mới thêm sản phẩm vào giỏ.'
   if (typeof apiMessage === 'string') return apiMessage
-  return 'Vui lòng đăng nhập hoặc thử lại sau.'
+  if (error instanceof Error && error.message) return error.message
+  return 'Không thể thêm sản phẩm vào giỏ hàng. Vui lòng thử lại.'
 }
 
 export default function ProductCard({
@@ -39,6 +44,8 @@ export default function ProductCard({
 }: ProductCardProps) {
   const addCartItem = useCartStore((state) => state.addItem)
   const fetchCart = useCartStore((state) => state.fetchCart)
+  const user = useAuthStore((state) => state.user)
+  const accessToken = useAuthStore((state) => state.accessToken)
   const [isAdding, setIsAdding] = useState(false)
   const [isCheckingStock, setIsCheckingStock] = useState(true)
   const [message, setMessage] = useState('')
@@ -83,6 +90,11 @@ export default function ProductCard({
     event.stopPropagation()
 
     if (isCheckingStock) return
+
+    if (!user || !accessToken) {
+      setMessage('Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng.')
+      return
+    }
 
     try {
       setIsAdding(true)

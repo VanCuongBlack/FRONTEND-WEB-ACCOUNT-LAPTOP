@@ -50,6 +50,7 @@ interface ProductForm {
   conditionPercent: string
   warrantyMonths: string
   importantPrice: string
+  physicalItemId: string
   serialNumber: string
   imageUrls: string
   imageAssets: UploadedImage[]
@@ -95,6 +96,7 @@ const emptyProductForm: ProductForm = {
   conditionPercent: '',
   warrantyMonths: '',
   importantPrice: '',
+  physicalItemId: '',
   serialNumber: '',
   imageUrls: '',
   imageAssets: [],
@@ -257,6 +259,8 @@ export default function ProductManagementPage() {
     try {
       const res = await getProductById(product.id)
       const detail = res.data.data
+      const firstItem = detail?.items?.[0]
+      const imageAssets = normalizeImageAssets(firstItem?.images_urls)
       setEditingProduct(product)
       setProductForm({
         ...emptyProductForm,
@@ -276,6 +280,11 @@ export default function ProductManagementPage() {
         conditionPercent: String(detail?.physical?.condition_percent ?? ''),
         warrantyMonths: String(detail?.physical?.warranty_months ?? ''),
         importantPrice: String(detail?.physical?.important_price ?? ''),
+        physicalItemId: firstItem?._id ?? '',
+        serialNumber: firstItem?.serial_number ?? '',
+        physicalSalePrice: String(firstItem?.sale_price ?? ''),
+        imageUrls: imageAssets.map((image) => image.url).join('\n'),
+        imageAssets,
         platform: detail?.digital?.platform ?? product.platform ?? '',
         category: detail?.digital?.category ?? product.category ?? '',
         region: detail?.digital?.region ?? 'VN',
@@ -372,6 +381,13 @@ export default function ProductManagementPage() {
     try {
       if (editingProduct) {
         if (editingProduct.type === 'physical') {
+          const urls = splitUrls(productForm.imageUrls)
+          const images = buildImagePayload(productForm.imageUrls, productForm.imageAssets)
+          if (hasInvalidUrl(urls)) {
+            setError('Link ảnh phải là URL hợp lệ, mỗi dòng một URL.')
+            return
+          }
+
           await updatePhysicalProduct(editingProduct.id, {
             productData: {
               name: productForm.name.trim(),
@@ -398,9 +414,18 @@ export default function ProductManagementPage() {
                 : {}),
               ...(productForm.importantPrice
                 ? { important_price: toNumber(productForm.importantPrice) }
-                : {}),
+              : {}),
             },
           })
+
+          if (productForm.physicalItemId) {
+            const salePrice = toNumber(productForm.physicalSalePrice)
+            await updatePhysicalProductItem(productForm.physicalItemId, {
+              ...(productForm.serialNumber.trim() ? { serial_number: productForm.serialNumber.trim() } : {}),
+              images_urls: images,
+              ...(Number.isNaN(salePrice) || salePrice < 0 ? {} : { sale_price: salePrice }),
+            })
+          }
         } else {
           await updateDigitalProduct(editingProduct.id, {
             productData: {
@@ -480,7 +505,6 @@ export default function ProductManagementPage() {
           itemData: {
             serial_number: productForm.serialNumber.trim(),
             images_urls: images,
-            images,
             status: 'available',
             sale_price: numbers.sale_price,
           },
@@ -520,7 +544,7 @@ export default function ProductManagementPage() {
           itemData: {
             account_email: productForm.accountEmail.trim(),
             account_password: productForm.accountPassword,
-            expired_at: productForm.expiredAt || null,
+            ...(productForm.expiredAt ? { expired_at: productForm.expiredAt } : {}),
             status: 'available',
             sale_price: salePrice,
           },
@@ -789,8 +813,8 @@ export default function ProductManagementPage() {
         >
           <p className="text-sm leading-6 text-gray-600">
             {actionKind === 'deactivate'
-              ? 'Thao tác này gọi PATCH /product/:id/deactivate để ngừng bán sản phẩm.'
-              : 'Thao tác này gọi DELETE /product/:id để xóa hẳn sản phẩm. Chỉ dùng khi thật sự cần.'}
+              ? 'Sản phẩm sẽ ngừng hiển thị để khách mua, nhưng dữ liệu vẫn được giữ lại.'
+              : 'Sản phẩm sẽ bị xóa vĩnh viễn khỏi hệ thống. Chỉ dùng khi thật sự cần.'}
           </p>
         </AppModal>
       </div>
@@ -1081,18 +1105,25 @@ function PhysicalFields({
           <>
             <Field label="Số serial"><input value={form.serialNumber} onChange={(event) => updateForm({ serialNumber: event.target.value })} className={inputClass} /></Field>
             <Field label="Giá bán"><input type="number" min="0" value={form.physicalSalePrice} onChange={(event) => updateForm({ physicalSalePrice: event.target.value })} className={inputClass} /></Field>
-            <div className="md:col-span-2">
-              <Field label="Link ảnh sản phẩm">
-                <ImageUploadField
-                  value={form.imageUrls}
-                  images={form.imageAssets}
-                  rows={3}
-                  textareaClassName={textareaClass}
-                  onChange={(imageUrls, imageAssets) => updateForm({ imageUrls, imageAssets })}
-                />
-              </Field>
-            </div>
           </>
+        )}
+        {editing && !form.physicalItemId && (
+          <div className="md:col-span-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800">
+            Sản phẩm này chưa có item kho nên chưa thể cập nhật ảnh tại đây. Hãy nhập kho item trước.
+          </div>
+        )}
+        {(!editing || form.physicalItemId) && (
+          <div className="md:col-span-2">
+            <Field label={editing ? 'Ảnh sản phẩm của item đầu tiên' : 'Link ảnh sản phẩm'}>
+              <ImageUploadField
+                value={form.imageUrls}
+                images={form.imageAssets}
+                rows={3}
+                textareaClassName={textareaClass}
+                onChange={(imageUrls, imageAssets) => updateForm({ imageUrls, imageAssets })}
+              />
+            </Field>
+          </div>
         )}
       </div>
     </div>
