@@ -41,16 +41,15 @@ export interface DigitalData {
 
 export interface PhysicalItemData {
   serial_number: string
-  images_urls?: Array<string | UploadedImage>
-  images?: Array<string | UploadedImage>
-  status?: 'available' | 'reserved' | 'sold'
+  images_urls?: Array<UploadedImage>
+  status?: 'available' | 'reserved' | 'sold' | 'returned'
   sale_price: number
 }
 
 export interface DigitalItemData {
   account_email: string
   account_password: string
-  expired_at?: string | null
+  expired_at?: string
   status?: 'available' | 'reserved' | 'sold'
   sale_price: number
 }

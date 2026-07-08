@@ -6,6 +6,18 @@ import { useAuthStore } from '@/store/authStore'
 
 import type { ProductType } from '@/services/cart.service'
 
+function getCartErrorMessage(error: unknown) {
+  const status = (error as any)?.response?.status
+  const apiMessage = (error as any)?.response?.data?.message
+  const message = typeof apiMessage === 'string' ? apiMessage : error instanceof Error ? error.message : ''
+
+  if (status === 401) return 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.'
+  if (status === 403) return 'Chỉ tài khoản khách hàng mới thêm sản phẩm vào giỏ.'
+  if (message) return message
+
+  return 'Không thể thêm sản phẩm vào giỏ hàng. Vui lòng thử lại.'
+}
+
 export const useCart = () => {
   const store = useCartStore()
   const user = useAuthStore((state) => state.user)
@@ -27,6 +39,11 @@ export const useCart = () => {
     productType: ProductType,
     quantity = 1
   ) => {
+    if (!isAuthenticated) {
+      toast.error('Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng.')
+      return false
+    }
+
     try {
       await store.addItem(
         itemId,
@@ -39,9 +56,7 @@ export const useCart = () => {
     } catch (error) {
       console.error(error)
 
-      toast.error(
-        'Vui lòng đăng nhập hoặc thử lại'
-      )
+      toast.error(getCartErrorMessage(error))
       return false
     }
   }

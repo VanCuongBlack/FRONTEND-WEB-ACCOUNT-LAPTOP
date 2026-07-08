@@ -20,6 +20,8 @@ import {
   assignTicket,
   getAllTickets,
   getManagedTicketDetail,
+  refundTicket,
+  rejectTicket,
   resolveTicket,
   sendStaffMessage,
   updateTicketPriority,
@@ -40,6 +42,7 @@ const statusLabels: Record<SupportTicketStatus, string> = {
   closed: 'Đã đóng',
   cancelled: 'Đã hủy',
   reopened: 'Mở lại',
+  rejected: 'Đã từ chối',
 }
 
 const typeLabels: Record<SupportTicket['type'], string> = {
@@ -78,6 +81,10 @@ function assigneeLabel(ticket: SupportTicket) {
 function ticketAssignLabel(ticket: SupportTicket) {
   const typeName = typeLabels[ticket.type] ?? 'ticket'
   return `Gán ${typeName.toLowerCase()}`
+}
+
+function canHandleRefundTicket(ticket: SupportTicket) {
+  return ['open', 'in_progress', 'waiting_customer', 'reopened'].includes(ticket.status)
 }
 
 const modeConfigs = {
@@ -153,6 +160,10 @@ export default function WarrantyManagementPage() {
   const [keyword, setKeyword] = useState('')
   const [reply, setReply] = useState('')
   const [resolution, setResolution] = useState('')
+  const [refundReason, setRefundReason] = useState('')
+  const [refundMethod, setRefundMethod] = useState<'original_payment' | 'bank_transfer' | 'store_credit'>('original_payment')
+  const [restockPhysical, setRestockPhysical] = useState(false)
+  const [rejectReason, setRejectReason] = useState('')
   const [assignStaffId, setAssignStaffId] = useState('')
   const [staffOptions, setStaffOptions] = useState<AdminUser[]>([])
   const [isInternal, setIsInternal] = useState(false)
@@ -167,6 +178,9 @@ export default function WarrantyManagementPage() {
       setMessages(res.data?.data?.messages ?? [])
       setReply('')
       setResolution('')
+      setRefundReason('')
+      setRejectReason('')
+      setRestockPhysical(false)
       setAssignStaffId('')
     } catch (err: any) {
       setError(err?.response?.data?.message || err?.message || 'Không thể tải chi tiết ticket.')
@@ -309,6 +323,64 @@ export default function WarrantyManagementPage() {
       setSuccess('Đã đánh dấu ticket là đã xử lý.')
     } catch (err: any) {
       setError(err?.response?.data?.message || err?.message || 'Không thể đánh dấu đã xử lý.')
+    }
+  }
+
+  const approveRefund = async () => {
+    if (!selectedTicket) return
+    if (!canHandleRefundTicket(selectedTicket)) {
+      setError(`Ticket đang ở trạng thái "${statusLabels[selectedTicket.status] ?? selectedTicket.status}" nên BE không cho phép hoàn tiền.`)
+      setSuccess('')
+      return
+    }
+    const reason = refundReason.trim() || selectedTicket.description
+    if (reason.trim().length < 10) {
+      setError('Lý do hoàn tiền cần ít nhất 10 ký tự.')
+      setSuccess('')
+      return
+    }
+
+    try {
+      setError('')
+      setSuccess('')
+      await refundTicket(selectedTicket._id, {
+        reason,
+        refund_method: refundMethod,
+        restock_physical: restockPhysical,
+      })
+      await openTicket(selectedTicket._id)
+      await loadTickets(selectedTicket._id)
+      setSuccess('Đã duyệt yêu cầu hoàn tiền.')
+    } catch (err: any) {
+      setSuccess('')
+      setError(err?.response?.data?.message || err?.message || 'Không thể duyệt hoàn tiền.')
+    }
+  }
+
+  const rejectRefundRequest = async () => {
+    if (!selectedTicket) return
+    if (!canHandleRefundTicket(selectedTicket)) {
+      setError(`Ticket đang ở trạng thái "${statusLabels[selectedTicket.status] ?? selectedTicket.status}" nên BE không cho phép từ chối.`)
+      setSuccess('')
+      return
+    }
+    const reason = rejectReason.trim()
+    if (reason.length < 10) {
+      setError('Lý do từ chối cần ít nhất 10 ký tự.')
+      setSuccess('')
+      return
+    }
+
+    try {
+      setError('')
+      setSuccess('')
+      await rejectTicket(selectedTicket._id, reason)
+      await openTicket(selectedTicket._id)
+      await loadTickets(selectedTicket._id)
+      setSuccess('Đã từ chối yêu cầu hoàn tiền.')
+    } catch (err: any) {
+      setSuccess('')
+      setError(err?.response?.data?.message || err?.message || 'Không thể từ chối yêu cầu.')
     }
   }
 
@@ -580,6 +652,92 @@ export default function WarrantyManagementPage() {
                     </button>
                   </div>
                 </div>
+
+                {selectedTicket.type === 'refund_request' && (
+                  <div className="rounded-2xl border border-amber-200 bg-amber-50/70 p-4">
+                    <div className="flex flex-col gap-1">
+                      <p className="text-sm font-black text-amber-950">Xử lý yêu cầu hoàn tiền</p>
+                      <p className="text-xs leading-5 text-amber-800">
+                        BE sẽ hoàn đúng sản phẩm gắn với ticket này, không hoàn toàn bộ đơn.
+                      </p>
+                    </div>
+
+                    {!canHandleRefundTicket(selectedTicket) && (
+                      <p className="mt-4 rounded-xl border border-amber-200 bg-white px-4 py-3 text-xs font-bold text-amber-800">
+                        Ticket đang ở trạng thái "{statusLabels[selectedTicket.status] ?? selectedTicket.status}", không còn thao tác hoàn tiền/từ chối.
+                      </p>
+                    )}
+
+                    <div className="mt-4 grid gap-4 lg:grid-cols-2">
+                      <div className="space-y-3">
+                        <label className="block text-xs font-bold text-slate-700">
+                          Lý do hoàn tiền
+                          <textarea
+                            value={refundReason}
+                            onChange={(event) => setRefundReason(event.target.value)}
+                            className="mt-2 min-h-[96px] w-full rounded-xl border border-amber-200 bg-white p-3 text-sm focus:border-amber-500 focus:outline-none"
+                            placeholder="Nhập lý do hoàn tiền..."
+                          />
+                        </label>
+
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          <label className="block text-xs font-bold text-slate-700">
+                            Phương thức hoàn
+                            <select
+                              value={refundMethod}
+                              onChange={(event) => setRefundMethod(event.target.value as typeof refundMethod)}
+                              className="mt-2 h-11 w-full rounded-xl border border-amber-200 bg-white px-3 text-sm font-semibold focus:border-amber-500 focus:outline-none"
+                            >
+                              <option value="original_payment">Theo phương thức gốc</option>
+                              <option value="bank_transfer">Chuyển khoản</option>
+                              <option value="store_credit">Điểm cửa hàng</option>
+                            </select>
+                          </label>
+
+                          <label className="mt-6 flex items-center gap-2 text-xs font-bold text-slate-700">
+                            <input
+                              type="checkbox"
+                              checked={restockPhysical}
+                              onChange={(event) => setRestockPhysical(event.target.checked)}
+                            />
+                            Nhập lại kho nếu là hàng vật lý
+                          </label>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={approveRefund}
+                          disabled={!canHandleRefundTicket(selectedTicket)}
+                          className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white hover:bg-emerald-500 disabled:opacity-50"
+                        >
+                          <Check className="h-4 w-4" />
+                          Duyệt hoàn tiền
+                        </button>
+                      </div>
+
+                      <div className="space-y-3">
+                        <label className="block text-xs font-bold text-slate-700">
+                          Lý do từ chối
+                          <textarea
+                            value={rejectReason}
+                            onChange={(event) => setRejectReason(event.target.value)}
+                            className="mt-2 min-h-[96px] w-full rounded-xl border border-rose-200 bg-white p-3 text-sm focus:border-rose-500 focus:outline-none"
+                            placeholder="Nhập lý do từ chối..."
+                          />
+                        </label>
+                        <button
+                          type="button"
+                          onClick={rejectRefundRequest}
+                          disabled={!canHandleRefundTicket(selectedTicket)}
+                          className="inline-flex items-center gap-2 rounded-xl bg-rose-600 px-4 py-2 text-xs font-bold text-white hover:bg-rose-500 disabled:opacity-50"
+                        >
+                          <ShieldAlert className="h-4 w-4" />
+                          Từ chối yêu cầu
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </section>

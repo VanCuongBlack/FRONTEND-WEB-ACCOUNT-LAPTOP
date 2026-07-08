@@ -5,6 +5,8 @@ import * as z from 'zod'
 import { Eye, EyeOff, Lock, Mail, ShieldCheck, Sparkles, Zap } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { loadGoogleSdk, initGoogleAuth, triggerGoogleLogin } from '@/utils/googleAuth'
+import { googleLogin } from '@/services/auth.service'
+import { useAuthStore } from '@/store/authStore'
 
 const loginSchema = z.object({
   email: z.string().min(1, 'Email không được để trống').email('Email không hợp lệ'),
@@ -18,6 +20,7 @@ type LoginFormValues = z.infer<typeof loginSchema>
 export default function LoginPage() {
   const navigate = useNavigate()
   const { login, isLoading } = useAuth()
+  const setAuth = useAuthStore((state) => state.setAuth)
   const [showPassword, setShowPassword] = useState(false)
   const [googleError, setGoogleError] = useState('')
   const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
@@ -31,12 +34,43 @@ export default function LoginPage() {
 
     loadGoogleSdk()
       .then(() => {
-        initGoogleAuth(googleClientId, (accessToken) => {
-          navigate(`/auth/google/success?googleToken=${accessToken}`)
+        initGoogleAuth(googleClientId, async (idToken) => {
+          try {
+            setGoogleError('')
+            const response = await googleLogin(idToken)
+            const data = response.data.data
+            if (!response.data.success || !data) {
+              setGoogleError(response.data.message || 'Đăng nhập Google thất bại.')
+              return
+            }
+
+            const role =
+              typeof data.user.role === 'string'
+                ? data.user.role
+                : data.user.role && typeof data.user.role === 'object' && 'name' in data.user.role
+                  ? data.user.role.name || 'customer'
+                  : 'customer'
+
+            setAuth({ ...data.user, role }, data.accessToken, data.refreshToken)
+
+            if (role === 'admin') {
+              navigate('/admin')
+              return
+            }
+
+            if (role === 'staff') {
+              navigate('/staff')
+              return
+            }
+
+            navigate('/')
+          } catch (err: any) {
+            setGoogleError(err?.response?.data?.message || err?.message || 'Đăng nhập Google thất bại.')
+          }
         })
       })
       .catch((err) => console.error('Lỗi khi tải Google SDK:', err))
-  }, [googleClientId, isGoogleConfigured, navigate])
+  }, [googleClientId, isGoogleConfigured, navigate, setAuth])
 
   const handleGoogleLogin = () => {
     if (!isGoogleConfigured) {

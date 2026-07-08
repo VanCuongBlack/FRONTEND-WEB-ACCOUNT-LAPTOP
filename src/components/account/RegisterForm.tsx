@@ -6,10 +6,13 @@ import { CheckCircle2, Eye, EyeOff, Loader2, Lock, Mail, Phone, User } from 'luc
 import { registerSchema, type RegisterFormValues } from '@/utils/validators'
 import { useAuth } from '@/hooks/useAuth'
 import { loadGoogleSdk, initGoogleAuth, triggerGoogleLogin } from '@/utils/googleAuth'
+import { googleLogin } from '@/services/auth.service'
+import { useAuthStore } from '@/store/authStore'
 
 export default function RegisterForm() {
   const navigate = useNavigate()
   const { register: registerUser, isLoading } = useAuth()
+  const setAuth = useAuthStore((state) => state.setAuth)
   const [showPass, setShowPass] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
   const [success, setSuccess] = useState(false)
@@ -18,18 +21,6 @@ export default function RegisterForm() {
     Boolean(googleClientId) &&
     String(googleClientId).endsWith('.apps.googleusercontent.com') &&
     !String(googleClientId).includes('placeholder')
-
-  useEffect(() => {
-    if (!isGoogleConfigured) return
-
-    loadGoogleSdk()
-      .then(() => {
-        initGoogleAuth(googleClientId, (accessToken) => {
-          navigate(`/auth/google/success?googleToken=${accessToken}`)
-        })
-      })
-      .catch((err) => console.error('Lỗi khi tải Google SDK:', err))
-  }, [googleClientId, isGoogleConfigured, navigate])
 
   const {
     register: field,
@@ -40,6 +31,54 @@ export default function RegisterForm() {
     resolver: zodResolver(registerSchema),
     defaultValues: { fullName: '', email: '', phone: '', password: '', confirmPassword: '' },
   })
+
+  useEffect(() => {
+    if (!isGoogleConfigured) return
+
+    loadGoogleSdk()
+      .then(() => {
+        initGoogleAuth(googleClientId, async (idToken) => {
+          try {
+            const response = await googleLogin(idToken)
+            const data = response.data.data
+            if (!response.data.success || !data) {
+              setError('root', {
+                type: 'server',
+                message: response.data.message || 'Đăng nhập Google thất bại.',
+              })
+              return
+            }
+
+            const role =
+              typeof data.user.role === 'string'
+                ? data.user.role
+                : data.user.role && typeof data.user.role === 'object' && 'name' in data.user.role
+                  ? data.user.role.name || 'customer'
+                  : 'customer'
+
+            setAuth({ ...data.user, role }, data.accessToken, data.refreshToken)
+
+            if (role === 'admin') {
+              navigate('/admin')
+              return
+            }
+
+            if (role === 'staff') {
+              navigate('/staff')
+              return
+            }
+
+            navigate('/')
+          } catch (err: any) {
+            setError('root', {
+              type: 'server',
+              message: err?.response?.data?.message || err?.message || 'Đăng nhập Google thất bại.',
+            })
+          }
+        })
+      })
+      .catch((err) => console.error('Lỗi khi tải Google SDK:', err))
+  }, [googleClientId, isGoogleConfigured, navigate, setAuth, setError])
 
   const onSubmit = async (data: RegisterFormValues) => {
     const response = await registerUser({

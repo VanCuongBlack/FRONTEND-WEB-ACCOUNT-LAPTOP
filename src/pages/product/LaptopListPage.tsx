@@ -8,6 +8,28 @@ import ProductFilter from '@/components/product/ProductFilter'
 import { useProduct } from '@/hooks/useProduct'
 
 type LaptopTab = '' | 'Gaming' | 'Văn phòng' | 'MacBook'
+type BrandReadableProduct = {
+  name?: string
+  brand?: string
+  physical?: {
+    brand?: string
+  }
+}
+
+function getBrandSearchText(product: BrandReadableProduct) {
+  return `${product.brand ?? ''} ${product.physical?.brand ?? ''} ${product.name ?? ''}`.toLowerCase()
+}
+
+function matchesBrand(product: BrandReadableProduct, brand: string) {
+  const text = getBrandSearchText(product)
+  const value = brand.toLowerCase()
+
+  if (value === 'apple') {
+    return text.includes('apple') || text.includes('macbook')
+  }
+
+  return text.includes(value)
+}
 
 export default function LaptopListPage() {
   const navigate = useNavigate()
@@ -108,9 +130,7 @@ export default function LaptopListPage() {
       })
       .filter((item) => {
         if (selectedBrands.length === 0) return true
-        return selectedBrands.some((brand) =>
-          (item.brand || '').toLowerCase().includes(brand.toLowerCase())
-        )
+        return selectedBrands.some((brand) => matchesBrand(item, brand))
       })
   }, [search, activeTab, selectedPrices, selectedBrands, laptops, products])
 

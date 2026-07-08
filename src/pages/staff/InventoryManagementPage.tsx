@@ -357,7 +357,7 @@ export default function InventoryManagementPage() {
         }
         await stockInPhysical(productId, {
           serial_number: stockInForm.serialNumber.trim(),
-          images_urls: imageUrls,
+          ...(imageUrls[0] ? { image: imageUrls[0] } : {}),
           sale_price: salePrice,
           status: 'available',
           note: stockInForm.note.trim() || undefined,

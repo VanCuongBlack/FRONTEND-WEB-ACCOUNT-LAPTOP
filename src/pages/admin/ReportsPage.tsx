@@ -204,6 +204,17 @@ export default function ReportsPage() {
           </p>
         )}
 
+        {type === 'revenue' && (
+          <div className="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-800">
+            <p className="font-bold">Doanh thu đang lấy theo API báo cáo của BE.</p>
+            <p className="mt-1">
+              API hiện chỉ cộng các đơn đã ở trạng thái <strong>Hoàn tất</strong>. Đơn chuyển khoản
+              đã được SePay xác nhận sẽ vào trạng thái <strong>Đã xác nhận</strong>, nên chưa cộng
+              vào báo cáo cho tới khi nhân viên chuyển đơn sang hoàn tất.
+            </p>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <SummaryCard
             label="Tổng doanh thu"
@@ -229,7 +240,7 @@ export default function ReportsPage() {
           <div className="mb-5 flex items-center justify-between gap-3">
             <h2 className="text-lg font-bold text-gray-900">
               {type === 'revenue'
-                ? 'Doanh thu theo ngày'
+                ? 'Doanh thu đơn hoàn tất theo ngày'
                 : type === 'products'
                   ? 'Sản phẩm bán chạy'
                   : 'Khách hàng nổi bật'}

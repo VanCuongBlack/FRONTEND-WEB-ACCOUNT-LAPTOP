@@ -28,6 +28,7 @@ const statusLabelMap: Record<SupportTicketStatus, string> = {
   closed: 'Đã đóng',
   cancelled: 'Đã hủy',
   reopened: 'Đã mở lại',
+  rejected: 'Đã từ chối',
 }
 
 const typeLabelMap: Record<SupportTicket['type'], string> = {

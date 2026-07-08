@@ -7,6 +7,7 @@ interface AppModalProps {
   children: ReactNode
   onClose: () => void
   footer?: ReactNode
+  maxWidthClassName?: string
 }
 
 export default function AppModal({
@@ -15,13 +16,14 @@ export default function AppModal({
   children,
   onClose,
   footer,
+  maxWidthClassName = 'max-w-[520px]',
 }: AppModalProps) {
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 px-4">
-      <div className="w-full max-w-[520px] rounded-2xl bg-white p-6 shadow-2xl">
-        <div className="mb-5 flex items-center justify-between">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/45 px-4 py-6 backdrop-blur-sm">
+      <div className={`max-h-[88vh] w-full overflow-y-auto rounded-2xl bg-white shadow-2xl ${maxWidthClassName}`}>
+        <div className="sticky top-0 z-10 mb-2 flex items-center justify-between border-b border-gray-100 bg-white px-6 py-5">
           <h2 className="text-xl font-bold text-black">
             {title}
           </h2>
@@ -35,10 +37,10 @@ export default function AppModal({
           </button>
         </div>
 
-        <div>{children}</div>
+        <div className="px-6 pb-6">{children}</div>
 
         {footer && (
-          <div className="mt-6 flex justify-end gap-3">
+          <div className="sticky bottom-0 mt-2 flex justify-end gap-3 border-t border-gray-100 bg-white px-6 py-4">
             {footer}
           </div>
         )}

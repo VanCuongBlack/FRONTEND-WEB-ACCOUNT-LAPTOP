@@ -1,5 +1,6 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Navigate, Routes, Route, useParams } from 'react-router-dom'
 import ProtectedRoute from '@/components/common/ProtectedRoute'
+import FloatingSocialLinks from '@/components/layout/FloatingSocialLinks'
 
 import LandingPage from '@/pages/public/LandingPage'
 
@@ -48,6 +49,21 @@ import CustomerManagementPage from '@/pages/staff/CustomerManagementPage'
 import WarrantyManagementPage from '@/pages/staff/WarrantyManagementPage'
 import StaffSettingsPage from '@/pages/staff/StaffSettingsPage'
 
+function LegacySupportTicketRedirect() {
+  const { ticketId } = useParams()
+  return <Navigate to={`/profile/support/${ticketId}`} replace />
+}
+
+function LegacyManagedTicketRedirect() {
+  const { ticketId } = useParams()
+  return <Navigate to={`/staff/tickets?ticketId=${ticketId}`} replace />
+}
+
+function LegacyOrderRedirect() {
+  const { id } = useParams()
+  return <Navigate to={`/profile/history/${id}`} replace />
+}
+
 export default function AppRoutes() {
   return (
     <BrowserRouter>
@@ -89,6 +105,8 @@ export default function AppRoutes() {
         <Route path="/profile/history/account/:id" element={<ProtectedRoute requiredRoles={['customer']}><AccountOrderDetailPage /></ProtectedRoute>} />
         <Route path="/profile/history/support/:type/:id" element={<ProtectedRoute requiredRoles={['customer']}><SupportRequestPage /></ProtectedRoute>} />
         <Route path="/profile/support/:ticketId" element={<ProtectedRoute requiredRoles={['customer']}><SupportRequestDetailPage /></ProtectedRoute>} />
+        <Route path="/support/tickets/:ticketId" element={<ProtectedRoute requiredRoles={['customer']}><LegacySupportTicketRedirect /></ProtectedRoute>} />
+        <Route path="/orders/:id" element={<ProtectedRoute requiredRoles={['customer']}><LegacyOrderRedirect /></ProtectedRoute>} />
 
         {/* Admin Routes */}
         <Route path="/admin" element={<ProtectedRoute requiredRoles={['admin']}><AdminDashboard /></ProtectedRoute>} />
@@ -106,11 +124,13 @@ export default function AppRoutes() {
         <Route path="/staff/customers" element={<ProtectedRoute requiredRoles={['admin']}><CustomerManagementPage /></ProtectedRoute>} />
         <Route path="/staff/warranty" element={<ProtectedRoute requiredRoles={['staff', 'admin']}><WarrantyManagementPage /></ProtectedRoute>} />
         <Route path="/staff/tickets" element={<ProtectedRoute requiredRoles={['staff', 'admin']}><WarrantyManagementPage /></ProtectedRoute>} />
+        <Route path="/support/manage/tickets/:ticketId" element={<ProtectedRoute requiredRoles={['staff', 'admin']}><LegacyManagedTicketRedirect /></ProtectedRoute>} />
         <Route path="/staff/settings" element={<ProtectedRoute requiredRoles={['staff', 'admin']}><StaffSettingsPage /></ProtectedRoute>} />
 
         {/* 404 Route */}
         <Route path="*" element={<div>404 Not Found</div>} />
       </Routes>
+      <FloatingSocialLinks />
     </BrowserRouter>
   )
 }

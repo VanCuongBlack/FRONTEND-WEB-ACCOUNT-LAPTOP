@@ -72,9 +72,9 @@ export interface InventoryLogsResponse {
 
 export interface StockInPhysicalPayload {
   serial_number: string
-  images_urls?: Array<{ url: string; public_id: string }>
+  image?: { url: string; public_id: string }
   sale_price: number
-  status?: 'available' | 'reserved' | 'sold'
+  status?: 'available' | 'reserved' | 'sold' | 'returned'
   note?: string
 }
 
