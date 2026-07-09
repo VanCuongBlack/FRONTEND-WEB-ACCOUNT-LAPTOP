@@ -1,10 +1,6 @@
-Dưới đây là file cấu hình định tuyến `AppRoutes` sau khi đã được dọn dẹp sạch sẽ các ký tự xung đột merge Git (`<<<<<<<`, `=======`, `>>>>>>>`).
-
-Tôi chọn **giữ lại route `/staff/settings` từ nhánh `feature-hung**` để đảm bảo nhân viên (`staff`) không bị thiếu trang cấu hình cá nhân hoặc cài đặt hệ thống của họ.
-
-```tsx
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Navigate, Routes, Route, useParams } from 'react-router-dom'
 import ProtectedRoute from '@/components/common/ProtectedRoute'
+import FloatingSocialLinks from '@/components/layout/FloatingSocialLinks'
 
 import LandingPage from '@/pages/public/LandingPage'
 
@@ -43,6 +39,7 @@ import AdminDashboard from '@/pages/admin/AdminDashboard'
 import SystemSettingsPage from '@/pages/admin/SystemSettingsPage'
 import EmployeeManagementPage from '@/pages/admin/EmployeeManagementPage'
 import ReportsPage from '@/pages/admin/ReportsPage'
+import BannerManagementPage from '@/pages/admin/BannerManagementPage'
 
 import StaffDashboard from '@/pages/staff/StaffDashboard'
 import ProductManagementPage from '@/pages/staff/ProductManagementPage'
@@ -51,6 +48,21 @@ import OrderManagementPage from '@/pages/staff/OrderManagementPage'
 import CustomerManagementPage from '@/pages/staff/CustomerManagementPage'
 import WarrantyManagementPage from '@/pages/staff/WarrantyManagementPage'
 import StaffSettingsPage from '@/pages/staff/StaffSettingsPage'
+
+function LegacySupportTicketRedirect() {
+  const { ticketId } = useParams()
+  return <Navigate to={`/profile/support/${ticketId}`} replace />
+}
+
+function LegacyManagedTicketRedirect() {
+  const { ticketId } = useParams()
+  return <Navigate to={`/staff/tickets?ticketId=${ticketId}`} replace />
+}
+
+function LegacyOrderRedirect() {
+  const { id } = useParams()
+  return <Navigate to={`/profile/history/${id}`} replace />
+}
 
 export default function AppRoutes() {
   return (
@@ -93,11 +105,14 @@ export default function AppRoutes() {
         <Route path="/profile/history/account/:id" element={<ProtectedRoute requiredRoles={['customer']}><AccountOrderDetailPage /></ProtectedRoute>} />
         <Route path="/profile/history/support/:type/:id" element={<ProtectedRoute requiredRoles={['customer']}><SupportRequestPage /></ProtectedRoute>} />
         <Route path="/profile/support/:ticketId" element={<ProtectedRoute requiredRoles={['customer']}><SupportRequestDetailPage /></ProtectedRoute>} />
+        <Route path="/support/tickets/:ticketId" element={<ProtectedRoute requiredRoles={['customer']}><LegacySupportTicketRedirect /></ProtectedRoute>} />
+        <Route path="/orders/:id" element={<ProtectedRoute requiredRoles={['customer']}><LegacyOrderRedirect /></ProtectedRoute>} />
 
         {/* Admin Routes */}
         <Route path="/admin" element={<ProtectedRoute requiredRoles={['admin']}><AdminDashboard /></ProtectedRoute>} />
         <Route path="/admin/employees" element={<ProtectedRoute requiredRoles={['admin']}><EmployeeManagementPage /></ProtectedRoute>} />
         <Route path="/admin/customers" element={<ProtectedRoute requiredRoles={['admin']}><CustomerManagementPage /></ProtectedRoute>} />
+        <Route path="/admin/banners" element={<ProtectedRoute requiredRoles={['admin']}><BannerManagementPage /></ProtectedRoute>} />
         <Route path="/admin/reports" element={<ProtectedRoute requiredRoles={['admin']}><ReportsPage /></ProtectedRoute>} />
         <Route path="/admin/settings" element={<ProtectedRoute requiredRoles={['admin']}><SystemSettingsPage /></ProtectedRoute>} />
 
@@ -109,13 +124,14 @@ export default function AppRoutes() {
         <Route path="/staff/customers" element={<ProtectedRoute requiredRoles={['admin']}><CustomerManagementPage /></ProtectedRoute>} />
         <Route path="/staff/warranty" element={<ProtectedRoute requiredRoles={['staff', 'admin']}><WarrantyManagementPage /></ProtectedRoute>} />
         <Route path="/staff/tickets" element={<ProtectedRoute requiredRoles={['staff', 'admin']}><WarrantyManagementPage /></ProtectedRoute>} />
+        <Route path="/support/manage/tickets/:ticketId" element={<ProtectedRoute requiredRoles={['staff', 'admin']}><LegacyManagedTicketRedirect /></ProtectedRoute>} />
         <Route path="/staff/settings" element={<ProtectedRoute requiredRoles={['staff', 'admin']}><StaffSettingsPage /></ProtectedRoute>} />
 
         {/* 404 Route */}
         <Route path="*" element={<div>404 Not Found</div>} />
       </Routes>
+      <FloatingSocialLinks />
     </BrowserRouter>
   )
 }
 
-```

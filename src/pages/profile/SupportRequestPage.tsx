@@ -179,13 +179,13 @@ export default function SupportRequestPage() {
                 <textarea
                   value={attachmentText}
                   onChange={(event) => setAttachmentText(event.target.value)}
-                  placeholder="Mỗi dòng một URL ảnh/video. Backend hiện nhận tối đa 5 URL."
+                  placeholder="Mỗi dòng một link ảnh/video, tối đa 5 link."
                   rows={4}
                   className={`${fieldClass} min-h-[110px] resize-none py-3 pl-11`}
                 />
               </div>
               <p className="mt-2 text-xs text-[#a9a2cf]">
-                Hiện backend chưa có API upload file từ máy, nên frontend chỉ gửi được link ảnh/video.
+                Bạn có thể gửi link ảnh chụp lỗi hoặc video thao tác để nhân viên kiểm tra nhanh hơn.
               </p>
             </Field>
           </div>

@@ -187,10 +187,10 @@ export default function WarrantyPolicyPage() {
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
-              <a className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-bold text-slate-900" href="tel:19000000">
+              <a className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-bold text-slate-900" href="tel:19001234">
                 <PhoneCall className="h-4 w-4" /> Hotline
               </a>
-              <a className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-bold text-white" href="/support">
+              <a className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-bold text-white" href="/profile/history">
                 <MessageSquare className="h-4 w-4" /> Hỗ trợ
               </a>
               <a className="inline-flex items-center gap-2 rounded-xl bg-white/10 px-4 py-2 text-sm font-bold text-white" href="/purchase-guide">

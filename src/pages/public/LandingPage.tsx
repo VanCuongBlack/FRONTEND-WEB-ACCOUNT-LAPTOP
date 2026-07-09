@@ -12,13 +12,10 @@ import NewsletterCTA from '@/components/landing/NewsletterCTA'
 import Footer from '@/components/layout/Footer'
 
 const marketplaceTabs = [
-  'Bán chạy',
-  'PC Gaming',
-  'Laptop văn phòng',
-  'MacBook',
-  'Account AI',
-  'Account giải trí',
-]
+  { id: 'all', label: 'Tất cả' },
+  { id: 'laptop', label: 'Laptop / PC' },
+  { id: 'account', label: 'Account số' },
+] as const
 
 export default function LandingPage() {
   const [banners, setBanners] = useState<Banner[]>([])
@@ -28,6 +25,7 @@ export default function LandingPage() {
   const searchQuery = searchParams.get('search') ?? ''
   const [searchResults, setSearchResults] = useState<Product[]>([])
   const [searchLoading, setSearchLoading] = useState(false)
+  const [activeTab, setActiveTab] = useState<'all' | 'laptop' | 'account'>('all')
 
   useEffect(() => {
     getLandingData()
@@ -103,70 +101,128 @@ export default function LandingPage() {
   })
 
   return (
-    <div className="min-h-screen bg-[#09051f]">
-      <Header />
-      <HeroBanner banners={banners} />
-      <CategoryBar />
+    <div className="min-h-screen bg-gradient-to-b from-[#0b0726] via-[#150e3d] to-[#040214] relative overflow-hidden text-white">
+      {/* Ambient background glows */}
+      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-blue-500/10 rounded-full blur-[120px] pointer-events-none z-0" />
+      <div className="absolute top-[20%] right-[-10%] w-[60%] h-[60%] bg-purple-500/5 rounded-full blur-[150px] pointer-events-none z-0" />
+      <div className="absolute bottom-[20%] left-[-10%] w-[45%] h-[45%] bg-indigo-500/5 rounded-full blur-[130px] pointer-events-none z-0" />
 
-      <section className="w-full px-4 pb-5 sm:px-6">
-        <div className="flex gap-3 overflow-x-auto py-2">
-          {marketplaceTabs.map((tab, index) => (
-            <button
-              key={tab}
-              type="button"
-              className={`h-12 shrink-0 rounded-[22px] px-7 text-base font-black transition-colors ${
-                index === 0
-                  ? 'border border-[#3f75ff] bg-transparent text-white'
-                  : 'bg-[#44405f] text-white hover:bg-[#565176]'
-              }`}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
-      </section>
-
-      <div className="flex w-full flex-col gap-5 sm:gap-6">
-        {searchQuery ? (
-          <FeaturedProducts
-            products={searchResults}
-            loading={searchLoading}
-            title={`Kết quả tìm kiếm cho: "${searchQuery}"`}
-            viewMoreUrl=""
-            accent="hot"
-          />
-        ) : (
-          <>
+      <div className="relative z-10 flex flex-col min-h-screen">
+        <Header />
+        <HeroBanner banners={banners} />
+        <CategoryBar />
+        <div className="flex w-full flex-col gap-8 relative z-10">
+          {searchQuery ? (
             <FeaturedProducts
-              products={filteredProducts}
-              loading={productsLoading}
-              title="Sản phẩm bán chạy"
-              viewMoreUrl="/best-seller"
+              products={searchResults}
+              loading={searchLoading}
+              title={`Kết quả tìm kiếm cho: "${searchQuery}"`}
+              viewMoreUrl=""
               accent="hot"
             />
+          ) : activeTab === 'all' ? (
+            <>
+              <FeaturedProducts
+                products={filteredProducts}
+                loading={productsLoading}
+                title="Sản phẩm bán chạy"
+                viewMoreUrl="/best-seller"
+                accent="hot"
+                showEyebrow={false}
+                headerRight={
+                  <div className="flex gap-2 overflow-x-auto">
+                    {marketplaceTabs.map((tab) => (
+                      <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id)}
+                        className={`h-8 shrink-0 rounded-full px-4 text-[11px] font-black uppercase tracking-wider transition-all duration-300 ${
+                          activeTab === tab.id
+                            ? 'bg-[#00d6ff] text-[#040214] shadow-[0_4px_15px_rgba(0,214,255,0.3)]'
+                            : 'bg-white/5 text-white/70 hover:bg-white/10 border border-white/5 hover:text-white'
+                        }`}
+                      >
+                        {tab.label}
+                      </button>
+                    ))}
+                  </div>
+                }
+              />
 
-            <FeaturedProducts
-              products={filteredProducts.filter((product) => product.category === 'account').slice(0, 4)}
-              loading={productsLoading}
-              title="Tài khoản Account riêng"
-              viewMoreUrl="/accounts"
-              accent="account"
-            />
+              <FeaturedProducts
+                products={filteredProducts.filter((product) => product.category === 'account').slice(0, 4)}
+                loading={productsLoading}
+                title="Tài khoản Premium"
+                viewMoreUrl="/accounts"
+                accent="account"
+              />
 
+              <FeaturedProducts
+                products={filteredProducts.filter((product) => product.category === 'laptop').slice(0, 4)}
+                loading={productsLoading}
+                title="Laptop & PC"
+                viewMoreUrl="/laptops"
+                accent="laptop"
+              />
+            </>
+          ) : activeTab === 'laptop' ? (
             <FeaturedProducts
-              products={filteredProducts.filter((product) => product.category === 'laptop').slice(0, 4)}
+              products={filteredProducts.filter((product) => product.category === 'laptop')}
               loading={productsLoading}
-              title="Laptop / PC riêng"
+              title="Danh sách Laptop / PC"
               viewMoreUrl="/laptops"
               accent="laptop"
+              showEyebrow={false}
+              headerRight={
+                <div className="flex gap-2 overflow-x-auto">
+                  {marketplaceTabs.map((tab) => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`h-8 shrink-0 rounded-full px-4 text-[11px] font-black uppercase tracking-wider transition-all duration-300 ${
+                        activeTab === tab.id
+                          ? 'bg-[#00d6ff] text-[#040214] shadow-[0_4px_15px_rgba(0,214,255,0.3)]'
+                          : 'bg-white/5 text-white/70 hover:bg-white/10 border border-white/5 hover:text-white'
+                      }`}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+              }
             />
-          </>
-        )}
-      </div>
+          ) : (
+            <FeaturedProducts
+              products={filteredProducts.filter((product) => product.category === 'account')}
+              loading={productsLoading}
+              title="Danh sách Tài khoản Account"
+              viewMoreUrl="/accounts"
+              accent="account"
+              showEyebrow={false}
+              headerRight={
+                <div className="flex gap-2 overflow-x-auto">
+                  {marketplaceTabs.map((tab) => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`h-8 shrink-0 rounded-full px-4 text-[11px] font-black uppercase tracking-wider transition-all duration-300 ${
+                        activeTab === tab.id
+                          ? 'bg-[#00d6ff] text-[#040214] shadow-[0_4px_15px_rgba(0,214,255,0.3)]'
+                          : 'bg-white/5 text-white/70 hover:bg-white/10 border border-white/5 hover:text-white'
+                      }`}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+              }
+            />
+          )}
+        </div>
 
-      <PromoBanners />
-      <NewsletterCTA />
-      <Footer />
+        <PromoBanners />
+        <NewsletterCTA />
+        <Footer />
+      </div>
     </div>
   )
 }

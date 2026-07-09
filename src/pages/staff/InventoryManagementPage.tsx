@@ -14,6 +14,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import StaffLayout from '@/layouts/StaffLayout'
+import ImageUploadField from '@/components/common/ImageUploadField'
 import {
   getInventoryLogs,
   getLowStockAlerts,
@@ -23,6 +24,7 @@ import {
   type InventoryLog,
   type StockSummaryItem,
 } from '@/services/inventory.service'
+import type { UploadedImage } from '@/services/upload.service'
 
 type InventoryTab = 'stock' | 'stock-in' | 'history'
 type ProductTypeFilter = 'all' | 'physical' | 'digital'
@@ -39,6 +41,7 @@ interface StockInForm {
   note: string
   serialNumber: string
   imageUrls: string
+  imageAssets: UploadedImage[]
   accountEmail: string
   accountPassword: string
   expiredAt: string
@@ -52,6 +55,7 @@ function emptyStockInForm(productType: 'physical' | 'digital' = 'physical'): Sto
     note: '',
     serialNumber: '',
     imageUrls: '',
+    imageAssets: [],
     accountEmail: '',
     accountPassword: '',
     expiredAt: '',
@@ -60,8 +64,18 @@ function emptyStockInForm(productType: 'physical' | 'digital' = 'physical'): Sto
 
 function getStockItems(data: any): StockSummaryItem[] {
   if (!data) return []
-  if (Array.isArray(data.items)) return data.items
-  if (Array.isArray(data.data)) return data.data
+  const normalize = (item: StockSummaryItem): StockSummaryItem => ({
+    ...item,
+    available: item.available ?? item.stock?.available ?? 0,
+    reserved: item.reserved ?? item.stock?.reserved ?? 0,
+    sold: item.sold ?? item.stock?.sold ?? 0,
+    total: item.total ?? item.stock?.total,
+    min_sale_price: item.min_sale_price ?? item.base_price,
+    max_sale_price: item.max_sale_price ?? item.base_price,
+  })
+  if (Array.isArray(data.items)) return data.items.map(normalize)
+  if (Array.isArray(data.data)) return data.data.map(normalize)
+  if (Array.isArray(data.products)) return data.products.map(normalize)
   if (data.physical || data.digital) {
     return [
       ...getStockItems(data.physical).map((item) => ({
@@ -85,8 +99,49 @@ function itemId(item: StockSummaryItem) {
   return item.product_id || item._id || itemName(item)
 }
 
+function refId(value: unknown) {
+  if (!value) return 'N/A'
+  if (typeof value === 'string') return value
+  if (typeof value === 'object' && '_id' in value) {
+    const id = (value as { _id?: unknown })._id
+    return typeof id === 'string' ? id : 'N/A'
+  }
+  return 'N/A'
+}
+
+function productLogName(log: InventoryLog) {
+  const product = log.product_id
+  if (product && typeof product === 'object') {
+    return product.name || refId(product)
+  }
+  return refId(product)
+}
+
 function itemTotal(item: StockSummaryItem) {
   return item.total ?? (item.available ?? 0) + (item.reserved ?? 0) + (item.sold ?? 0)
+}
+
+function stockItemKind(item: StockSummaryItem): 'physical' | 'digital' {
+  return item.product_type === 'digital' ? 'digital' : 'physical'
+}
+
+function stockItemPrice(item?: StockSummaryItem) {
+  return item?.min_sale_price ?? item?.max_sale_price ?? item?.base_price ?? ''
+}
+
+function makeSerialNumber() {
+  const now = new Date()
+  const stamp = [
+    now.getFullYear(),
+    String(now.getMonth() + 1).padStart(2, '0'),
+    String(now.getDate()).padStart(2, '0'),
+  ].join('')
+  const time = [
+    String(now.getHours()).padStart(2, '0'),
+    String(now.getMinutes()).padStart(2, '0'),
+    String(now.getSeconds()).padStart(2, '0'),
+  ].join('')
+  return `LP-${stamp}-${time}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`
 }
 
 function formatDate(value?: string) {
@@ -108,10 +163,27 @@ function parseUrls(value: string) {
     .filter(Boolean)
 }
 
-function hasInvalidUrl(urls: string[]) {
-  return urls.some((url) => {
+function buildImageObjects(imageUrls: string, imageAssets: UploadedImage[]) {
+  const uploadedImages = imageAssets
+    .filter((image) => image.url && image.public_id)
+    .map((image) => ({ url: image.url, public_id: image.public_id }))
+  const manualImages = parseUrls(imageUrls).map((url) => ({
+    url,
+    public_id: `manual-${url}`,
+  }))
+  const images = [...uploadedImages, ...manualImages]
+  const seen = new Set<string>()
+  return images.filter((image) => {
+    if (seen.has(image.url)) return false
+    seen.add(image.url)
+    return true
+  })
+}
+
+function hasInvalidUrl(images: Array<{ url: string }>) {
+  return images.some((image) => {
     try {
-      new URL(url)
+      new URL(image.url)
       return false
     } catch {
       return true
@@ -188,6 +260,35 @@ export default function InventoryManagementPage() {
     if (activeTab === 'history') loadLogs()
   }, [activeTab, type, logAction])
 
+  const makeStockInForm = (productType: 'physical' | 'digital'): StockInForm => {
+    const candidate = items.find((item) => stockItemKind(item) === productType)
+    return {
+      ...emptyStockInForm(productType),
+      productId: candidate ? String(itemId(candidate)) : '',
+      salePrice: candidate ? String(stockItemPrice(candidate)) : '',
+      serialNumber: productType === 'physical' ? makeSerialNumber() : '',
+    }
+  }
+
+  useEffect(() => {
+    if (activeTab !== 'stock-in') return
+
+    setStockInForm((prev) => {
+      const candidate = items.find((item) => stockItemKind(item) === prev.productType)
+      const shouldFillProduct = !prev.productId.trim() && Boolean(candidate)
+      const shouldFillSerial = prev.productType === 'physical' && !prev.serialNumber.trim()
+
+      if (!shouldFillProduct && !shouldFillSerial) return prev
+
+      return {
+        ...prev,
+        productId: shouldFillProduct && candidate ? String(itemId(candidate)) : prev.productId,
+        salePrice: shouldFillProduct && candidate && !prev.salePrice.trim() ? String(stockItemPrice(candidate)) : prev.salePrice,
+        serialNumber: shouldFillSerial ? makeSerialNumber() : prev.serialNumber,
+      }
+    })
+  }, [activeTab, items, stockInForm.productType])
+
   const filteredItems = useMemo(() => {
     const keyword = search.trim().toLowerCase()
     if (!keyword) return items
@@ -218,12 +319,13 @@ export default function InventoryManagementPage() {
   ]
 
   const handlePickProduct = (item: StockSummaryItem) => {
-    const productType = item.product_type === 'digital' ? 'digital' : 'physical'
+    const productType = stockItemKind(item)
     setStockInForm((prev) => ({
       ...prev,
-      productId: String(item.product_id ?? item._id ?? ''),
+      productId: String(itemId(item)),
       productType,
-      salePrice: String(item.min_sale_price ?? item.max_sale_price ?? ''),
+      salePrice: String(stockItemPrice(item)),
+      serialNumber: productType === 'physical' ? makeSerialNumber() : '',
     }))
     setActiveTab('stock-in')
     setSuccess('')
@@ -244,7 +346,7 @@ export default function InventoryManagementPage() {
 
     try {
       if (stockInForm.productType === 'physical') {
-        const imageUrls = parseUrls(stockInForm.imageUrls)
+        const imageUrls = buildImageObjects(stockInForm.imageUrls, stockInForm.imageAssets)
         if (!stockInForm.serialNumber.trim()) {
           setError('Số serial là bắt buộc cho Laptop/PC.')
           return
@@ -255,7 +357,7 @@ export default function InventoryManagementPage() {
         }
         await stockInPhysical(productId, {
           serial_number: stockInForm.serialNumber.trim(),
-          images_urls: imageUrls,
+          ...(imageUrls[0] ? { image: imageUrls[0] } : {}),
           sale_price: salePrice,
           status: 'available',
           note: stockInForm.note.trim() || undefined,
@@ -276,7 +378,7 @@ export default function InventoryManagementPage() {
       }
 
       setSuccess('Nhập kho thành công.')
-      setStockInForm(emptyStockInForm(stockInForm.productType))
+      setStockInForm(makeStockInForm(stockInForm.productType))
       await Promise.all([loadInventory(), loadLogs()])
     } catch (err: any) {
       setError(err?.response?.data?.message || err?.message || 'Không thể nhập kho.')
@@ -398,11 +500,11 @@ export default function InventoryManagementPage() {
 
               <div className="grid gap-4 md:grid-cols-2">
                 <Field label="Mã sản phẩm">
-                  <input value={stockInForm.productId} onChange={(event) => setStockInForm((prev) => ({ ...prev, productId: event.target.value }))} placeholder="Dán mã sản phẩm từ bảng tồn kho" className={inputClass} />
+                  <input value={stockInForm.productId} onChange={(event) => setStockInForm((prev) => ({ ...prev, productId: event.target.value }))} placeholder="Tự điền từ sản phẩm đầu tiên trong tồn kho" className={inputClass} />
                 </Field>
 
                 <Field label="Loại sản phẩm">
-                  <select value={stockInForm.productType} onChange={(event) => setStockInForm(emptyStockInForm(event.target.value as 'physical' | 'digital'))} className={inputClass}>
+                  <select value={stockInForm.productType} onChange={(event) => setStockInForm(makeStockInForm(event.target.value as 'physical' | 'digital'))} className={inputClass}>
                     <option value="physical">Laptop / PC</option>
                     <option value="digital">Account số</option>
                   </select>
@@ -415,11 +517,17 @@ export default function InventoryManagementPage() {
                 {stockInForm.productType === 'physical' ? (
                   <>
                     <Field label="Số serial">
-                      <input value={stockInForm.serialNumber} onChange={(event) => setStockInForm((prev) => ({ ...prev, serialNumber: event.target.value }))} placeholder="VD: LP-2026-0001" className={inputClass} />
+                      <input value={stockInForm.serialNumber} onChange={(event) => setStockInForm((prev) => ({ ...prev, serialNumber: event.target.value }))} placeholder="Tự tạo khi chọn Laptop / PC" className={inputClass} />
                     </Field>
                     <div className="md:col-span-2">
                       <Field label="Link ảnh sản phẩm">
-                        <textarea value={stockInForm.imageUrls} onChange={(event) => setStockInForm((prev) => ({ ...prev, imageUrls: event.target.value }))} rows={4} placeholder="Mỗi dòng một URL hợp lệ" className={textareaClass} />
+                        <ImageUploadField
+                          value={stockInForm.imageUrls}
+                          images={stockInForm.imageAssets}
+                          rows={4}
+                          textareaClassName={textareaClass}
+                          onChange={(imageUrls, imageAssets) => setStockInForm((prev) => ({ ...prev, imageUrls, imageAssets }))}
+                        />
                       </Field>
                     </div>
                   </>
@@ -445,7 +553,7 @@ export default function InventoryManagementPage() {
               </div>
 
               <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
-                <button type="button" onClick={() => setStockInForm(emptyStockInForm(stockInForm.productType))} className="h-11 rounded-xl border border-slate-200 px-5 text-sm font-bold text-slate-600 hover:bg-slate-50">
+                <button type="button" onClick={() => setStockInForm(makeStockInForm(stockInForm.productType))} className="h-11 rounded-xl border border-slate-200 px-5 text-sm font-bold text-slate-600 hover:bg-slate-50">
                   Làm mới
                 </button>
                 <button type="button" disabled={isSaving} onClick={handleStockIn} className="h-11 rounded-xl bg-sky-600 px-6 text-sm font-black text-white hover:bg-sky-500 disabled:cursor-not-allowed disabled:bg-slate-300">
@@ -621,7 +729,7 @@ function HistoryTable({
               logs.map((log) => (
                 <tr key={log._id} className="hover:bg-slate-50/60">
                   <td className="px-6 py-4 text-sm text-slate-600"><div className="flex items-center gap-2"><FileClock className="h-4 w-4 text-slate-400" />{formatDate(log.createdAt)}</div></td>
-                  <td className="px-6 py-4"><p className="text-sm font-bold text-slate-800">{String(log.product_id ?? 'N/A')}</p><p className="text-xs text-slate-400">{log._id}</p></td>
+                  <td className="px-6 py-4"><p className="text-sm font-bold text-slate-800">{productLogName(log)}</p><p className="text-xs text-slate-400">{refId(log.product_id)}</p></td>
                   <td className="px-6 py-4 text-sm text-slate-600">{log.product_type === 'digital' ? 'Account' : 'Laptop'}</td>
                   <td className="px-6 py-4"><span className="rounded-full bg-sky-50 px-3 py-1 text-xs font-bold text-sky-700">{formatAction(log.action)}</span></td>
                   <td className="px-6 py-4 text-sm text-slate-600">{`${log.status_before ?? 'null'} -> ${log.status_after ?? 'null'}`}</td>

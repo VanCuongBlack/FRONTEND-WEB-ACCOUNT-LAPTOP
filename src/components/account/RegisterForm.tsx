@@ -6,24 +6,21 @@ import { CheckCircle2, Eye, EyeOff, Loader2, Lock, Mail, Phone, User } from 'luc
 import { registerSchema, type RegisterFormValues } from '@/utils/validators'
 import { useAuth } from '@/hooks/useAuth'
 import { loadGoogleSdk, initGoogleAuth, triggerGoogleLogin } from '@/utils/googleAuth'
+import { googleLogin } from '@/services/auth.service'
+import { useAuthStore } from '@/store/authStore'
 
 export default function RegisterForm() {
   const navigate = useNavigate()
   const { register: registerUser, isLoading } = useAuth()
+  const setAuth = useAuthStore((state) => state.setAuth)
   const [showPass, setShowPass] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
   const [success, setSuccess] = useState(false)
-
-  useEffect(() => {
-    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '1035252877685-placeholder.apps.googleusercontent.com'
-    loadGoogleSdk()
-      .then(() => {
-        initGoogleAuth(clientId, (accessToken) => {
-          navigate(`/auth/google/success?googleToken=${accessToken}`)
-        })
-      })
-      .catch((err) => console.error('Lỗi khi tải Google SDK:', err))
-  }, [navigate])
+  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
+  const isGoogleConfigured =
+    Boolean(googleClientId) &&
+    String(googleClientId).endsWith('.apps.googleusercontent.com') &&
+    !String(googleClientId).includes('placeholder')
 
   const {
     register: field,
@@ -35,6 +32,54 @@ export default function RegisterForm() {
     defaultValues: { fullName: '', email: '', phone: '', password: '', confirmPassword: '' },
   })
 
+  useEffect(() => {
+    if (!isGoogleConfigured) return
+
+    loadGoogleSdk()
+      .then(() => {
+        initGoogleAuth(googleClientId, async (idToken) => {
+          try {
+            const response = await googleLogin(idToken)
+            const data = response.data.data
+            if (!response.data.success || !data) {
+              setError('root', {
+                type: 'server',
+                message: response.data.message || 'Đăng nhập Google thất bại.',
+              })
+              return
+            }
+
+            const role =
+              typeof data.user.role === 'string'
+                ? data.user.role
+                : data.user.role && typeof data.user.role === 'object' && 'name' in data.user.role
+                  ? data.user.role.name || 'customer'
+                  : 'customer'
+
+            setAuth({ ...data.user, role }, data.accessToken, data.refreshToken)
+
+            if (role === 'admin') {
+              navigate('/admin')
+              return
+            }
+
+            if (role === 'staff') {
+              navigate('/staff')
+              return
+            }
+
+            navigate('/')
+          } catch (err: any) {
+            setError('root', {
+              type: 'server',
+              message: err?.response?.data?.message || err?.message || 'Đăng nhập Google thất bại.',
+            })
+          }
+        })
+      })
+      .catch((err) => console.error('Lỗi khi tải Google SDK:', err))
+  }, [googleClientId, isGoogleConfigured, navigate, setAuth, setError])
+
   const onSubmit = async (data: RegisterFormValues) => {
     const response = await registerUser({
       fullname: data.fullName,
@@ -44,6 +89,7 @@ export default function RegisterForm() {
     })
 
     if (response.success) {
+      setSuccess(true)
       navigate('/verify-email', { state: { email: data.email.trim().toLowerCase() } })
 
       return
@@ -63,6 +109,18 @@ export default function RegisterForm() {
       type: 'server',
       message: response.error || 'Đăng ký thất bại',
     })
+  }
+
+  const handleGoogleRegister = () => {
+    if (!isGoogleConfigured) {
+      setError('root', {
+        type: 'manual',
+        message: 'Đăng ký Google chưa được cấu hình. Cần thêm VITE_GOOGLE_CLIENT_ID hợp lệ vào file .env FE.',
+      })
+      return
+    }
+
+    triggerGoogleLogin()
   }
 
   if (success) {
@@ -193,7 +251,7 @@ export default function RegisterForm() {
 
       <button
         type="button"
-        onClick={triggerGoogleLogin}
+        onClick={handleGoogleRegister}
         className="flex h-12 w-full items-center justify-center gap-3 rounded-2xl border border-[#3d63ff]/25 bg-[#171233] text-sm font-black text-white hover:border-[#79a7ff]"
       >
         G

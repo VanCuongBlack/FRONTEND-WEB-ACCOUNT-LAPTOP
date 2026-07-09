@@ -19,6 +19,7 @@ export type SupportTicketStatus =
   | 'closed'
   | 'cancelled'
   | 'reopened'
+  | 'rejected'
 
 export interface CreateTicketPayload {
   order_id: string
@@ -42,7 +43,14 @@ export interface SupportTicket {
   attachments?: string[]
   status: SupportTicketStatus
   priority?: 'low' | 'medium' | 'high' | 'urgent'
+  assigned_to?: string | {
+    _id?: string
+    fullname?: string
+    email?: string
+  } | null
   resolution_note?: string
+  rejection_reason?: string
+  refund_processed?: boolean
   createdAt?: string
   updatedAt?: string
 }
@@ -157,6 +165,26 @@ export const resolveTicket = (ticketId: string, resolution_note: string) => {
   return api.put<ApiResponse<SupportTicket>>(`/support/manage/tickets/${ticketId}/resolve`, {
     resolution_note,
   })
+}
+
+export interface RefundTicketPayload {
+  reason?: string
+  refund_method?: 'original_payment' | 'bank_transfer' | 'store_credit'
+  restock_physical?: boolean
+}
+
+export const refundTicket = (ticketId: string, data: RefundTicketPayload = {}) => {
+  return api.put<ApiResponse<SupportTicket>>(
+    `/support/manage/tickets/${ticketId}/refund`,
+    data
+  )
+}
+
+export const rejectTicket = (ticketId: string, rejection_reason: string) => {
+  return api.put<ApiResponse<SupportTicket>>(
+    `/support/manage/tickets/${ticketId}/reject`,
+    { rejection_reason }
+  )
 }
 
 export const getSupportStats = () => {

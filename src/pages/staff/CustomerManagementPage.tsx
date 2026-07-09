@@ -10,6 +10,7 @@ import {
   type AdminUser,
   type CustomerDetailResponse,
 } from '@/services/admin.service'
+import { getStaffOrderById, type Order } from '@/services/order.service'
 
 function formatPrice(price?: number) {
   return `${(price ?? 0).toLocaleString('vi-VN')}đ`
@@ -26,9 +27,11 @@ export default function CustomerManagementPage() {
   const [selectedCustomer, setSelectedCustomer] = useState<CustomerDetailResponse | null>(null)
   const [openCustomerModal, setOpenCustomerModal] = useState(false)
   const [openHistoryModal, setOpenHistoryModal] = useState(false)
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
   const [total, setTotal] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
   const [isDetailLoading, setIsDetailLoading] = useState(false)
+  const [isOrderLoading, setIsOrderLoading] = useState(false)
   const [error, setError] = useState('')
 
   const loadCustomers = async () => {
@@ -88,6 +91,19 @@ export default function CustomerManagementPage() {
       await loadCustomers()
     } catch (err: any) {
       toast.error(err?.response?.data?.message || err?.message || 'Không thể cập nhật trạng thái khách hàng.')
+    }
+  }
+
+  const openOrderDetail = async (orderId: string) => {
+    setIsOrderLoading(true)
+    setSelectedOrder(null)
+    try {
+      const res = await getStaffOrderById(orderId)
+      setSelectedOrder(res.data?.data ?? null)
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || err?.message || 'Không thể tải chi tiết đơn hàng.')
+    } finally {
+      setIsOrderLoading(false)
     }
   }
 
@@ -287,6 +303,7 @@ export default function CustomerManagementPage() {
           open={openHistoryModal}
           title="Lịch sử đơn hàng"
           onClose={() => setOpenHistoryModal(false)}
+          maxWidthClassName="max-w-[760px]"
         >
           <div className="space-y-3 text-sm">
             {(selectedCustomer?.order_history ?? []).length === 0 ? (
@@ -294,7 +311,16 @@ export default function CustomerManagementPage() {
             ) : (
               selectedCustomer?.order_history?.map((order) => (
                 <div key={order._id} className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-                  <p className="font-bold text-slate-800">#{order._id}</p>
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                    <p className="break-all font-bold text-slate-800">#{order._id}</p>
+                    <button
+                      type="button"
+                      onClick={() => openOrderDetail(order._id)}
+                      className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-blue-500"
+                    >
+                      Xem chi tiết
+                    </button>
+                  </div>
                   <p className="text-slate-600">Trạng thái: {order.status || '-'}</p>
                   <p className="text-slate-600">Thanh toán: {order.payment_method || '-'}</p>
                   <p className="text-slate-600">Ngày tạo: {formatDate(order.createdAt)}</p>
@@ -302,7 +328,50 @@ export default function CustomerManagementPage() {
                 </div>
               ))
             )}
+
           </div>
+        </AppModal>
+
+        <AppModal
+          open={isOrderLoading || Boolean(selectedOrder)}
+          title="Chi tiết đơn hàng"
+          maxWidthClassName="max-w-[720px]"
+          onClose={() => {
+            setSelectedOrder(null)
+            setIsOrderLoading(false)
+          }}
+        >
+          {isOrderLoading ? (
+            <div className="rounded-xl border border-blue-100 bg-blue-50 p-4 text-sm font-semibold text-blue-700">
+              Đang tải chi tiết đơn hàng...
+            </div>
+          ) : selectedOrder ? (
+            <div className="space-y-4 text-sm">
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <p className="text-xs font-bold uppercase text-slate-400">Mã đơn</p>
+                <p className="mt-1 break-all font-black text-slate-900">#{selectedOrder._id}</p>
+                <div className="mt-3 grid grid-cols-2 gap-3 text-slate-600">
+                  <p>Trạng thái: <strong>{selectedOrder.status || '-'}</strong></p>
+                  <p>Thanh toán: <strong>{selectedOrder.payment_method || '-'}</strong></p>
+                  <p className="col-span-2">Ngày tạo: <strong>{formatDate(selectedOrder.createdAt)}</strong></p>
+                </div>
+                <p className="mt-4 text-right text-lg font-black text-emerald-600">
+                  {formatPrice(selectedOrder.total_amount)}
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                {selectedOrder.items?.map((item) => (
+                  <div key={item._id ?? item.item_id} className="rounded-lg bg-slate-50 p-3">
+                    <p className="font-bold text-slate-800">{item.product_name || item.product?.name || 'Sản phẩm'}</p>
+                    <p className="text-xs text-slate-500">
+                      {item.product_type === 'digital' ? 'Account' : 'Laptop / PC'} - {formatPrice(item.sale_price ?? item.price)}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
         </AppModal>
       </div>
     </AdminLayout>

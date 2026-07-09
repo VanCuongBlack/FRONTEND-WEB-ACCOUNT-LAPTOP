@@ -149,6 +149,7 @@ export default function ProfilePage() {
     closed: { label: "Đã đóng", dotColor: "bg-slate-400" },
     cancelled: { label: "Đã hủy", dotColor: "bg-red-400" },
     reopened: { label: "Đã mở lại", dotColor: "bg-purple-400" },
+    rejected: { label: "Đã từ chối", dotColor: "bg-rose-500" },
   };
 
   const formatDate = (isoDate: string) =>

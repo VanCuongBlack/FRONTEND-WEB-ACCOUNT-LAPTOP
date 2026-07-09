@@ -83,14 +83,13 @@ export default function PurchaseGuidePage() {
             <div className="space-y-3">
               <h2 className="text-xl sm:text-2xl font-semibold text-slate-800">Tổng quan</h2>
               <p>
-                Hiện tại tụi mình đã hỗ trợ rất nhiều hình thức thanh toán khác nhau để bạn có thể dễ dàng lựa chọn phương thức thanh toán tốt và thuận tiện nhất.
+                Hiện tại hệ thống hỗ trợ thanh toán đúng theo loại sản phẩm trong đơn hàng.
               </p>
-              <p>Các hình thức thanh toán hiện tại mà tụi mình đang hỗ trợ:</p>
+              <p>Các hình thức thanh toán đang hỗ trợ:</p>
               <ul className="list-disc pl-5 space-y-1">
-                <li>Thanh toán qua VNPAY-QR</li>
-                <li>Ví Momo</li>
-                <li>Chuyển khoản ngân hàng</li>
-                <li>Thanh toán khi nhận (đối với laptop/pc)</li>
+                <li>Chuyển khoản ngân hàng bằng mã QR.</li>
+                <li>Thanh toán khi nhận hàng cho đơn PC/Laptop.</li>
+                <li>Đơn mua account số chỉ hỗ trợ chuyển khoản ngân hàng.</li>
               </ul>
             </div>
           </div>

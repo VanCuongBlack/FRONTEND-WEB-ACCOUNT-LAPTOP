@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { Edit3, EyeOff, Plus, Search, Settings2, Trash2 } from 'lucide-react'
 import AppModal from '@/components/common/AppModal'
+import ImageUploadField from '@/components/common/ImageUploadField'
 import StaffLayout from '@/layouts/StaffLayout'
 import { getProductById, type ProductItem } from '@/services/product.service'
+import type { UploadedImage } from '@/services/upload.service'
 import {
   createDigitalProduct,
   createPhysicalProduct,
@@ -48,8 +50,10 @@ interface ProductForm {
   conditionPercent: string
   warrantyMonths: string
   importantPrice: string
+  physicalItemId: string
   serialNumber: string
   imageUrls: string
+  imageAssets: UploadedImage[]
   physicalSalePrice: string
   platform: string
   category: string
@@ -66,6 +70,7 @@ interface ItemForm {
   productType: ProductType
   serialNumber: string
   imageUrls: string
+  imageAssets: UploadedImage[]
   physicalStatus: 'available' | 'reserved' | 'sold'
   accountEmail: string
   accountPassword: string
@@ -91,8 +96,10 @@ const emptyProductForm: ProductForm = {
   conditionPercent: '',
   warrantyMonths: '',
   importantPrice: '',
+  physicalItemId: '',
   serialNumber: '',
   imageUrls: '',
+  imageAssets: [],
   physicalSalePrice: '',
   platform: '',
   category: '',
@@ -109,6 +116,7 @@ const emptyItemForm: ItemForm = {
   productType: 'physical',
   serialNumber: '',
   imageUrls: '',
+  imageAssets: [],
   physicalStatus: 'available',
   accountEmail: '',
   accountPassword: '',
@@ -136,6 +144,20 @@ function splitUrls(value: string) {
     .split('\n')
     .map((url) => url.trim())
     .filter(Boolean)
+}
+
+function normalizeImageAssets(images?: Array<string | UploadedImage>): UploadedImage[] {
+  return (images ?? [])
+    .map((image) => {
+      if (typeof image === 'string') return { url: image, public_id: `manual-${image}` }
+      return image
+    })
+    .filter((image): image is UploadedImage => Boolean(image?.url))
+}
+
+function buildImagePayload(imageUrls: string, imageAssets: UploadedImage[]) {
+  const uploadedByUrl = new Map(imageAssets.filter((image) => image.url).map((image) => [image.url, image]))
+  return splitUrls(imageUrls).map((url) => uploadedByUrl.get(url) ?? { url, public_id: `manual-${url}` })
 }
 
 function toDateInput(value?: string | null) {
@@ -237,6 +259,8 @@ export default function ProductManagementPage() {
     try {
       const res = await getProductById(product.id)
       const detail = res.data.data
+      const firstItem = detail?.items?.[0]
+      const imageAssets = normalizeImageAssets(firstItem?.images_urls)
       setEditingProduct(product)
       setProductForm({
         ...emptyProductForm,
@@ -256,6 +280,11 @@ export default function ProductManagementPage() {
         conditionPercent: String(detail?.physical?.condition_percent ?? ''),
         warrantyMonths: String(detail?.physical?.warranty_months ?? ''),
         importantPrice: String(detail?.physical?.important_price ?? ''),
+        physicalItemId: firstItem?._id ?? '',
+        serialNumber: firstItem?.serial_number ?? '',
+        physicalSalePrice: String(firstItem?.sale_price ?? ''),
+        imageUrls: imageAssets.map((image) => image.url).join('\n'),
+        imageAssets,
         platform: detail?.digital?.platform ?? product.platform ?? '',
         category: detail?.digital?.category ?? product.category ?? '',
         region: detail?.digital?.region ?? 'VN',
@@ -278,12 +307,14 @@ export default function ProductManagementPage() {
       const firstItem = detailItems[0]
       setItems(detailItems)
       setSelectedProduct(product)
+      const imageAssets = normalizeImageAssets(firstItem?.images_urls)
       setItemForm({
         ...emptyItemForm,
         productType: product.type,
         itemId: firstItem?._id ?? '',
         serialNumber: firstItem?.serial_number ?? '',
-        imageUrls: firstItem?.images_urls?.join('\n') ?? '',
+        imageUrls: imageAssets.map((image) => image.url).join('\n'),
+        imageAssets,
         physicalStatus:
           firstItem?.status === 'reserved' || firstItem?.status === 'sold'
             ? firstItem.status
@@ -312,11 +343,13 @@ export default function ProductManagementPage() {
       return
     }
 
+    const imageAssets = normalizeImageAssets(item.images_urls)
     setItemForm((prev) => ({
       ...prev,
       itemId,
       serialNumber: item.serial_number ?? '',
-      imageUrls: item.images_urls?.join('\n') ?? '',
+      imageUrls: imageAssets.map((image) => image.url).join('\n'),
+      imageAssets,
       physicalStatus:
         item.status === 'reserved' || item.status === 'sold' ? item.status : 'available',
       accountEmail: item.account_email ?? '',
@@ -348,6 +381,13 @@ export default function ProductManagementPage() {
     try {
       if (editingProduct) {
         if (editingProduct.type === 'physical') {
+          const urls = splitUrls(productForm.imageUrls)
+          const images = buildImagePayload(productForm.imageUrls, productForm.imageAssets)
+          if (hasInvalidUrl(urls)) {
+            setError('Link ảnh phải là URL hợp lệ, mỗi dòng một URL.')
+            return
+          }
+
           await updatePhysicalProduct(editingProduct.id, {
             productData: {
               name: productForm.name.trim(),
@@ -374,9 +414,18 @@ export default function ProductManagementPage() {
                 : {}),
               ...(productForm.importantPrice
                 ? { important_price: toNumber(productForm.importantPrice) }
-                : {}),
+              : {}),
             },
           })
+
+          if (productForm.physicalItemId) {
+            const salePrice = toNumber(productForm.physicalSalePrice)
+            await updatePhysicalProductItem(productForm.physicalItemId, {
+              ...(productForm.serialNumber.trim() ? { serial_number: productForm.serialNumber.trim() } : {}),
+              images_urls: images,
+              ...(Number.isNaN(salePrice) || salePrice < 0 ? {} : { sale_price: salePrice }),
+            })
+          }
         } else {
           await updateDigitalProduct(editingProduct.id, {
             productData: {
@@ -396,6 +445,7 @@ export default function ProductManagementPage() {
         }
       } else if (productForm.productType === 'physical') {
         const urls = splitUrls(productForm.imageUrls)
+        const images = buildImagePayload(productForm.imageUrls, productForm.imageAssets)
         const numbers = {
           weight_kg: toNumber(productForm.weightKg),
           display_inches: toNumber(productForm.displayInches),
@@ -454,7 +504,7 @@ export default function ProductManagementPage() {
           },
           itemData: {
             serial_number: productForm.serialNumber.trim(),
-            images_urls: urls,
+            images_urls: images,
             status: 'available',
             sale_price: numbers.sale_price,
           },
@@ -494,7 +544,7 @@ export default function ProductManagementPage() {
           itemData: {
             account_email: productForm.accountEmail.trim(),
             account_password: productForm.accountPassword,
-            expired_at: productForm.expiredAt || null,
+            ...(productForm.expiredAt ? { expired_at: productForm.expiredAt } : {}),
             status: 'available',
             sale_price: salePrice,
           },
@@ -529,6 +579,7 @@ export default function ProductManagementPage() {
     try {
       if (itemForm.productType === 'physical') {
         const urls = splitUrls(itemForm.imageUrls)
+        const images = buildImagePayload(itemForm.imageUrls, itemForm.imageAssets)
         if (hasInvalidUrl(urls)) {
           setError('Link ảnh phải là URL hợp lệ, mỗi dòng một URL.')
           return
@@ -536,7 +587,7 @@ export default function ProductManagementPage() {
 
         await updatePhysicalProductItem(itemForm.itemId.trim(), {
           ...(itemForm.serialNumber.trim() ? { serial_number: itemForm.serialNumber.trim() } : {}),
-          images_urls: urls,
+          images_urls: images,
           status: itemForm.physicalStatus,
           sale_price: salePrice,
         })
@@ -762,8 +813,8 @@ export default function ProductManagementPage() {
         >
           <p className="text-sm leading-6 text-gray-600">
             {actionKind === 'deactivate'
-              ? 'Thao tác này gọi PATCH /product/:id/deactivate để ngừng bán sản phẩm.'
-              : 'Thao tác này gọi DELETE /product/:id để xóa hẳn sản phẩm. Chỉ dùng khi thật sự cần.'}
+              ? 'Sản phẩm sẽ ngừng hiển thị để khách mua, nhưng dữ liệu vẫn được giữ lại.'
+              : 'Sản phẩm sẽ bị xóa vĩnh viễn khỏi hệ thống. Chỉ dùng khi thật sự cần.'}
           </p>
         </AppModal>
       </div>
@@ -933,7 +984,13 @@ function ItemModal({
             </Field>
             <div className="md:col-span-2">
               <Field label="Link ảnh sản phẩm">
-                <textarea value={form.imageUrls} onChange={(event) => updateForm({ imageUrls: event.target.value })} rows={4} placeholder="Mỗi dòng một URL hợp lệ" className={textareaClass} />
+                <ImageUploadField
+                  value={form.imageUrls}
+                  images={form.imageAssets}
+                  rows={4}
+                  textareaClassName={textareaClass}
+                  onChange={(imageUrls, imageAssets) => updateForm({ imageUrls, imageAssets })}
+                />
               </Field>
             </div>
           </div>
@@ -1048,12 +1105,25 @@ function PhysicalFields({
           <>
             <Field label="Số serial"><input value={form.serialNumber} onChange={(event) => updateForm({ serialNumber: event.target.value })} className={inputClass} /></Field>
             <Field label="Giá bán"><input type="number" min="0" value={form.physicalSalePrice} onChange={(event) => updateForm({ physicalSalePrice: event.target.value })} className={inputClass} /></Field>
-            <div className="md:col-span-2">
-              <Field label="Link ảnh sản phẩm">
-                <textarea value={form.imageUrls} onChange={(event) => updateForm({ imageUrls: event.target.value })} rows={3} placeholder="Mỗi dòng một URL" className={textareaClass} />
-              </Field>
-            </div>
           </>
+        )}
+        {editing && !form.physicalItemId && (
+          <div className="md:col-span-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800">
+            Sản phẩm này chưa có item kho nên chưa thể cập nhật ảnh tại đây. Hãy nhập kho item trước.
+          </div>
+        )}
+        {(!editing || form.physicalItemId) && (
+          <div className="md:col-span-2">
+            <Field label={editing ? 'Ảnh sản phẩm của item đầu tiên' : 'Link ảnh sản phẩm'}>
+              <ImageUploadField
+                value={form.imageUrls}
+                images={form.imageAssets}
+                rows={3}
+                textareaClassName={textareaClass}
+                onChange={(imageUrls, imageAssets) => updateForm({ imageUrls, imageAssets })}
+              />
+            </Field>
+          </div>
         )}
       </div>
     </div>

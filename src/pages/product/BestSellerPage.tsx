@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type React from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import {
@@ -12,6 +12,7 @@ import {
   normalizeProductDetail,
   type Product,
 } from '@/services/product.service'
+import { getReport } from '@/services/admin.service'
 import { useCart } from '@/hooks/useCart'
 import { useAuthStore } from '@/store/authStore'
 import { toast } from 'sonner'
@@ -25,14 +26,52 @@ interface FlyingItem {
   deltaY: number
 }
 
+type BestSellerProduct = Product & {
+  total_sold?: number
+  sold_count?: number
+  sold?: number
+  sales_count?: number
+  totalSold?: number
+  order_count?: number
+  total_revenue?: number
+}
+
+function getRoleName(role: unknown) {
+  if (typeof role === 'string') return role
+  if (role && typeof role === 'object' && 'name' in role) {
+    const roleName = (role as { name?: unknown }).name
+    return typeof roleName === 'string' ? roleName : null
+  }
+  return null
+}
+
+function getSoldCount(product: BestSellerProduct) {
+  return (
+    product.total_sold ??
+    product.sold_count ??
+    product.sold ??
+    product.sales_count ??
+    product.totalSold ??
+    product.order_count ??
+    0
+  )
+}
+
+function getSoldText(product: BestSellerProduct) {
+  const count = getSoldCount(product)
+  return `Đã bán ${count.toLocaleString('vi-VN')}`
+}
+
 export default function BestSellerPage() {
   const navigate = useNavigate()
   const { totalItems, addToCart } = useCart()
   const user = useAuthStore((state) => state.user)
   const accessToken = useAuthStore((state) => state.accessToken)
   const isAuthenticated = Boolean(user && accessToken)
+  const role = getRoleName(user?.role)
+  const canReadSalesReport = role === 'admin' || role === 'staff'
 
-  const [products, setProducts] = useState<Product[]>([])
+  const [products, setProducts] = useState<BestSellerProduct[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -57,10 +96,74 @@ export default function BestSellerPage() {
 
         const res = await getProducts({
           is_active: true,
-          limit: 12,
+          limit: 100,
         })
 
-        setProducts(res.data.data?.products ?? [])
+        let baseProducts: BestSellerProduct[] = res.data.data?.products ?? []
+
+        if (canReadSalesReport) {
+          try {
+            const now = new Date()
+            const from = new Date(now)
+            from.setDate(now.getDate() - 30)
+            const reportRes = await getReport({
+              type: 'products',
+              from: from.toISOString(),
+              to: now.toISOString(),
+            })
+            const reportRows = reportRes.data.data?.data ?? []
+            const reportMap = new Map(
+              reportRows.map((row, index) => [
+                String(row._id),
+                {
+                  index,
+                  total_sold: row.total_sold ?? 0,
+                  total_revenue: row.total_revenue ?? 0,
+                },
+              ])
+            )
+
+            baseProducts = baseProducts
+              .map((product) => ({
+                ...product,
+                total_sold: reportMap.get(product._id)?.total_sold ?? 0,
+                total_revenue: reportMap.get(product._id)?.total_revenue ?? 0,
+              }))
+              .sort((a, b) => {
+                const aReport = reportMap.get(a._id)
+                const bReport = reportMap.get(b._id)
+                if (aReport && bReport) return aReport.index - bReport.index
+                if (aReport) return -1
+                if (bReport) return 1
+                return getSoldCount(b) - getSoldCount(a)
+              })
+          } catch {
+            baseProducts = [...baseProducts].sort((a, b) => getSoldCount(b) - getSoldCount(a))
+          }
+        } else {
+          baseProducts = [...baseProducts].sort((a, b) => getSoldCount(b) - getSoldCount(a))
+        }
+
+        const detailedProducts = await Promise.all(
+          baseProducts.slice(0, 12).map(async (product) => {
+            try {
+              const detailResponse = await getProductById(product._id)
+              const detail = normalizeProductDetail(detailResponse.data?.data)
+              return detail
+                ? {
+                    ...product,
+                    ...detail,
+                    total_sold: getSoldCount(product),
+                    total_revenue: product.total_revenue,
+                  }
+                : product
+            } catch {
+              return product
+            }
+          })
+        )
+
+        setProducts(detailedProducts)
       } catch (err) {
         console.error(err)
         setError('Không thể tải sản phẩm bán chạy.')
@@ -74,7 +177,7 @@ export default function BestSellerPage() {
     return () => {
       timeoutIdsRef.current.forEach((id) => window.clearTimeout(id))
     }
-  }, [])
+  }, [canReadSalesReport])
 
   const toggleValue = (
     value: string,
@@ -228,8 +331,15 @@ export default function BestSellerPage() {
     })
   }
 
-  const getProductLink = (item: Product) => {
-    return item.product_type === 'physical'
+  const getProductLink = (item: BestSellerProduct) => {
+    const productType = String(item.product_type ?? '').toLowerCase()
+    const isPhysical =
+      productType === 'physical' ||
+      productType === 'laptop' ||
+      productType === 'pc' ||
+      Boolean('physical' in item && item.physical)
+
+    return isPhysical
       ? `/laptops/${item._id}`
       : `/accounts/${item._id}`
   }
@@ -407,9 +517,9 @@ export default function BestSellerPage() {
                   const price = getDisplayPrice(item)
 
                   return (
-                    <a
+                    <Link
                       key={item._id}
-                      href={getProductLink(item)}
+                      to={getProductLink(item)}
                       className="group overflow-hidden rounded-2xl bg-[#211b42] shadow-[0_18px_40px_rgba(0,0,0,0.18)] transition-all hover:shadow-md"
                     >
                       <div className="overflow-hidden">
@@ -428,11 +538,15 @@ export default function BestSellerPage() {
                           {item.name}
                         </h3>
 
-                        <p className="mt-2 line-clamp-2 min-h-[36px] text-[12px] text-[#b9b4d7]">
-                          {item.description || 'Chưa có mô tả sản phẩm'}
-                        </p>
+                    <p className="mt-2 line-clamp-2 min-h-[36px] text-[12px] text-[#b9b4d7]">
+                      {item.description || 'Chưa có mô tả sản phẩm'}
+                    </p>
 
-                        <div className="mt-4 flex items-center justify-between">
+                    <p className="mt-3 inline-flex rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-bold text-emerald-300">
+                      {getSoldText(item)}
+                    </p>
+
+                    <div className="mt-4 flex items-center justify-between">
                           <span className="text-[16px] font-bold text-[#27AE60]">
                             {formatPrice(price)}
                           </span>
@@ -467,7 +581,7 @@ export default function BestSellerPage() {
                           Mua ngay
                         </button>
                       </div>
-                    </a>
+                    </Link>
                   )
                 })}
               </div>

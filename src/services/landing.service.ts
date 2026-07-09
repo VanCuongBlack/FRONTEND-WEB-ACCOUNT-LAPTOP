@@ -1,4 +1,5 @@
 import api from './api'
+import { getActiveBanners, type BannerRecord } from './banner.service'
 
 export interface Banner {
   id: string
@@ -31,6 +32,8 @@ export interface Product {
   imageUrl?: string
   icon?: string
   category?: string
+  product_type?: 'physical' | 'digital' | string
+  brand?: string
   badge?: 'HOT' | 'NEW' | 'SALE' | 'OUT'
   isActive: boolean
   tag?: string
@@ -56,6 +59,8 @@ export interface LandingData {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function normalizeProduct(raw: any): Product {
   const productType = raw.product_type ?? raw.category
+  const firstImage = raw.images?.[0]
+  const firstImageUrl = typeof firstImage === 'string' ? firstImage : firstImage?.url
 
   return {
     id: raw._id ?? raw.id,
@@ -64,10 +69,12 @@ function normalizeProduct(raw: any): Product {
     price: raw.price ?? raw.sale_price ?? raw.base_price ?? 0,
     originalPrice: raw.originalPrice,
     stock: raw.stock ?? raw.stock_quantity,
-    imageUrl: raw.imageUrl ?? raw.image ?? raw.thumbnail ?? raw.images?.[0],
+    imageUrl: raw.imageUrl ?? raw.image ?? raw.thumbnail ?? firstImageUrl,
     icon: raw.icon,
     category:
       productType === 'physical' ? 'laptop' : productType === 'digital' ? 'account' : productType,
+    product_type: raw.product_type,
+    brand: raw.brand,
     badge: raw.badge,
     isActive: raw.isActive ?? raw.is_active ?? true,
     tag: raw.tag ?? raw.category ?? raw.product_type,
@@ -79,35 +86,35 @@ function normalizeProduct(raw: any): Product {
 export const marketingBanners: Banner[] = [
   {
     id: '1',
-    imageUrl: '/hero-1.png',
-    imageGradient: 'from-[#0d47a1] via-[#1565c0] to-[#1976d2]',
-    title: 'Tài khoản Premium giá tốt',
-    subtitle: 'Netflix, YouTube, Spotify, Adobe bản quyền. Giao nhanh, bảo hành rõ ràng.',
-    ctaText: 'Mua tài khoản',
-    ctaLink: '/accounts',
+    imageUrl: '/hero-2.png',
+    imageGradient: 'from-[#00c6ff] to-[#0072ff]',
+    title: 'Laptop & PC Đỉnh cao công nghệ',
+    subtitle: 'Sở hữu ngay Dell, ThinkPad, MacBook cấu hình mạnh mẽ với chính sách bảo hành độc quyền chỉ có tại PCAcc.com.',
+    ctaText: 'Khám phá ngay',
+    ctaLink: '/laptops',
     isActive: true,
     order: 1,
-    tag: 'BÁN CHẠY',
+    tag: 'CHÍNH HÃNG 100%',
   },
   {
     id: '2',
-    imageUrl: '/hero-2.png',
+    imageUrl: '/hero-1.png',
     imageGradient: 'from-[#6a1b9a] via-[#7b1fa2] to-[#8e24aa]',
-    title: 'Laptop & PC chính hãng',
-    subtitle: 'Dell, ThinkPad, HP, MacBook cấu hình mạnh. Bảo hành theo từng sản phẩm.',
-    ctaText: 'Xem Laptop',
-    ctaLink: '/laptops',
+    title: 'Tài khoản Premium giá tốt',
+    subtitle: 'Netflix, YouTube, Spotify, Adobe bản quyền. Giao nhanh, bảo hành rõ ràng.',
+    ctaText: 'Khám phá ngay',
+    ctaLink: '/accounts',
     isActive: true,
     order: 2,
-    tag: 'CHÍNH HÃNG',
+    tag: 'BÁN CHẠY',
   },
   {
     id: '3',
     imageUrl: '/hero-3.png',
     imageGradient: 'from-[#00695c] via-[#00796b] to-[#00897b]',
-    title: 'PC gaming và account số',
-    subtitle: 'Một nơi cho cả máy tính, laptop và tài khoản giải trí/học tập.',
-    ctaText: 'Xem ưu đãi',
+    title: 'Dịch vụ số đỉnh cao',
+    subtitle: 'Bản quyền chính hãng, kích hoạt ngay lập tức. Tiết kiệm chi phí lên đến 70%.',
+    ctaText: 'Mua ngay',
     ctaLink: '/best-seller',
     isActive: true,
     order: 3,
@@ -168,11 +175,37 @@ export const getProducts = async (): Promise<Product[]> => {
   }
 }
 
+function normalizeBanner(raw: BannerRecord): Banner {
+  return {
+    id: raw._id,
+    imageUrl: raw.image?.url,
+    imageGradient: 'from-[#0d47a1] via-[#1565c0] to-[#1976d2]',
+    title: raw.title,
+    subtitle: '',
+    ctaText: 'Xem ngay',
+    ctaLink: raw.link_url || '/',
+    isActive: raw.is_active,
+    order: raw.display_order ?? 0,
+    tag: raw.position,
+  }
+}
+
+export const getBanners = async (): Promise<Banner[]> => {
+  try {
+    const res = await getActiveBanners('home_top')
+    const items = Array.isArray(res.data.data) ? res.data.data : []
+    return items.length ? items.map(normalizeBanner) : marketingBanners
+  } catch (error) {
+    console.error('Error fetching banners from API:', error)
+    return marketingBanners
+  }
+}
+
 export const getLandingData = async (): Promise<LandingData> => {
-  const [products] = await Promise.all([getProducts()])
+  const [products, banners] = await Promise.all([getProducts(), getBanners()])
 
   return {
-    banners: marketingBanners,
+    banners,
     categories: [],
     products,
     promoBanners: marketingPromoBanners,

@@ -1,4 +1,5 @@
 import api from './api'
+import type { UploadedImage } from './upload.service'
 
 export interface Product {
   _id: string
@@ -11,6 +12,7 @@ export interface Product {
   base_price: number
   sale_price?: number
   stock_quantity?: number
+  total_sold?: number
   product_type: 'physical' | 'digital'
   is_active: boolean
   createdAt: string
@@ -21,7 +23,7 @@ export interface ProductItem {
   _id: string
   status?: 'available' | 'reserved' | 'sold' | 'expired'
   sale_price?: number
-  images_urls?: string[]
+  images_urls?: Array<string | UploadedImage>
   serial_number?: string
   account_email?: string
   expired_at?: string | null
@@ -171,12 +173,15 @@ export const formatPrice = (
 export const getProductImage = (
   product: Product | ProductDetail
 ) => {
+  const imageUrl = (image?: string | UploadedImage) =>
+    typeof image === 'string' ? image : image?.url
+
   return (
     product.thumbnail ||
-    product.images?.[0] ||
-    ('availableItem' in product ? product.availableItem?.images_urls?.[0] : undefined) ||
-    ('items' in product ? product.items?.find((item) => item.status === 'available' && item.images_urls?.[0])?.images_urls?.[0] : undefined) ||
-    ('items' in product ? product.items?.find((item) => item.images_urls?.[0])?.images_urls?.[0] : undefined) ||
+    imageUrl(product.images?.[0]) ||
+    ('availableItem' in product ? imageUrl(product.availableItem?.images_urls?.[0]) : undefined) ||
+    ('items' in product ? imageUrl(product.items?.find((item) => item.status === 'available' && item.images_urls?.[0])?.images_urls?.[0]) : undefined) ||
+    ('items' in product ? imageUrl(product.items?.find((item) => item.images_urls?.[0])?.images_urls?.[0]) : undefined) ||
     '/placeholder.png'
   )
 }
@@ -192,17 +197,21 @@ export function normalizeProductDetail(
 
   const items = detail.items ?? []
   const availableItem = getAvailableItem(items)
+  const availableImages = (availableItem?.images_urls ?? [])
+    .map((image) => (typeof image === 'string' ? image : image.url))
+    .filter(Boolean)
 
   return {
     ...detail.product,
     ...(detail.physical ?? {}),
     ...(detail.digital ?? {}),
+    _id: detail.product._id,
     physical: detail.physical,
     digital: detail.digital,
     items,
     availableItem,
     sale_price: availableItem?.sale_price ?? detail.product.sale_price,
-    thumbnail: availableItem?.images_urls?.[0] ?? detail.product.thumbnail,
-    images: availableItem?.images_urls ?? detail.product.images,
+    thumbnail: availableImages[0] ?? detail.product.thumbnail,
+    images: availableImages.length ? availableImages : detail.product.images,
   }
 }
