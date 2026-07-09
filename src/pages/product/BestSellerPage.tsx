@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type React from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import {
@@ -28,6 +28,11 @@ interface FlyingItem {
 
 type BestSellerProduct = Product & {
   total_sold?: number
+  sold_count?: number
+  sold?: number
+  sales_count?: number
+  totalSold?: number
+  order_count?: number
   total_revenue?: number
 }
 
@@ -41,13 +46,20 @@ function getRoleName(role: unknown) {
 }
 
 function getSoldCount(product: BestSellerProduct) {
-  return product.total_sold ?? 0
+  return (
+    product.total_sold ??
+    product.sold_count ??
+    product.sold ??
+    product.sales_count ??
+    product.totalSold ??
+    product.order_count ??
+    0
+  )
 }
 
 function getSoldText(product: BestSellerProduct) {
   const count = getSoldCount(product)
-  if (count > 0) return `Đã bán ${count.toLocaleString('vi-VN')}`
-  return 'Đang cập nhật lượt bán'
+  return `Đã bán ${count.toLocaleString('vi-VN')}`
 }
 
 export default function BestSellerPage() {
@@ -137,7 +149,14 @@ export default function BestSellerPage() {
             try {
               const detailResponse = await getProductById(product._id)
               const detail = normalizeProductDetail(detailResponse.data?.data)
-              return detail ? { ...product, ...detail } : product
+              return detail
+                ? {
+                    ...product,
+                    ...detail,
+                    total_sold: getSoldCount(product),
+                    total_revenue: product.total_revenue,
+                  }
+                : product
             } catch {
               return product
             }
@@ -312,8 +331,15 @@ export default function BestSellerPage() {
     })
   }
 
-  const getProductLink = (item: Product) => {
-    return item.product_type === 'physical'
+  const getProductLink = (item: BestSellerProduct) => {
+    const productType = String(item.product_type ?? '').toLowerCase()
+    const isPhysical =
+      productType === 'physical' ||
+      productType === 'laptop' ||
+      productType === 'pc' ||
+      Boolean('physical' in item && item.physical)
+
+    return isPhysical
       ? `/laptops/${item._id}`
       : `/accounts/${item._id}`
   }
@@ -491,9 +517,9 @@ export default function BestSellerPage() {
                   const price = getDisplayPrice(item)
 
                   return (
-                    <a
+                    <Link
                       key={item._id}
-                      href={getProductLink(item)}
+                      to={getProductLink(item)}
                       className="group overflow-hidden rounded-2xl bg-[#211b42] shadow-[0_18px_40px_rgba(0,0,0,0.18)] transition-all hover:shadow-md"
                     >
                       <div className="overflow-hidden">
@@ -555,7 +581,7 @@ export default function BestSellerPage() {
                           Mua ngay
                         </button>
                       </div>
-                    </a>
+                    </Link>
                   )
                 })}
               </div>

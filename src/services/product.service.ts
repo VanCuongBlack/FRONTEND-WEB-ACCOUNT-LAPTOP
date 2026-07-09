@@ -12,6 +12,7 @@ export interface Product {
   base_price: number
   sale_price?: number
   stock_quantity?: number
+  total_sold?: number
   product_type: 'physical' | 'digital'
   is_active: boolean
   createdAt: string
@@ -204,6 +205,7 @@ export function normalizeProductDetail(
     ...detail.product,
     ...(detail.physical ?? {}),
     ...(detail.digital ?? {}),
+    _id: detail.product._id,
     physical: detail.physical,
     digital: detail.digital,
     items,
