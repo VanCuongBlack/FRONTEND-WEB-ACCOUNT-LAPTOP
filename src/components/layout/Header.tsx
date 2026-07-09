@@ -106,8 +106,8 @@ export default function Header({
           </div>
 
           {/* Right side items (nav links, cart, auth) */}
-          <div className="flex shrink-0 items-center gap-6">
-            <nav className="hidden items-center gap-6 text-sm font-bold text-[#c8c1e8] md:flex">
+          <div className="flex shrink-0 items-center gap-2 md:gap-4">
+            <nav className="hidden items-center gap-6 text-sm font-bold text-[#c8c1e8] md:flex mr-2">
               <Link to="/laptops" className="hover:text-white transition-colors">
                 PC/Laptop
               </Link>
@@ -118,6 +118,19 @@ export default function Header({
                 Bán chạy
               </Link>
             </nav>
+
+            <Link
+              to={isLoggedIn ? '/notification' : '/login'}
+              className="relative hidden rounded-xl p-2 text-[#c8c1e8] transition-colors hover:bg-white/10 hover:text-white md:block"
+              title="Thông báo"
+            >
+              <Bell className="h-5 w-5" />
+              {unreadNotifications > 0 && (
+                <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-black text-white">
+                  {unreadNotifications > 9 ? '9+' : unreadNotifications}
+                </span>
+              )}
+            </Link>
 
             <Link
               to="/cart"
@@ -250,7 +263,7 @@ export default function Header({
               ) : (
                 <>
                   <Link to="/login" onClick={() => setMobileOpen(false)} className="rounded-xl px-3 py-2 hover:bg-white/10">
-                    Đăng nhập
+                    <Đăng nhập></Đăng nhập>
                   </Link>
                   <Link to="/register" onClick={() => setMobileOpen(false)} className="rounded-xl px-3 py-2 hover:bg-white/10">
                     Đăng ký

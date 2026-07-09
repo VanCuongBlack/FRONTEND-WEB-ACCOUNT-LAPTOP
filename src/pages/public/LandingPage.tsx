@@ -111,6 +111,7 @@ export default function LandingPage() {
         <Header />
         <HeroBanner banners={banners} />
         <CategoryBar />
+        
         <div className="flex w-full flex-col gap-8 relative z-10">
           {searchQuery ? (
             <FeaturedProducts
@@ -119,6 +120,7 @@ export default function LandingPage() {
               title={`Kết quả tìm kiếm cho: "${searchQuery}"`}
               viewMoreUrl=""
               accent="hot"
+              showEyebrow={false}
             />
           ) : activeTab === 'all' ? (
             <>
@@ -134,6 +136,7 @@ export default function LandingPage() {
                     {marketplaceTabs.map((tab) => (
                       <button
                         key={tab.id}
+                        type="button"
                         onClick={() => setActiveTab(tab.id)}
                         className={`h-8 shrink-0 rounded-full px-4 text-[11px] font-black uppercase tracking-wider transition-all duration-300 ${
                           activeTab === tab.id
@@ -177,6 +180,7 @@ export default function LandingPage() {
                   {marketplaceTabs.map((tab) => (
                     <button
                       key={tab.id}
+                      type="button"
                       onClick={() => setActiveTab(tab.id)}
                       className={`h-8 shrink-0 rounded-full px-4 text-[11px] font-black uppercase tracking-wider transition-all duration-300 ${
                         activeTab === tab.id
@@ -203,6 +207,7 @@ export default function LandingPage() {
                   {marketplaceTabs.map((tab) => (
                     <button
                       key={tab.id}
+                      type="button"
                       onClick={() => setActiveTab(tab.id)}
                       className={`h-8 shrink-0 rounded-full px-4 text-[11px] font-black uppercase tracking-wider transition-all duration-300 ${
                         activeTab === tab.id
