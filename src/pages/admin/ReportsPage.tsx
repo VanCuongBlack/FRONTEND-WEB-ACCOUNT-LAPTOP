@@ -143,11 +143,11 @@ export default function ReportsPage() {
 
   return (
     <AdminLayout title="Báo cáo">
-      <section className="mx-auto max-w-[1840px] space-y-6 font-sans">
+      <section className="mx-auto max-w-[1840px] space-y-6 font-sans text-white">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Báo cáo hệ thống</h1>
-            <p className="mt-1 text-sm text-gray-500">
+            <h1 className="text-2xl font-bold text-white">Báo cáo hệ thống</h1>
+            <p className="mt-1 text-sm text-slate-400">
               Theo dõi doanh thu, sản phẩm bán chạy và nhóm khách hàng theo từng khoảng thời gian.
             </p>
           </div>
@@ -155,19 +155,19 @@ export default function ReportsPage() {
           <button
             type="button"
             onClick={loadReport}
-            className="flex h-[44px] items-center justify-center gap-2 rounded-xl bg-green-600 px-6 text-sm font-semibold text-white hover:bg-green-700"
+            className="flex h-[44px] items-center justify-center gap-2 rounded-xl bg-green-600 px-6 text-sm font-semibold text-white hover:bg-green-500 cursor-pointer"
           >
             <RefreshCw size={18} />
             Tải lại
           </button>
         </div>
 
-        <div className="rounded-2xl bg-white p-5 shadow-sm">
+        <div className="rounded-2xl border border-white/10 bg-[#2A2F3B] p-5 shadow-sm">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <select
               value={range}
               onChange={(event) => setRange(event.target.value as RangeType)}
-              className="h-[46px] rounded-xl border border-gray-300 px-4 text-sm outline-none focus:border-blue-600"
+              className="h-[46px] rounded-xl border border-white/10 bg-[#181B22] text-white px-4 text-sm outline-none focus:border-blue-600 cursor-pointer"
             >
               <option value="day">Hôm nay</option>
               <option value="week">7 ngày qua</option>
@@ -179,35 +179,35 @@ export default function ReportsPage() {
             <select
               value={type}
               onChange={(event) => setType(event.target.value as ReportType)}
-              className="h-[46px] rounded-xl border border-gray-300 px-4 text-sm outline-none focus:border-blue-600"
+              className="h-[46px] rounded-xl border border-white/10 bg-[#181B22] text-white px-4 text-sm outline-none focus:border-blue-600 cursor-pointer"
             >
               <option value="revenue">Doanh thu theo ngày</option>
               <option value="products">Sản phẩm bán chạy</option>
-              <option value="customers">Khách hàng</option>
+              <option value="customers">Khách hàng nổi bật</option>
             </select>
 
-            <div className="flex h-[46px] items-center gap-3 rounded-xl border border-gray-300 px-4">
-              <Search size={18} className="text-gray-400" />
+            <div className="flex h-[46px] items-center gap-3 rounded-xl border border-white/10 bg-[#181B22] px-4">
+              <Search size={18} className="text-[#909AAB]" />
               <input
                 value={keyword}
                 onChange={(event) => setKeyword(event.target.value)}
                 placeholder="Tìm trong báo cáo..."
-                className="h-full flex-1 bg-transparent text-sm outline-none"
+                className="h-full flex-1 bg-transparent text-sm text-white outline-none placeholder:text-[#909AAB]"
               />
             </div>
           </div>
         </div>
 
         {error && (
-          <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">
+          <p className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
             {error}
           </p>
         )}
 
         {type === 'revenue' && (
-          <div className="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-800">
-            <p className="font-bold">Doanh thu đang lấy theo API báo cáo của BE.</p>
-            <p className="mt-1">
+          <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 px-5 py-4 text-sm text-amber-250">
+            <p className="font-bold text-amber-300">Doanh thu đang lấy theo API báo cáo của BE.</p>
+            <p className="mt-1 text-slate-300 leading-6">
               API hiện chỉ cộng các đơn đã ở trạng thái <strong>Hoàn tất</strong>. Đơn chuyển khoản
               đã được SePay xác nhận sẽ vào trạng thái <strong>Đã xác nhận</strong>, nên chưa cộng
               vào báo cáo cho tới khi nhân viên chuyển đơn sang hoàn tất.
@@ -219,26 +219,26 @@ export default function ReportsPage() {
           <SummaryCard
             label="Tổng doanh thu"
             value={formatPrice(totalRevenue)}
-            icon={<TrendingUp className="text-blue-600" size={22} />}
+            icon={<TrendingUp className="text-blue-400" size={22} />}
             color="blue"
           />
           <SummaryCard
             label="Tổng đơn / lượt bán"
             value={String(totalOrders)}
-            icon={<ShoppingCart className="text-green-600" size={22} />}
+            icon={<ShoppingCart className="text-emerald-400" size={22} />}
             color="green"
           />
           <SummaryCard
             label="Dòng dữ liệu"
             value={String(rows.length)}
-            icon={<Package className="text-yellow-600" size={22} />}
+            icon={<Package className="text-amber-400" size={22} />}
             color="yellow"
           />
         </div>
 
-        <div className="rounded-2xl bg-white p-5 shadow-sm">
+        <div className="rounded-2xl border border-white/10 bg-[#2A2F3B] p-5 shadow-sm">
           <div className="mb-5 flex items-center justify-between gap-3">
-            <h2 className="text-lg font-bold text-gray-900">
+            <h2 className="text-lg font-bold text-white">
               {type === 'revenue'
                 ? 'Doanh thu đơn hoàn tất theo ngày'
                 : type === 'products'
@@ -249,7 +249,7 @@ export default function ReportsPage() {
               type="button"
               onClick={handleExportCsv}
               disabled={rows.length === 0}
-              className="flex items-center gap-2 rounded-xl border px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex items-center gap-2 rounded-xl border border-white/10 bg-[#181B22] px-4 py-2 text-xs font-semibold text-slate-300 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
             >
               <Download size={16} />
               Xuất CSV
@@ -257,8 +257,8 @@ export default function ReportsPage() {
           </div>
 
           <div className="overflow-x-auto">
-            <div className="min-w-[760px] overflow-hidden rounded-2xl border border-gray-100">
-              <div className="grid grid-cols-[1.4fr_1fr_1fr_1fr] bg-gray-100 px-5 py-4 text-sm font-bold">
+            <div className="min-w-[760px] overflow-hidden rounded-2xl border border-white/10">
+              <div className="grid grid-cols-[1.4fr_1fr_1fr_1fr] bg-[#181B22] px-5 py-4 text-sm font-bold text-slate-300">
                 <span>
                   {type === 'revenue'
                     ? 'Ngày'
@@ -272,11 +272,11 @@ export default function ReportsPage() {
               </div>
 
               {isLoading ? (
-                <div className="py-10 text-center text-sm text-gray-500">
+                <div className="py-10 text-center text-sm text-slate-400 bg-[#1E2229]/20">
                   Đang tải báo cáo...
                 </div>
               ) : rows.length === 0 ? (
-                <div className="py-10 text-center text-sm text-gray-500">
+                <div className="py-10 text-center text-sm text-slate-400 bg-[#1E2229]/20">
                   Không có dữ liệu báo cáo.
                 </div>
               ) : (
@@ -324,18 +324,18 @@ function SummaryCard({
   color: 'blue' | 'green' | 'yellow'
 }) {
   const colorClass = {
-    blue: 'bg-blue-50 text-blue-700',
-    green: 'bg-green-50 text-green-700',
-    yellow: 'bg-yellow-50 text-yellow-700',
+    blue: 'bg-blue-955/20 text-blue-400 border border-blue-500/20',
+    green: 'bg-emerald-955/20 text-emerald-400 border border-emerald-500/20',
+    yellow: 'bg-amber-955/20 text-amber-400 border border-amber-500/20',
   }[color]
 
   return (
     <div className={`rounded-2xl p-5 ${colorClass}`}>
       <div className="flex items-center justify-between">
-        <p className="text-sm text-gray-500">{label}</p>
+        <p className="text-sm text-slate-400">{label}</p>
         {icon}
       </div>
-      <p className="mt-4 text-3xl font-bold">{value}</p>
+      <p className="mt-4 text-3xl font-bold text-white">{value}</p>
     </div>
   )
 }
@@ -352,10 +352,10 @@ function ReportRow({
   count: number
 }) {
   return (
-    <div className="grid grid-cols-[1.4fr_1fr_1fr_1fr] items-center border-t border-gray-100 px-5 py-4 text-sm">
-      <span className="font-semibold">{name}</span>
+    <div className="grid grid-cols-[1.4fr_1fr_1fr_1fr] items-center border-t border-white/5 bg-[#1E2229]/20 px-5 py-4 text-sm text-slate-300">
+      <span className="font-semibold text-white">{name}</span>
       <span>{typeLabel}</span>
-      <span className="font-bold text-green-600">{amount}</span>
+      <span className="font-bold text-emerald-400">{amount}</span>
       <span>{count}</span>
     </div>
   )

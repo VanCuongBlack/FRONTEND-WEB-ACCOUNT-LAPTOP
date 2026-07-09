@@ -124,32 +124,32 @@ export default function StaffDashboard() {
         value: formatNumber(productCount),
         note: 'Đang mở bán',
         icon: Package,
-        bg: 'bg-blue-50',
-        text: 'text-blue-600',
+        bg: 'bg-blue-500/10',
+        text: 'text-blue-400',
       },
       {
         title: 'Tồn kho thấp',
         value: formatNumber(lowStockCount),
         note: 'Cần kiểm tra',
         icon: Warehouse,
-        bg: 'bg-yellow-50',
-        text: 'text-yellow-600',
+        bg: 'bg-yellow-500/10',
+        text: 'text-yellow-400',
       },
       {
         title: 'Đơn hàng nội bộ',
         value: 'N/A',
         note: 'Chưa có dữ liệu tổng hợp',
         icon: ShoppingCart,
-        bg: 'bg-green-50',
-        text: 'text-green-600',
+        bg: 'bg-green-500/10',
+        text: 'text-green-400',
       },
       {
         title: 'Ticket cần hỗ trợ',
         value: formatNumber(openTicketCount),
         note: 'Đang chờ xử lý',
         icon: Headphones,
-        bg: 'bg-red-50',
-        text: 'text-red-600',
+        bg: 'bg-red-500/10',
+        text: 'text-red-400',
       },
     ],
     [productCount, lowStockCount, openTicketCount]
@@ -161,18 +161,18 @@ export default function StaffDashboard() {
       staffName="Staff"
       notificationCount={openTicketCount}
     >
-      <section className="space-y-6">
+      <section className="space-y-6 text-white">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-white">
             Tổng quan nhân viên
           </h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="mt-1 text-sm text-slate-400">
             Theo dõi công việc vận hành, tồn kho và yêu cầu hỗ trợ trong ngày.
           </p>
         </div>
 
         {error && (
-          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+          <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
             {error}
           </div>
         )}
@@ -181,16 +181,16 @@ export default function StaffDashboard() {
           {stats.map((item) => {
             const Icon = item.icon
             return (
-              <div key={item.title} className={`${item.bg} rounded-2xl p-5 shadow-sm`}>
+              <div key={item.title} className={`${item.bg} border border-white/5 rounded-2xl p-5 shadow-sm text-white`}>
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-sm text-gray-500">{item.title}</p>
+                    <p className="text-sm text-[#909AAB]">{item.title}</p>
                     <p className={`mt-4 text-3xl font-bold ${item.text}`}>
                       {isLoading ? '...' : item.value}
                     </p>
-                    <p className="mt-2 text-xs text-gray-500">{item.note}</p>
+                    <p className="mt-2 text-xs text-slate-400">{item.note}</p>
                   </div>
-                  <div className="rounded-xl bg-white/70 p-3">
+                  <div className="rounded-xl bg-[#181B22] border border-white/5 p-3">
                     <Icon className={item.text} size={22} />
                   </div>
                 </div>
@@ -200,10 +200,10 @@ export default function StaffDashboard() {
         </div>
 
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1.5fr_1fr]">
-          <section className="rounded-2xl bg-white p-5 shadow-sm">
+          <section className="rounded-2xl bg-[#2A2F3B] border border-white/10 p-5 shadow-sm">
             <div className="mb-5 flex items-center justify-between">
-              <h2 className="text-lg font-bold">Công việc nhanh</h2>
-              <span className="text-xs text-gray-400">Khu vực nhân viên</span>
+              <h2 className="text-lg font-bold text-white">Công việc nhanh</h2>
+              <span className="text-xs text-[#909AAB]">Khu vực nhân viên</span>
             </div>
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -213,13 +213,13 @@ export default function StaffDashboard() {
                   <a
                     key={item.title}
                     href={item.href}
-                    className="rounded-2xl border border-gray-100 bg-gray-50 p-4 transition-all hover:border-green-500 hover:bg-green-50"
+                    className="rounded-2xl border border-white/5 bg-[#181B22] p-4 transition-all hover:border-green-500/30 hover:bg-[#202530]"
                   >
-                    <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-green-100 text-green-600">
+                    <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-green-500/10 text-green-400 border border-green-500/20">
                       <Icon size={20} />
                     </div>
-                    <h3 className="font-bold text-gray-900">{item.title}</h3>
-                    <p className="mt-1 text-sm leading-6 text-gray-500">
+                    <h3 className="font-bold text-white">{item.title}</h3>
+                    <p className="mt-1 text-sm leading-6 text-slate-400">
                       {item.description}
                     </p>
                   </a>
@@ -228,16 +228,16 @@ export default function StaffDashboard() {
             </div>
           </section>
 
-          <section className="rounded-2xl bg-white p-5 shadow-sm">
-            <h2 className="text-lg font-bold">Ticket gần đây</h2>
+          <section className="rounded-2xl bg-[#2A2F3B] border border-white/10 p-5 shadow-sm text-white">
+            <h2 className="text-lg font-bold text-white">Ticket gần đây</h2>
 
             <div className="mt-5 space-y-4">
               {isLoading ? (
-                <div className="rounded-xl bg-gray-50 p-4 text-sm text-gray-500">
+                <div className="rounded-xl bg-[#181B22] border border-white/5 p-4 text-sm text-slate-400">
                   Đang tải ticket...
                 </div>
               ) : recentTickets.length === 0 ? (
-                <div className="rounded-xl bg-gray-50 p-4 text-sm text-gray-500">
+                <div className="rounded-xl bg-[#181B22] border border-white/5 p-4 text-sm text-slate-400">
                   Chưa có ticket cần xử lý.
                 </div>
               ) : (
@@ -245,12 +245,12 @@ export default function StaffDashboard() {
                   <a
                     key={ticket._id}
                     href="/staff/warranty"
-                    className="block rounded-xl bg-gray-50 p-4 transition hover:bg-gray-100"
+                    className="block rounded-xl bg-[#181B22] border border-white/5 p-4 transition hover:bg-[#202530]"
                   >
-                    <p className="font-semibold text-gray-800">
+                    <p className="font-semibold text-white">
                       {ticket.ticket_code ?? ticket._id} - {ticket.title}
                     </p>
-                    <p className="mt-1 text-xs text-gray-500">
+                    <p className="mt-1 text-xs text-slate-400">
                       {ticket.status} - {ticket.product_name ?? 'Sản phẩm'}
                     </p>
                   </a>

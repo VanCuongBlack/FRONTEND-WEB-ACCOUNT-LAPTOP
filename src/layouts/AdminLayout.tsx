@@ -41,7 +41,7 @@ export default function AdminLayout({
   topbarRight,
 }: Props) {
   return (
-    <div className="flex h-screen bg-gray-100 overflow-hidden font-sans">
+    <div className="flex h-screen bg-[#1E2229] overflow-hidden font-sans text-white">
 
       {/* Sidebar — tự detect active từ URL */}
       <AdminSidebar />

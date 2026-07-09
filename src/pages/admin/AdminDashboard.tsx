@@ -78,14 +78,14 @@ export default function AdminDashboard() {
 
   return (
     <AdminLayout title="Tổng quan hệ thống" notificationCount={summary?.pending_orders ?? 0}>
-      <div className="mx-auto max-w-[1840px] space-y-6 font-sans text-slate-800">
+      <div className="mx-auto max-w-[1840px] space-y-6 font-sans text-white">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <p className="text-xs font-bold uppercase text-blue-600">Admin</p>
-            <h1 className="mt-1 text-2xl font-black tracking-tight text-slate-900">
+            <p className="text-xs font-bold uppercase text-blue-400">Admin</p>
+            <h1 className="mt-1 text-2xl font-black tracking-tight text-white">
               Tổng quan hệ thống
             </h1>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-slate-400">
               Theo dõi doanh thu, đơn hàng, khách hàng và sản phẩm đang hoạt động.
             </p>
           </div>
@@ -93,7 +93,7 @@ export default function AdminDashboard() {
             type="button"
             onClick={loadDashboard}
             disabled={isLoading}
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 text-sm font-bold text-white hover:bg-blue-500 disabled:opacity-60"
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 text-sm font-bold text-white hover:bg-blue-500 disabled:opacity-60 cursor-pointer"
           >
             <RefreshCw className="h-4 w-4" />
             Tải lại
@@ -101,7 +101,7 @@ export default function AdminDashboard() {
         </div>
 
         {error && (
-          <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
+          <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm font-semibold text-rose-200">
             {error}
           </div>
         )}
@@ -111,25 +111,25 @@ export default function AdminDashboard() {
             label="Tổng doanh thu tháng này"
             value={formatPrice(revenue?.this_month)}
             note={`Tháng trước: ${formatPrice(revenue?.last_month)}`}
-            icon={<TrendingUp className="h-6 w-6 text-blue-600" />}
+            icon={<TrendingUp className="h-6 w-6 text-blue-400" />}
           />
           <MetricCard
             label="Tổng đơn hàng"
             value={(summary?.total_orders ?? 0).toLocaleString('vi-VN')}
             note="Tất cả trạng thái"
-            icon={<ShoppingCart className="h-6 w-6 text-emerald-600" />}
+            icon={<ShoppingCart className="h-6 w-6 text-emerald-400" />}
           />
           <MetricCard
             label="Tổng khách hàng"
             value={(summary?.total_customers ?? 0).toLocaleString('vi-VN')}
             note="Role customer"
-            icon={<Users className="h-6 w-6 text-violet-600" />}
+            icon={<Users className="h-6 w-6 text-violet-400" />}
           />
           <MetricCard
             label="Sản phẩm đang bán"
             value={(summary?.total_products ?? 0).toLocaleString('vi-VN')}
             note="is_active = true"
-            icon={<Package className="h-6 w-6 text-amber-600" />}
+            icon={<Package className="h-6 w-6 text-amber-400" />}
           />
         </div>
 
@@ -138,33 +138,33 @@ export default function AdminDashboard() {
             label="Đơn chờ xử lý"
             value={summary?.pending_orders ?? 0}
             icon={<Clock3 className="h-5 w-5" />}
-            className="bg-blue-50 text-blue-700"
+            className="bg-blue-955/20 text-blue-400 border border-blue-500/20"
           />
           <StatusCard
             label="Đơn hoàn tất"
             value={summary?.completed_orders ?? 0}
             icon={<BarChart3 className="h-5 w-5" />}
-            className="bg-emerald-50 text-emerald-700"
+            className="bg-emerald-955/20 text-emerald-400 border border-emerald-500/20"
           />
           <StatusCard
             label="Đơn đã hủy"
             value={summary?.cancelled_orders ?? 0}
             icon={<XCircle className="h-5 w-5" />}
-            className="bg-rose-50 text-rose-700"
+            className="bg-rose-955/20 text-rose-400 border border-rose-500/20"
           />
         </div>
 
         <div className="grid grid-cols-1 gap-5 xl:grid-cols-[1.2fr_0.8fr]">
-          <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <section className="rounded-2xl border border-white/10 bg-[#2A2F3B] p-5 shadow-sm">
             <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h2 className="text-lg font-black text-slate-900">Doanh thu theo ngày</h2>
-                <p className="text-sm text-slate-500">Thống kê doanh thu theo từng ngày trong khoảng đã chọn.</p>
+                <h2 className="text-lg font-black text-white">Doanh thu theo ngày</h2>
+                <p className="text-sm text-slate-400">Thống kê doanh thu theo từng ngày trong khoảng đã chọn.</p>
               </div>
               <select
                 value={range}
                 onChange={(event) => setRange(event.target.value)}
-                className="h-10 rounded-xl border border-slate-200 px-4 text-sm outline-none focus:border-blue-500"
+                className="h-10 rounded-xl border border-white/10 bg-[#181B22] text-white px-4 text-sm outline-none focus:border-blue-600 cursor-pointer"
               >
                 <option value="7">7 ngày qua</option>
                 <option value="30">30 ngày qua</option>
@@ -172,9 +172,9 @@ export default function AdminDashboard() {
               </select>
             </div>
 
-            <div className="flex h-[260px] items-end gap-3 rounded-2xl bg-slate-50 p-4">
+            <div className="flex h-[260px] items-end gap-3 rounded-2xl bg-[#181B22] border border-white/5 p-4">
               {chartData.length === 0 ? (
-                <div className="flex h-full w-full items-center justify-center text-sm text-slate-400">
+                <div className="flex h-full w-full items-center justify-center text-sm text-[#909AAB]">
                   Chưa có dữ liệu doanh thu.
                 </div>
               ) : (
@@ -182,7 +182,7 @@ export default function AdminDashboard() {
                   const height = Math.max(8, (item.value / maxChartValue) * 210)
                   return (
                     <div key={item.label} className="flex min-w-0 flex-1 flex-col items-center gap-2">
-                      <div className="text-[11px] font-bold text-slate-500">
+                      <div className="text-[11px] font-bold text-slate-300">
                         {formatShortMoney(item.value)}
                       </div>
                       <div
@@ -190,7 +190,7 @@ export default function AdminDashboard() {
                         style={{ height }}
                         title={`${item.label}: ${formatPrice(item.value)}`}
                       />
-                      <div className="w-full truncate text-center text-[10px] text-slate-400">
+                      <div className="w-full truncate text-center text-[10px] text-[#909AAB]">
                         {item.label.slice(5)}
                       </div>
                     </div>
@@ -200,30 +200,30 @@ export default function AdminDashboard() {
             </div>
           </section>
 
-          <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <h2 className="text-lg font-black text-slate-900">Đơn hàng mới</h2>
+          <section className="rounded-2xl border border-white/10 bg-[#2A2F3B] p-5 shadow-sm">
+            <h2 className="text-lg font-black text-white">Đơn hàng mới</h2>
             <div className="mt-4 space-y-3">
               {(dashboard?.recent_orders ?? []).length === 0 ? (
-                <div className="rounded-2xl bg-slate-50 p-8 text-center text-sm text-slate-400">
+                <div className="rounded-2xl bg-[#181B22] border border-white/5 p-8 text-center text-sm text-[#909AAB]">
                   Chưa có đơn hàng.
                 </div>
               ) : (
                 dashboard?.recent_orders?.map((order) => {
                   const firstItem = order.items?.[0]
                   return (
-                    <div key={order._id} className="rounded-2xl border border-slate-100 p-4">
+                    <div key={order._id} className="rounded-2xl border border-white/5 bg-[#181B22]/30 p-4">
                       <div className="flex items-start justify-between gap-4">
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-bold text-slate-900">
+                          <p className="truncate text-sm font-bold text-white">
                             #{order._id.slice(-8).toUpperCase()} - {firstItem?.product_name || order.user_id?.fullname || order.user_id?.email || 'Đơn hàng'}
                           </p>
-                          <p className="mt-1 text-xs text-slate-500">{formatDate(order.createdAt)}</p>
+                          <p className="mt-1 text-xs text-slate-400">{formatDate(order.createdAt)}</p>
                         </div>
-                        <span className="shrink-0 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-600">
+                        <span className="shrink-0 rounded-full bg-slate-800 px-2.5 py-1 text-xs font-bold text-slate-300">
                           {order.status ?? 'unknown'}
                         </span>
                       </div>
-                      <p className="mt-3 text-sm font-black text-blue-600">
+                      <p className="mt-3 text-sm font-black text-blue-400">
                         {formatPrice(order.total_amount)}
                       </p>
                     </div>
@@ -257,13 +257,13 @@ function MetricCard({
   icon: ReactNode
 }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div className="rounded-2xl border border-white/10 bg-[#2A2F3B] p-5 shadow-sm">
       <div className="flex items-center justify-between">
-        <p className="text-sm font-semibold text-slate-500">{label}</p>
-        <div className="rounded-2xl bg-slate-50 p-3">{icon}</div>
+        <p className="text-sm font-semibold text-[#909AAB]">{label}</p>
+        <div className="rounded-2xl bg-[#181B22] p-3">{icon}</div>
       </div>
-      <p className="mt-4 text-3xl font-black text-slate-900">{value}</p>
-      <p className="mt-1 text-xs text-slate-500">{note}</p>
+      <p className="mt-4 text-3xl font-black text-white">{value}</p>
+      <p className="mt-1 text-xs text-slate-400">{note}</p>
     </div>
   )
 }

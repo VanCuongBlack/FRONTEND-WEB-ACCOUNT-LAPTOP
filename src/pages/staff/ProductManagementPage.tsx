@@ -126,9 +126,9 @@ const emptyItemForm: ItemForm = {
 }
 
 const inputClass =
-  'h-[42px] w-full rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-blue-500'
+  'h-[42px] w-full rounded-xl border border-white/10 bg-[#181B22] text-white px-3 text-sm outline-none focus:border-blue-600 focus:bg-[#181B22] transition-colors'
 const textareaClass =
-  'w-full resize-none rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-500'
+  'w-full resize-none rounded-xl border border-white/10 bg-[#181B22] text-white px-3 py-2 text-sm outline-none focus:border-blue-600 focus:bg-[#181B22] transition-colors'
 
 function formatPrice(price: number) {
   return `${(price ?? 0).toLocaleString('vi-VN')}đ`
@@ -641,21 +641,21 @@ export default function ProductManagementPage() {
 
   return (
     <StaffLayout title="Quản lý sản phẩm" notificationCount={0}>
-      <div className="mx-auto w-full max-w-[1840px] space-y-6 font-sans text-slate-800">
+      <div className="mx-auto w-full max-w-[1840px] space-y-6 font-sans text-white">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-xs font-bold uppercase text-blue-600">Kho sản phẩm</p>
-            <h1 className="mt-1 text-2xl font-black tracking-tight text-slate-900">
+            <p className="text-xs font-bold uppercase text-blue-400">Kho sản phẩm</p>
+            <h1 className="mt-1 text-2xl font-black tracking-tight text-white">
               Quản lý sản phẩm
             </h1>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-slate-400">
               Tạo, chỉnh sửa, ẩn sản phẩm và quản lý từng item trong kho.
             </p>
           </div>
           <button
             type="button"
             onClick={openAddProduct}
-            className="flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-xs font-bold text-white shadow-sm transition-colors hover:bg-blue-500"
+            className="flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-xs font-bold text-white shadow-sm transition-colors hover:bg-blue-500 cursor-pointer"
           >
             <Plus className="h-4 w-4" />
             Thêm sản phẩm
@@ -663,13 +663,13 @@ export default function ProductManagementPage() {
         </div>
 
         {error && (
-          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+          <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
             {error}
           </div>
         )}
 
-        <div className="flex flex-col gap-4 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm md:flex-row md:items-center md:justify-between">
-          <div className="flex w-fit flex-wrap gap-1 rounded-xl bg-slate-100 p-1">
+        <div className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-[#2A2F3B] p-4 shadow-sm md:flex-row md:items-center md:justify-between">
+          <div className="flex w-fit flex-wrap gap-1 rounded-xl bg-[#181B22] p-1 border border-white/5">
             <TabButton active={activeTab === 'physical'} onClick={() => setActiveTab('physical')}>
               Laptop / PC
             </TabButton>
@@ -679,55 +679,55 @@ export default function ProductManagementPage() {
           </div>
 
           <div className="relative flex-1 md:max-w-[420px]">
-            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#909AAB]" />
             <input
               value={keyword}
               onChange={(event) => setKeyword(event.target.value)}
               placeholder="Tìm kiếm sản phẩm..."
-              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2 pl-9 pr-4 text-sm transition-colors focus:border-blue-500 focus:bg-white focus:outline-none"
+              className="w-full rounded-xl border border-white/10 bg-[#181B22] py-2 pl-9 pr-4 text-sm text-white transition-colors focus:border-blue-600 focus:outline-none placeholder:text-[#909AAB]"
             />
           </div>
         </div>
 
-        <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
-          <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
-            <h2 className="text-sm font-bold text-slate-800">
+        <section className="overflow-hidden rounded-2xl border border-white/10 bg-[#2A2F3B] shadow-sm">
+          <div className="flex items-center justify-between border-b border-white/10 px-5 py-4 bg-[#181B22]">
+            <h2 className="text-sm font-bold text-white">
               {loading ? 'Đang tải sản phẩm...' : `Danh sách (${filteredProducts.length})`}
             </h2>
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[980px] border-collapse text-left">
+            <table className="w-full min-w-[980px] border-collapse text-left text-white">
               <thead>
-                <tr className="border-b border-slate-100 bg-slate-50/75">
-                  <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">Tên sản phẩm</th>
-                  <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">Loại</th>
-                  <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">Nhóm</th>
-                  <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">Giá nền</th>
-                  <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">Trạng thái</th>
-                  <th className="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-slate-500">Thao tác</th>
+                <tr className="border-b border-white/5 bg-[#181B22]">
+                  <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-300">Tên sản phẩm</th>
+                  <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-300">Loại</th>
+                  <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-300">Nhóm</th>
+                  <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-300">Giá nền</th>
+                  <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-300">Trạng thái</th>
+                  <th className="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-slate-300">Thao tác</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-white/5 bg-[#2A2F3B]">
                 {filteredProducts.map((item) => (
-                  <tr key={item.id} className="transition-colors hover:bg-slate-50/50">
+                  <tr key={item.id} className="transition-colors hover:bg-[#202530] text-white">
                     <td className="px-6 py-4">
-                      <p className="text-sm font-bold text-slate-800">{item.name}</p>
-                      <p className="mt-0.5 max-w-[360px] truncate text-xs text-slate-400">{item.id}</p>
+                      <p className="text-sm font-bold text-white">{item.name}</p>
+                      <p className="mt-0.5 max-w-[360px] truncate text-xs text-[#909AAB]">{item.id}</p>
                     </td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm text-slate-500">
+                    <td className="whitespace-nowrap px-6 py-4 text-sm text-slate-300">
                       {item.type === 'physical' ? 'Laptop / PC' : 'Account'}
                     </td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm text-slate-500">
+                    <td className="whitespace-nowrap px-6 py-4 text-sm text-slate-300">
                       {item.type === 'physical' ? item.brand || '-' : item.platform || item.category || '-'}
                     </td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm font-bold text-emerald-600">
+                    <td className="whitespace-nowrap px-6 py-4 text-sm font-bold text-emerald-400">
                       {formatPrice(item.price)}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4">
                       <span
-                        className={`rounded-full px-2.5 py-1 text-xs font-bold ${
-                          item.active ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-500'
+                        className={`rounded-full border px-2.5 py-1 text-xs font-bold ${
+                          item.active ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-slate-800 border-white/5 text-[#909AAB]'
                         }`}
                       >
                         {item.active ? 'Đang bán' : 'Đã ẩn'}
@@ -787,6 +787,7 @@ export default function ProductManagementPage() {
 
         <AppModal
           open={openActionModal}
+          theme="dark"
           title={actionKind === 'deactivate' ? 'Ẩn sản phẩm' : 'Xóa hẳn sản phẩm'}
           onClose={() => setOpenActionModal(false)}
           footer={
@@ -794,7 +795,7 @@ export default function ProductManagementPage() {
               <button
                 type="button"
                 onClick={() => setOpenActionModal(false)}
-                className="h-[42px] rounded-xl border px-6 text-sm font-semibold"
+                className="h-[42px] rounded-xl border border-white/10 bg-[#181B22] text-slate-300 hover:bg-slate-800 cursor-pointer px-6 text-sm font-semibold"
               >
                 Hủy
               </button>
@@ -802,8 +803,8 @@ export default function ProductManagementPage() {
                 type="button"
                 disabled={saving}
                 onClick={confirmAction}
-                className={`h-[42px] rounded-xl px-6 text-sm font-semibold text-white disabled:opacity-60 ${
-                  actionKind === 'deactivate' ? 'bg-slate-700' : 'bg-red-500'
+                className={`h-[42px] rounded-xl px-6 text-sm font-semibold text-white disabled:opacity-60 cursor-pointer ${
+                  actionKind === 'deactivate' ? 'bg-slate-600 hover:bg-slate-500' : 'bg-rose-600 hover:bg-rose-500'
                 }`}
               >
                 {saving ? 'Đang xử lý...' : actionKind === 'deactivate' ? 'Ẩn sản phẩm' : 'Xóa hẳn'}
@@ -811,7 +812,7 @@ export default function ProductManagementPage() {
             </>
           }
         >
-          <p className="text-sm leading-6 text-gray-600">
+          <p className="text-sm leading-6 text-slate-300">
             {actionKind === 'deactivate'
               ? 'Sản phẩm sẽ ngừng hiển thị để khách mua, nhưng dữ liệu vẫn được giữ lại.'
               : 'Sản phẩm sẽ bị xóa vĩnh viễn khỏi hệ thống. Chỉ dùng khi thật sự cần.'}
@@ -844,18 +845,23 @@ function ProductModal({
   return (
     <AppModal
       open={open}
+      theme="dark"
       title={editingProduct ? 'Sửa sản phẩm' : 'Thêm sản phẩm'}
       onClose={onClose}
       footer={
         <>
-          <button type="button" onClick={onClose} className="h-[42px] rounded-xl border px-6 text-sm font-semibold">
+          <button
+            type="button"
+            onClick={onClose}
+            className="h-[42px] rounded-xl border border-white/10 bg-[#181B22] text-slate-300 hover:bg-slate-800 cursor-pointer px-6 text-sm font-semibold"
+          >
             Hủy
           </button>
           <button
             type="button"
             disabled={saving}
             onClick={onSave}
-            className="h-[42px] rounded-xl bg-blue-600 px-6 text-sm font-semibold text-white disabled:opacity-60"
+            className="h-[42px] rounded-xl bg-blue-600 hover:bg-blue-500 cursor-pointer px-6 text-sm font-semibold text-white disabled:opacity-60"
           >
             {saving ? 'Đang lưu...' : 'Lưu'}
           </button>
@@ -924,18 +930,23 @@ function ItemModal({
   return (
     <AppModal
       open={open}
+      theme="dark"
       title={`Sửa item${product ? ` - ${product.name}` : ''}`}
       onClose={onClose}
       footer={
         <>
-          <button type="button" onClick={onClose} className="h-[42px] rounded-xl border px-6 text-sm font-semibold">
+          <button
+            type="button"
+            onClick={onClose}
+            className="h-[42px] rounded-xl border border-white/10 bg-[#181B22] text-slate-300 hover:bg-slate-800 cursor-pointer px-6 text-sm font-semibold"
+          >
             Hủy
           </button>
           <button
             type="button"
             disabled={saving}
             onClick={onSave}
-            className="h-[42px] rounded-xl bg-blue-600 px-6 text-sm font-semibold text-white disabled:opacity-60"
+            className="h-[42px] rounded-xl bg-blue-600 hover:bg-blue-500 cursor-pointer px-6 text-sm font-semibold text-white disabled:opacity-60"
           >
             {saving ? 'Đang lưu...' : 'Lưu item'}
           </button>
@@ -954,7 +965,7 @@ function ItemModal({
             </select>
           </Field>
         ) : (
-          <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+          <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 p-3 text-sm text-amber-200">
             Chưa tìm thấy item cho sản phẩm này. Bạn có thể nhập mã item thủ công nếu đã biết.
           </div>
         )}
@@ -1031,8 +1042,8 @@ function TabButton({ active, onClick, children }: { active: boolean; onClick: ()
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-lg px-4 py-1.5 text-xs font-bold transition-all ${
-        active ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-800'
+      className={`rounded-lg px-4 py-1.5 text-xs font-bold transition-all cursor-pointer ${
+        active ? 'bg-[#2A2F3B] text-white shadow-sm border border-white/5' : 'text-[#909AAB] hover:text-white'
       }`}
     >
       {children}
@@ -1055,10 +1066,10 @@ function IconButton({
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-lg p-1.5 transition-colors ${
+      className={`rounded-lg p-1.5 transition-colors cursor-pointer ${
         danger
-          ? 'text-slate-400 hover:bg-rose-50 hover:text-rose-600'
-          : 'text-slate-400 hover:bg-blue-50 hover:text-blue-600'
+          ? 'text-slate-400 hover:bg-rose-500/10 hover:text-rose-400'
+          : 'text-slate-400 hover:bg-blue-500/10 hover:text-blue-400'
       }`}
       title={title}
     >
@@ -1070,7 +1081,7 @@ function IconButton({
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-xs font-bold text-slate-500">{label}</span>
+      <span className="mb-1.5 block text-xs font-bold text-slate-300">{label}</span>
       {children}
     </label>
   )
@@ -1087,7 +1098,7 @@ function PhysicalFields({
 }) {
   return (
     <div>
-      <h3 className="mb-3 text-sm font-black text-slate-900">Thông số Laptop / PC</h3>
+      <h3 className="mb-3 text-sm font-black text-white">Thông số Laptop / PC</h3>
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         <Field label="Thương hiệu"><input value={form.brand} onChange={(event) => updateForm({ brand: event.target.value })} className={inputClass} /></Field>
         <Field label="Model"><input value={form.model} onChange={(event) => updateForm({ model: event.target.value })} className={inputClass} /></Field>
@@ -1108,7 +1119,7 @@ function PhysicalFields({
           </>
         )}
         {editing && !form.physicalItemId && (
-          <div className="md:col-span-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800">
+          <div className="md:col-span-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm font-semibold text-amber-300">
             Sản phẩm này chưa có item kho nên chưa thể cập nhật ảnh tại đây. Hãy nhập kho item trước.
           </div>
         )}
@@ -1141,7 +1152,7 @@ function DigitalFields({
 }) {
   return (
     <div>
-      <h3 className="mb-3 text-sm font-black text-slate-900">Thông tin account</h3>
+      <h3 className="mb-3 text-sm font-black text-white">Thông tin account</h3>
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         <Field label="Nền tảng"><input value={form.platform} onChange={(event) => updateForm({ platform: event.target.value })} className={inputClass} /></Field>
         <Field label="Danh mục"><input value={form.category} onChange={(event) => updateForm({ category: event.target.value })} className={inputClass} /></Field>

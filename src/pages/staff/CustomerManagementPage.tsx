@@ -109,20 +109,20 @@ export default function CustomerManagementPage() {
 
   return (
     <AdminLayout title="Quản lý khách hàng" notificationCount={0}>
-      <div className="mx-auto w-full max-w-[1840px] space-y-6 font-sans text-slate-800">
+      <div className="mx-auto w-full max-w-[1840px] space-y-6 font-sans text-white">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+            <h1 className="text-2xl font-bold tracking-tight text-white">
               Quản lý khách hàng
             </h1>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-slate-400">
               Theo dõi tài khoản khách hàng, lịch sử mua hàng và trạng thái hoạt động.
             </p>
           </div>
           <button
             type="button"
             onClick={loadCustomers}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-xs font-bold text-white hover:bg-blue-500"
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-xs font-bold text-white hover:bg-blue-500 cursor-pointer"
           >
             <RefreshCw className="h-4 w-4" />
             Tải lại
@@ -130,67 +130,67 @@ export default function CustomerManagementPage() {
         </div>
 
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
-          <div className="flex items-center justify-between rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
+          <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-[#2A2F3B] p-5 shadow-sm">
             <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
+              <p className="text-xs font-bold uppercase tracking-wider text-[#909AAB]">
                 Tổng khách hàng
               </p>
-              <h3 className="mt-1 text-2xl font-extrabold text-slate-900">
+              <h3 className="mt-1 text-2xl font-extrabold text-white">
                 {total.toLocaleString('vi-VN')}
               </h3>
             </div>
-            <Users className="h-8 w-8 text-blue-600" />
+            <Users className="h-8 w-8 text-blue-400" />
           </div>
-          <div className="flex items-center justify-between rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
+          <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-[#2A2F3B] p-5 shadow-sm">
             <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
+              <p className="text-xs font-bold uppercase tracking-wider text-[#909AAB]">
                 Đang hoạt động
               </p>
-              <h3 className="mt-1 text-2xl font-extrabold text-emerald-600">
+              <h3 className="mt-1 text-2xl font-extrabold text-emerald-400">
                 {activeCustomers}
               </h3>
             </div>
-            <Unlock className="h-8 w-8 text-emerald-600" />
+            <Unlock className="h-8 w-8 text-emerald-400" />
           </div>
-          <div className="flex items-center justify-between rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
+          <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-[#2A2F3B] p-5 shadow-sm">
             <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
+              <p className="text-xs font-bold uppercase tracking-wider text-[#909AAB]">
                 Bị khóa
               </p>
-              <h3 className="mt-1 text-2xl font-extrabold text-rose-600">
+              <h3 className="mt-1 text-2xl font-extrabold text-rose-400">
                 {filteredCustomers.length - activeCustomers}
               </h3>
             </div>
-            <Lock className="h-8 w-8 text-rose-600" />
+            <Lock className="h-8 w-8 text-rose-400" />
           </div>
         </div>
 
-        <div className="flex flex-col gap-4 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm md:flex-row md:items-center md:justify-between">
+        <div className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-[#2A2F3B] p-4 shadow-sm md:flex-row md:items-center md:justify-between">
           <div className="relative w-full md:w-96">
-            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#909AAB]" />
             <input
               value={keyword}
               onChange={(event) => setKeyword(event.target.value)}
               onKeyDown={(event) => event.key === 'Enter' && loadCustomers()}
               placeholder="Tìm tên, email, số điện thoại..."
-              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2 pl-9 pr-4 text-sm focus:border-blue-500 focus:bg-white focus:outline-none"
+              className="w-full rounded-xl border border-white/10 bg-[#181B22] text-white py-2 pl-9 pr-4 text-sm focus:border-blue-600 focus:outline-none placeholder:text-[#909AAB]"
             />
           </div>
-          <span className="text-xs font-semibold text-slate-400">
+          <span className="text-xs font-semibold text-[#909AAB]">
             Hiển thị {filteredCustomers.length.toLocaleString('vi-VN')} khách hàng
           </span>
         </div>
 
         {error && (
-          <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
+          <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm font-medium text-rose-200">
             {error}
           </div>
         )}
 
-        <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
+        <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#2A2F3B] shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[920px] text-left">
-              <thead className="bg-slate-50/75 text-xs font-bold uppercase tracking-wider text-slate-500">
+              <thead className="bg-[#181B22] text-xs font-bold uppercase tracking-wider text-slate-300">
                 <tr>
                   <th className="px-6 py-4">Khách hàng</th>
                   <th className="px-6 py-4">Email</th>
@@ -200,39 +200,39 @@ export default function CustomerManagementPage() {
                   <th className="px-6 py-4 text-right">Thao tác</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-white/5 bg-[#1E2229]/20">
                 {isLoading ? (
                   <tr>
-                    <td colSpan={6} className="px-6 py-10 text-center text-sm text-slate-400">
+                    <td colSpan={6} className="px-6 py-10 text-center text-sm text-slate-400 bg-[#1E2229]/20">
                       Đang tải danh sách khách hàng...
                     </td>
                   </tr>
                 ) : filteredCustomers.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-6 py-10 text-center text-sm text-slate-400">
+                    <td colSpan={6} className="px-6 py-10 text-center text-sm text-slate-400 bg-[#1E2229]/20">
                       Không tìm thấy khách hàng.
                     </td>
                   </tr>
                 ) : (
                   filteredCustomers.map((customer) => (
-                    <tr key={customer._id} className="hover:bg-slate-50/60">
+                    <tr key={customer._id} className="hover:bg-[#202530]">
                       <td className="px-6 py-4">
-                        <p className="text-sm font-bold text-slate-800">
+                        <p className="text-sm font-bold text-white">
                           {customer.fullname || 'Khách hàng'}
                         </p>
-                        <p className="text-xs text-slate-400">{customer._id}</p>
+                        <p className="text-xs text-[#909AAB]">{customer._id}</p>
                       </td>
-                      <td className="px-6 py-4 text-sm text-slate-600">{customer.email}</td>
-                      <td className="px-6 py-4 text-sm text-slate-600">{customer.phone || '-'}</td>
-                      <td className="px-6 py-4 text-sm text-slate-500">
+                      <td className="px-6 py-4 text-sm text-slate-300">{customer.email}</td>
+                      <td className="px-6 py-4 text-sm text-slate-300">{customer.phone || '-'}</td>
+                      <td className="px-6 py-4 text-sm text-slate-400">
                         {formatDate(customer.createdAt)}
                       </td>
                       <td className="px-6 py-4">
                         <span
                           className={`rounded-full px-2.5 py-1 text-xs font-bold ${
                             customer.isActive === false
-                              ? 'bg-rose-50 text-rose-600'
-                              : 'bg-emerald-50 text-emerald-600'
+                              ? 'bg-rose-955/40 text-rose-300 border border-rose-500/20'
+                              : 'bg-emerald-955/40 text-emerald-300 border border-emerald-500/20'
                           }`}
                         >
                           {customer.isActive === false ? 'Bị khóa' : 'Hoạt động'}
@@ -244,7 +244,7 @@ export default function CustomerManagementPage() {
                             type="button"
                             onClick={() => openDetail(customer, 'info')}
                             disabled={isDetailLoading}
-                            className="rounded-lg bg-blue-50 px-2.5 py-1.5 text-xs font-bold text-blue-600 hover:bg-blue-100 disabled:opacity-60"
+                            className="rounded-lg bg-blue-600 px-2.5 py-1.5 text-xs font-bold text-white hover:bg-blue-500 disabled:opacity-60 cursor-pointer"
                           >
                             <Eye className="inline h-3.5 w-3.5" /> Xem
                           </button>
@@ -252,14 +252,14 @@ export default function CustomerManagementPage() {
                             type="button"
                             onClick={() => openDetail(customer, 'history')}
                             disabled={isDetailLoading}
-                            className="rounded-lg bg-emerald-50 px-2.5 py-1.5 text-xs font-bold text-emerald-600 hover:bg-emerald-100 disabled:opacity-60"
+                            className="rounded-lg bg-emerald-600 px-2.5 py-1.5 text-xs font-bold text-white hover:bg-emerald-500 disabled:opacity-60 cursor-pointer"
                           >
                             <History className="inline h-3.5 w-3.5" /> Đơn
                           </button>
                           <button
                             type="button"
                             onClick={() => handleToggleStatus(customer)}
-                            className="rounded-lg bg-slate-50 px-2.5 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-100"
+                            className="rounded-lg border border-white/10 bg-[#181B22] px-2.5 py-1.5 text-xs font-bold text-slate-300 hover:bg-slate-800 cursor-pointer"
                           >
                             {customer.isActive === false ? 'Mở khóa' : 'Khóa'}
                           </button>
@@ -275,11 +275,12 @@ export default function CustomerManagementPage() {
 
         <AppModal
           open={openCustomerModal}
+          theme="dark"
           title="Thông tin khách hàng"
           onClose={() => setOpenCustomerModal(false)}
         >
           {selectedCustomer && (
-            <div className="space-y-3 text-sm text-slate-600">
+            <div className="space-y-3 text-sm text-slate-350">
               <p>
                 <strong>Họ tên:</strong> {selectedCustomer.customer.fullname || '-'}
               </p>
@@ -301,39 +302,40 @@ export default function CustomerManagementPage() {
 
         <AppModal
           open={openHistoryModal}
+          theme="dark"
           title="Lịch sử đơn hàng"
           onClose={() => setOpenHistoryModal(false)}
           maxWidthClassName="max-w-[760px]"
         >
           <div className="space-y-3 text-sm">
             {(selectedCustomer?.order_history ?? []).length === 0 ? (
-              <p className="text-slate-500">Khách hàng chưa có đơn hàng.</p>
+              <p className="text-[#909AAB]">Khách hàng chưa có đơn hàng.</p>
             ) : (
               selectedCustomer?.order_history?.map((order) => (
-                <div key={order._id} className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                <div key={order._id} className="rounded-xl border border-white/10 bg-[#181B22] p-3">
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                    <p className="break-all font-bold text-slate-800">#{order._id}</p>
+                    <p className="break-all font-bold text-white">#{order._id}</p>
                     <button
                       type="button"
                       onClick={() => openOrderDetail(order._id)}
-                      className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-blue-500"
+                      className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-blue-500 cursor-pointer"
                     >
                       Xem chi tiết
                     </button>
                   </div>
-                  <p className="text-slate-600">Trạng thái: {order.status || '-'}</p>
-                  <p className="text-slate-600">Thanh toán: {order.payment_method || '-'}</p>
-                  <p className="text-slate-600">Ngày tạo: {formatDate(order.createdAt)}</p>
-                  <p className="font-semibold text-emerald-600">{formatPrice(order.total_amount)}</p>
+                  <p className="text-slate-300">Trạng thái: {order.status || '-'}</p>
+                  <p className="text-slate-300">Thanh toán: {order.payment_method || '-'}</p>
+                  <p className="text-slate-300">Ngày tạo: {formatDate(order.createdAt)}</p>
+                  <p className="font-semibold text-emerald-400">{formatPrice(order.total_amount)}</p>
                 </div>
               ))
             )}
-
           </div>
         </AppModal>
 
         <AppModal
           open={isOrderLoading || Boolean(selectedOrder)}
+          theme="dark"
           title="Chi tiết đơn hàng"
           maxWidthClassName="max-w-[720px]"
           onClose={() => {
@@ -342,29 +344,29 @@ export default function CustomerManagementPage() {
           }}
         >
           {isOrderLoading ? (
-            <div className="rounded-xl border border-blue-100 bg-blue-50 p-4 text-sm font-semibold text-blue-700">
+            <div className="rounded-xl border border-blue-500/20 bg-blue-950/20 p-4 text-sm font-semibold text-blue-300">
               Đang tải chi tiết đơn hàng...
             </div>
           ) : selectedOrder ? (
             <div className="space-y-4 text-sm">
-              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                <p className="text-xs font-bold uppercase text-slate-400">Mã đơn</p>
-                <p className="mt-1 break-all font-black text-slate-900">#{selectedOrder._id}</p>
-                <div className="mt-3 grid grid-cols-2 gap-3 text-slate-600">
+              <div className="rounded-xl border border-white/10 bg-[#181B22] p-4">
+                <p className="text-xs font-bold uppercase text-[#909AAB]">Mã đơn</p>
+                <p className="mt-1 break-all font-black text-white">#{selectedOrder._id}</p>
+                <div className="mt-3 grid grid-cols-2 gap-3 text-slate-300">
                   <p>Trạng thái: <strong>{selectedOrder.status || '-'}</strong></p>
                   <p>Thanh toán: <strong>{selectedOrder.payment_method || '-'}</strong></p>
                   <p className="col-span-2">Ngày tạo: <strong>{formatDate(selectedOrder.createdAt)}</strong></p>
                 </div>
-                <p className="mt-4 text-right text-lg font-black text-emerald-600">
+                <p className="mt-4 text-right text-lg font-black text-emerald-400">
                   {formatPrice(selectedOrder.total_amount)}
                 </p>
               </div>
 
               <div className="space-y-2">
                 {selectedOrder.items?.map((item) => (
-                  <div key={item._id ?? item.item_id} className="rounded-lg bg-slate-50 p-3">
-                    <p className="font-bold text-slate-800">{item.product_name || item.product?.name || 'Sản phẩm'}</p>
-                    <p className="text-xs text-slate-500">
+                  <div key={item._id ?? item.item_id} className="rounded-lg bg-[#1E2229]/40 border border-white/5 p-3">
+                    <p className="font-bold text-white">{item.product_name || item.product?.name || 'Sản phẩm'}</p>
+                    <p className="text-xs text-[#909AAB]">
                       {item.product_type === 'digital' ? 'Account' : 'Laptop / PC'} - {formatPrice(item.sale_price ?? item.price)}
                     </p>
                   </div>

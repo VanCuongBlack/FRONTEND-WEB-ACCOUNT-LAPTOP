@@ -174,11 +174,7 @@ export default function AccountListPage() {
           <button
             type="button"
             onClick={() => { window.location.href = 'tel:19001234' }}
-
             className="rounded-full bg-[#00c6ff]/10 border border-[#00c6ff]/20 px-5 py-3 font-bold text-[#00c6ff] hover:bg-[#00c6ff]/25 transition-all duration-200"
-
-            className="rounded-full bg-[#4a4568] px-5 py-3 font-bold text-[#79a7ff] hover:bg-[#5a5378]"
-
           >
             Hotline: 1900 1234
           </button>

@@ -38,11 +38,11 @@ export default function SystemSettingsPage() {
 
   return (
     <AdminLayout title="Quản lý hệ thống">
-      <section className="mx-auto w-full max-w-[1840px] space-y-6 font-sans">
+      <section className="mx-auto w-full max-w-[1840px] space-y-6 font-sans text-white">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Quản lý hệ thống</h1>
-            <p className="mt-1 text-sm text-gray-500">
+            <h1 className="text-2xl font-bold text-white">Quản lý hệ thống</h1>
+            <p className="mt-1 text-sm text-slate-400">
               Theo dõi thông tin vận hành, quyền truy cập và trạng thái hệ thống.
             </p>
           </div>
@@ -50,88 +50,88 @@ export default function SystemSettingsPage() {
           <button
             type="button"
             onClick={loadInfo}
-            className="flex h-[44px] items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 text-sm font-semibold text-white hover:bg-blue-700"
+            className="flex h-[44px] items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 text-sm font-semibold text-white hover:bg-blue-500 cursor-pointer"
           >
             <RefreshCw size={18} />
             Tải lại
           </button>
         </div>
 
-        {error && <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">{error}</p>}
+        {error && <p className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">{error}</p>}
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          <div className="rounded-2xl bg-blue-50 p-5">
+          <div className="rounded-2xl bg-blue-955/20 text-blue-400 border border-blue-500/20 p-5">
             <div className="flex items-center justify-between">
-              <p className="text-sm text-gray-500">Tổng người dùng</p>
-              <Users className="text-blue-600" size={22} />
+              <p className="text-sm text-[#909AAB]">Tổng người dùng</p>
+              <Users className="text-blue-400" size={22} />
             </div>
-            <p className="mt-4 text-3xl font-bold text-blue-700">
+            <p className="mt-4 text-3xl font-bold text-white">
               {(info?.stats?.total_users ?? 0).toLocaleString('vi-VN')}
             </p>
           </div>
 
-          <div className="rounded-2xl bg-green-50 p-5">
+          <div className="rounded-2xl bg-emerald-955/20 text-emerald-400 border border-emerald-500/20 p-5">
             <div className="flex items-center justify-between">
-              <p className="text-sm text-gray-500">Tổng sản phẩm</p>
-              <Database className="text-green-600" size={22} />
+              <p className="text-sm text-[#909AAB]">Tổng sản phẩm</p>
+              <Database className="text-emerald-400" size={22} />
             </div>
-            <p className="mt-4 text-3xl font-bold text-green-700">
+            <p className="mt-4 text-3xl font-bold text-white">
               {(info?.stats?.total_products ?? 0).toLocaleString('vi-VN')}
             </p>
           </div>
 
-          <div className="rounded-2xl bg-yellow-50 p-5">
+          <div className="rounded-2xl bg-amber-955/20 text-amber-400 border border-amber-500/20 p-5">
             <div className="flex items-center justify-between">
-              <p className="text-sm text-gray-500">Số role</p>
-              <Shield className="text-yellow-600" size={22} />
+              <p className="text-sm text-[#909AAB]">Số role</p>
+              <Shield className="text-amber-400" size={22} />
             </div>
-            <p className="mt-4 text-3xl font-bold text-yellow-700">{info?.roles?.length ?? 0}</p>
+            <p className="mt-4 text-3xl font-bold text-white">{info?.roles?.length ?? 0}</p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_380px]">
-          <main className="rounded-2xl bg-white p-6 shadow-sm">
-            <h2 className="text-lg font-bold text-gray-900">Thông tin runtime</h2>
+          <main className="rounded-2xl border border-white/10 bg-[#2A2F3B] p-6 shadow-sm">
+            <h2 className="text-lg font-bold text-white">Thông tin runtime</h2>
             {isLoading ? (
-              <p className="mt-4 text-sm text-gray-500">Đang tải thông tin hệ thống...</p>
+              <p className="mt-4 text-sm text-slate-400">Đang tải thông tin hệ thống...</p>
             ) : (
               <div className="mt-5 grid gap-4 md:grid-cols-2">
-                <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
-                  <div className="flex items-center gap-2 text-sm font-bold text-gray-700">
+                <div className="rounded-2xl border border-white/10 bg-[#181B22] p-4">
+                  <div className="flex items-center gap-2 text-sm font-bold text-slate-300">
                     <Globe size={18} />
                     Node version
                   </div>
-                  <p className="mt-2 text-xl font-bold text-gray-900">
+                  <p className="mt-2 text-xl font-bold text-white">
                     {info?.system?.node_version ?? '-'}
                   </p>
                 </div>
 
-                <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
-                  <div className="flex items-center gap-2 text-sm font-bold text-gray-700">
+                <div className="rounded-2xl border border-white/10 bg-[#181B22] p-4">
+                  <div className="flex items-center gap-2 text-sm font-bold text-slate-300">
                     <Database size={18} />
                     Memory heap
                   </div>
-                  <p className="mt-2 text-xl font-bold text-gray-900">
+                  <p className="mt-2 text-xl font-bold text-white">
                     {info?.system?.memory_mb ?? 0} MB
                   </p>
                 </div>
 
-                <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
-                  <div className="flex items-center gap-2 text-sm font-bold text-gray-700">
+                <div className="rounded-2xl border border-white/10 bg-[#181B22] p-4">
+                  <div className="flex items-center gap-2 text-sm font-bold text-slate-300">
                     <RefreshCw size={18} />
                     Uptime
                   </div>
-                  <p className="mt-2 text-xl font-bold text-gray-900">
+                  <p className="mt-2 text-xl font-bold text-white">
                     {formatUptime(info?.system?.uptime_seconds)}
                   </p>
                 </div>
 
-                <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
-                  <div className="flex items-center gap-2 text-sm font-bold text-gray-700">
+                <div className="rounded-2xl border border-white/10 bg-[#181B22] p-4">
+                  <div className="flex items-center gap-2 text-sm font-bold text-slate-300">
                     <Mail size={18} />
                     Email/SMTP
                   </div>
-                  <p className="mt-2 text-sm text-gray-600">
+                  <p className="mt-2 text-sm text-slate-450">
                     Chưa có cấu hình email công khai để hiển thị.
                   </p>
                 </div>
@@ -139,16 +139,16 @@ export default function SystemSettingsPage() {
             )}
           </main>
 
-          <aside className="rounded-2xl bg-white p-6 shadow-sm">
-            <h2 className="text-lg font-bold text-gray-900">Role hệ thống</h2>
+          <aside className="rounded-2xl border border-white/10 bg-[#2A2F3B] p-6 shadow-sm">
+            <h2 className="text-lg font-bold text-white">Role hệ thống</h2>
             <div className="mt-4 space-y-3">
               {(info?.roles ?? []).length === 0 ? (
-                <p className="text-sm text-gray-500">Chưa có dữ liệu role.</p>
+                <p className="text-sm text-slate-400">Chưa có dữ liệu role.</p>
               ) : (
                 info?.roles?.map((role) => (
-                  <div key={role._id} className="rounded-xl border border-gray-100 bg-gray-50 p-3">
-                    <p className="font-bold text-gray-900">{role.name}</p>
-                    <p className="mt-1 text-xs text-gray-500">{role.description || role._id}</p>
+                  <div key={role._id} className="rounded-xl border border-white/5 bg-[#181B22] p-3">
+                    <p className="font-bold text-white">{role.name}</p>
+                    <p className="mt-1 text-xs text-[#909AAB]">{role.description || role._id}</p>
                   </div>
                 ))
               )}
