@@ -2,11 +2,9 @@ import React, { useEffect, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import {
   Bell,
-  ChevronDown,
   LogOut,
   Menu,
   Search,
-  ShoppingBag,
   ShoppingCart,
   User,
   X,
@@ -23,7 +21,6 @@ interface HeaderProps {
 }
 
 export default function Header({
-  pageLabel,
   cartCount = 0,
   mobileCartRef,
   desktopCartRef,
@@ -79,73 +76,49 @@ export default function Header({
   }
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/10 bg-[#09051f] text-white shadow-[0_10px_30px_rgba(0,0,0,0.25)]">
-      <div className="hidden border-b border-white/10 bg-[#0d0828] md:block">
-        <div className="mx-auto flex h-11 max-w-[1840px] items-center justify-between px-4 text-sm text-[#b9b4d7] sm:px-6">
-          <nav className="flex items-center gap-7">
-            <Link to="/best-seller" className="hover:text-white">
-              Tin PC
-            </Link>
-            <Link to="/warranty-policy" className="hover:text-white">
-              Bảo hành
-            </Link>
-            <Link to="/purchase-guide" className="hover:text-white">
-              Hướng dẫn mua hàng
-            </Link>
-          </nav>
-          <div className="flex items-center gap-4">
-            <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-xs font-black text-yellow-300">
-              VN
-            </span>
-            <span>Tiếng Việt</span>
-            <span className="h-5 w-10 rounded-full bg-white/20 p-0.5">
-              <span className="block h-4 w-4 rounded-full bg-white" />
-            </span>
-          </div>
-        </div>
-      </div>
-
+    <header className="sticky top-0 z-50 border-b border-white/5 bg-[#09051f]/90 backdrop-blur-md text-white shadow-[0_10px_30px_rgba(0,0,0,0.25)]">
       <div className="mx-auto max-w-[1840px] px-4 sm:px-6">
-        <div className="flex h-[76px] items-center justify-between gap-4">
-          <div className="flex min-w-0 items-center gap-7">
-            <Link to="/" className="flex shrink-0 items-baseline gap-1">
-              <span className="text-3xl font-black tracking-tight text-white">PCAcc</span>
-              <span className="text-sm font-black text-white">.com</span>
+        <div className="flex h-[70px] items-center justify-between gap-4">
+          
+          {/* Logo and Search bar on the left */}
+          <div className="flex flex-1 items-center gap-6">
+            <Link to="/" className="flex shrink-0 items-baseline gap-0.5 group">
+              <span className="text-2xl font-black tracking-tight text-white transition-transform duration-200">PCAcc</span>
+              <span className="text-sm font-black text-[#00d6ff]">.com</span>
             </Link>
 
-            <nav className="hidden items-center gap-7 text-base font-bold text-[#c8c1e8] md:flex">
-              <Link to="/laptops" className="inline-flex items-center gap-1 hover:text-white">
-                PC/Laptop <ChevronDown className="h-4 w-4" />
+            <form onSubmit={handleSearch} className="hidden flex-1 max-w-[420px] md:flex">
+              <div className="flex h-[42px] w-full items-center gap-2.5 rounded-full bg-white/5 border border-white/10 px-4 text-[#c3bddb] focus-within:border-[#00d6ff]/40 focus-within:bg-white/10 transition-all duration-300">
+                <Search className="h-4.5 w-4.5 text-white/40" />
+                <input
+                  value={query}
+                  onChange={(event) => handleQueryChange(event.target.value)}
+                  placeholder="Tìm kiếm Laptop, PC, Netflix, Adobe..."
+                  className="min-w-0 flex-1 bg-transparent text-sm font-semibold text-white placeholder:text-white/30 focus:outline-none"
+                />
+                {query && (
+                  <button type="button" onClick={() => handleQueryChange('')} className="text-[#c3bddb] hover:text-white">
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+            </form>
+          </div>
+
+          {/* Right side items (nav links, cart, auth) */}
+          <div className="flex shrink-0 items-center gap-2 md:gap-4">
+            <nav className="hidden items-center gap-6 text-sm font-bold text-[#c8c1e8] md:flex mr-2">
+              <Link to="/laptops" className="hover:text-white transition-colors">
+                PC/Laptop
               </Link>
-              <Link to="/accounts" className="hover:text-white">
+              <Link to="/accounts" className="hover:text-white transition-colors">
                 Account
               </Link>
-              <Link to="/best-seller" className="hover:text-white">
+              <Link to="/best-seller" className="hover:text-white transition-colors">
                 Bán chạy
               </Link>
-              {pageLabel && <span className="text-sm text-white/60">{pageLabel}</span>}
             </nav>
-          </div>
 
-          <form onSubmit={handleSearch} className="hidden flex-1 justify-end md:flex">
-            <div className="flex h-[54px] w-full max-w-[395px] items-center gap-3 rounded-[22px] bg-[#37335f] px-5 text-[#c3bddb] ring-1 ring-white/5 focus-within:ring-[#6aa8ff]">
-              <input
-                value={query}
-                onChange={(event) => handleQueryChange(event.target.value)}
-                placeholder="Tìm PC, laptop, account..."
-                className="min-w-0 flex-1 bg-transparent text-base font-semibold text-white placeholder:text-[#9b95b8] focus:outline-none"
-              />
-              {query ? (
-                <button type="button" onClick={() => handleQueryChange('')} className="text-[#c3bddb] hover:text-white">
-                  <X className="h-5 w-5" />
-                </button>
-              ) : (
-                <Search className="h-6 w-6 text-[#c3bddb]" />
-              )}
-            </div>
-          </form>
-
-          <div className="flex shrink-0 items-center gap-2 md:gap-4">
             <Link
               to={isLoggedIn ? '/notification' : '/login'}
               className="relative hidden rounded-xl p-2 text-[#c8c1e8] transition-colors hover:bg-white/10 hover:text-white md:block"
@@ -162,12 +135,12 @@ export default function Header({
             <Link
               to="/cart"
               ref={desktopCartRef}
-              className="relative hidden rounded-xl p-2 text-white transition-colors hover:bg-white/10 md:block"
+              className="relative rounded-full p-2 text-white/80 transition-colors hover:bg-white/10 hover:text-white"
               title="Giỏ hàng"
             >
-              <ShoppingBag className={`h-7 w-7 ${cartIconClassName}`} />
+              <ShoppingCart className={`h-5 w-5 ${cartIconClassName}`} />
               {cartCount > 0 && (
-                <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-black text-white">
+                <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#00d6ff] text-[9px] font-black text-[#040214] shadow-[0_0_8px_rgba(0,214,255,0.4)]">
                   {cartCount}
                 </span>
               )}
@@ -177,7 +150,7 @@ export default function Header({
               <div className="hidden items-center gap-3 md:flex">
                 <Link
                   to="/profile"
-                  className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border-2 border-white/20 bg-[#3d63ff] text-sm font-black text-white"
+                  className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border border-white/20 bg-[#3d63ff] text-xs font-black text-white"
                 >
                   {user?.avatar ? (
                     <img src={user.avatar} alt="Avatar" className="h-full w-full object-cover" />
@@ -188,20 +161,19 @@ export default function Header({
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="inline-flex h-10 items-center gap-2 rounded-xl bg-white/10 px-3 text-sm font-black text-[#d9d4f2] transition-colors hover:bg-white/15 hover:text-white"
+                  className="inline-flex h-9 items-center gap-1.5 rounded-full bg-white/10 px-3 text-xs font-black text-[#d9d4f2] transition-colors hover:bg-white/15 hover:text-white"
                 >
-                  <LogOut className="h-4 w-4" />
+                  <LogOut className="h-3.5 w-3.5" />
                   Đăng xuất
                 </button>
               </div>
             ) : (
-              <div className="hidden items-center gap-1 text-base font-black text-[#d9d4f2] md:flex">
-                <Link to="/login" className="hover:text-white">
+              <div className="hidden items-center md:flex">
+                <Link
+                  to="/login"
+                  className="inline-flex items-center justify-center rounded-full bg-white px-5 py-2 text-xs font-black text-[#09051f] hover:bg-gray-100 transition-colors active:scale-95 shadow-lg"
+                >
                   Đăng nhập
-                </Link>
-                <span>/</span>
-                <Link to="/register" className="hover:text-white">
-                  Đăng ký
                 </Link>
               </div>
             )}
@@ -214,7 +186,7 @@ export default function Header({
             >
               <ShoppingCart className={`h-5 w-5 ${cartIconClassName}`} />
               {cartCount > 0 && (
-                <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-black text-white">
+                <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#00d6ff] px-1 text-[10px] font-black text-[#040214]">
                   {cartCount}
                 </span>
               )}
@@ -291,7 +263,7 @@ export default function Header({
               ) : (
                 <>
                   <Link to="/login" onClick={() => setMobileOpen(false)} className="rounded-xl px-3 py-2 hover:bg-white/10">
-                    Đăng nhập
+                    <Đăng nhập></Đăng nhập>
                   </Link>
                   <Link to="/register" onClick={() => setMobileOpen(false)} className="rounded-xl px-3 py-2 hover:bg-white/10">
                     Đăng ký

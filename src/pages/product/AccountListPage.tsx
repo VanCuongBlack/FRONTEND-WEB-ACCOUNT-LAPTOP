@@ -108,8 +108,8 @@ export default function AccountListPage() {
 
   const tabClass = (tab: AccountTab) =>
     activeTab === tab
-      ? 'border-[#3d63ff] bg-[#0f0a2c] text-white'
-      : 'border-transparent bg-[#4a4568] text-[#f0edf9] hover:bg-[#5a5378]'
+      ? 'bg-gradient-to-r from-[#00c6ff] to-[#8a2be2] text-white border-none'
+      : 'border border-white/5 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white'
 
   const filteredProducts = useMemo(() => {
     return products.filter((item) => {
@@ -138,24 +138,24 @@ export default function AccountListPage() {
   }, [products, search, selectedPrices, selectedPlatforms])
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#09051f] font-sans text-white">
+    <div className="flex min-h-screen flex-col bg-gradient-to-b from-[#0b0726] via-[#150e3d] to-[#040214] font-sans text-white">
       <Header />
 
       <main className="mx-auto w-full max-w-[1840px] flex-1 px-4 py-6">
         <button
           type="button"
           onClick={() => navigate(-1)}
-          className="mb-5 flex items-center gap-2 text-sm text-[#b9b4d7] hover:text-white"
+          className="mb-5 flex items-center gap-2 text-sm text-white/60 hover:text-white transition-colors"
         >
           <ChevronLeft size={20} />
           Quay lại
         </button>
 
-        <nav className="flex flex-wrap items-center gap-3 rounded-[22px] bg-[#211b42] px-4 py-4 text-sm shadow-[0_18px_40px_rgba(0,0,0,0.18)] sm:px-6">
+        <nav className="flex flex-wrap items-center gap-3 rounded-[26px] bg-[#1a1435]/60 backdrop-blur-md border border-white/5 px-4 py-4 text-sm shadow-[0_20px_50px_rgba(0,0,0,0.3)] sm:px-6">
           <button
             type="button"
             onClick={() => navigate('/')}
-            className="rounded-full bg-[#4a4568] px-5 py-3 font-bold text-[#f0edf9] hover:bg-[#5a5378]"
+            className="rounded-full border border-white/5 bg-white/5 px-5 py-3 font-bold text-white/70 hover:bg-white/10 hover:text-white transition-all duration-200"
           >
             Trang chủ
           </button>
@@ -165,7 +165,7 @@ export default function AccountListPage() {
               key={tab}
               type="button"
               onClick={() => handleTabClick(tab)}
-              className={`rounded-full border px-5 py-3 font-bold transition-colors ${tabClass(tab)}`}
+              className={`rounded-full px-5 py-3 font-bold transition-all duration-200 ${tabClass(tab)}`}
             >
               {tab}
             </button>
@@ -174,27 +174,31 @@ export default function AccountListPage() {
           <button
             type="button"
             onClick={() => { window.location.href = 'tel:19001234' }}
+
+            className="rounded-full bg-[#00c6ff]/10 border border-[#00c6ff]/20 px-5 py-3 font-bold text-[#00c6ff] hover:bg-[#00c6ff]/25 transition-all duration-200"
+
             className="rounded-full bg-[#4a4568] px-5 py-3 font-bold text-[#79a7ff] hover:bg-[#5a5378]"
+
           >
             Hotline: 1900 1234
           </button>
         </nav>
 
-        <section className="mt-6">
-          <p className="text-xs font-black uppercase tracking-wide text-[#79a7ff]">
+        <section className="mt-8">
+          <span className="text-[#00c6ff] bg-[#00c6ff]/10 px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest shadow-sm">
             Account số
-          </p>
-          <h1 className="mt-2 text-[30px] font-black text-white">
+          </span>
+          <h1 className="mt-4 text-3xl sm:text-4xl font-black text-white leading-tight">
             {activeTab || 'Tài khoản số'}
           </h1>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-[#b9b4d7]">
+          <p className="mt-2 max-w-3xl text-sm leading-relaxed text-white/60">
             Tài khoản số phục vụ học tập, giải trí và làm việc. Giao nhanh sau thanh toán.
           </p>
         </section>
 
-        <div className="mt-6 rounded-[22px] bg-[#211b42] p-4 shadow-[0_18px_40px_rgba(0,0,0,0.18)]">
-          <div className="flex h-[52px] items-center gap-3 rounded-2xl border border-[#3d63ff]/30 bg-[#34305a] px-4 focus-within:border-[#79a7ff]">
-            <Search size={18} className="text-[#b9b4d7]" />
+        <div className="mt-6 rounded-[26px] bg-[#1a1435]/60 backdrop-blur-md border border-white/5 p-4 shadow-[0_20px_50px_rgba(0,0,0,0.3)]">
+          <div className="flex h-[52px] items-center gap-3 rounded-2xl border border-white/5 bg-white/5 px-4 focus-within:border-[#00c6ff]/50 transition-all duration-250">
+            <Search size={18} className="text-white/40" />
             <input
               type="text"
               value={search}
@@ -203,7 +207,7 @@ export default function AccountListPage() {
                 setActiveTab('')
               }}
               placeholder="Tìm kiếm account..."
-              className="h-full flex-1 bg-transparent text-sm text-white outline-none placeholder:text-[#8d86b6]"
+              className="h-full flex-1 bg-transparent text-sm text-white outline-none placeholder:text-white/30"
             />
             {search && (
               <button
@@ -212,7 +216,7 @@ export default function AccountListPage() {
                   setSearch('')
                   setActiveTab('')
                 }}
-                className="text-xs font-bold text-[#b9b4d7] hover:text-white"
+                className="text-xs font-bold text-[#00c6ff] hover:text-[#00d6ff]"
               >
                 Xóa
               </button>
@@ -241,13 +245,13 @@ export default function AccountListPage() {
 
           <section className="flex-1">
             <div className="mb-4 flex items-center justify-between">
-              <p className="text-sm text-[#b9b4d7]">
+              <p className="text-sm text-white/50">
                 {loading ? 'Đang tải...' : `Tìm thấy ${filteredProducts.length} account`}
               </p>
             </div>
 
             {loading ? (
-              <div className="rounded-[22px] bg-[#211b42] p-8 text-center text-[#b9b4d7]">
+              <div className="rounded-[26px] bg-[#1a1435]/60 backdrop-blur-md border border-white/5 p-8 text-center text-white/40 shadow-sm">
                 Đang tải dữ liệu...
               </div>
             ) : (
@@ -264,7 +268,7 @@ export default function AccountListPage() {
                     />
                   ))
                 ) : (
-                  <div className="rounded-[22px] bg-[#211b42] p-8 text-center text-[#b9b4d7]">
+                  <div className="col-span-full rounded-[26px] bg-[#1a1435]/60 backdrop-blur-md border border-white/5 p-8 text-center text-white/40 shadow-sm">
                     Không tìm thấy account phù hợp.
                   </div>
                 )}

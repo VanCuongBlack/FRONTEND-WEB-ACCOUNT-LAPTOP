@@ -3,12 +3,83 @@ import { Link } from 'react-router-dom'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import type { Banner } from '@/services/landing.service'
 
+const fallbackBanners: Banner[] = [
+  {
+    id: 'fallback-1',
+    imageUrl: '/hero-2.png',
+    imageGradient: 'from-[#00c6ff] to-[#0072ff]',
+    title: 'Laptop & PC Đỉnh cao công nghệ',
+    subtitle: 'Sở hữu ngay Dell, ThinkPad, MacBook cấu hình mạnh mẽ với chính sách bảo hành độc quyền chỉ có tại PCAcc.com.',
+    ctaText: 'Khám phá ngay',
+    ctaLink: '/laptops',
+    isActive: true,
+    order: 1,
+    tag: 'CHÍNH HÃNG 100%',
+  },
+  {
+    id: 'fallback-2',
+    imageUrl: '/hero-1.png',
+    imageGradient: 'from-[#6a1b9a] via-[#7b1fa2] to-[#8e24aa]',
+    title: 'Tài khoản Premium giá tốt',
+    subtitle: 'Netflix, YouTube, Spotify, Adobe bản quyền. Giao nhanh, bảo hành rõ ràng.',
+    ctaText: 'Khám phá ngay',
+    ctaLink: '/accounts',
+    isActive: true,
+    order: 2,
+    tag: 'BÁN CHẠY',
+  },
+  {
+    id: 'fallback-3',
+    imageUrl: '/hero-3.png',
+    imageGradient: 'from-[#00695c] via-[#00796b] to-[#00897b]',
+    title: 'Dịch vụ số đỉnh cao',
+    subtitle: 'Bản quyền chính hãng, kích hoạt ngay lập tức. Tiết kiệm chi phí lên đến 70%.',
+    ctaText: 'Mua ngay',
+    ctaLink: '/best-seller',
+    isActive: true,
+    order: 3,
+    tag: 'HOT DEAL',
+  },
+]
+
 interface Props {
   banners: Banner[]
 }
 
+function BannerImage({ src, alt, fallbackSrc, fallbackGradient }: { src?: string; alt: string; fallbackSrc: string; fallbackGradient: string }) {
+  const [currentSrc, setCurrentSrc] = useState(src || fallbackSrc)
+  const [hasError, setHasError] = useState(false)
+
+  useEffect(() => {
+    setCurrentSrc(src || fallbackSrc)
+    setHasError(false)
+  }, [src, fallbackSrc])
+
+  if (hasError) {
+    return <div className={`absolute inset-0 bg-gradient-to-br ${fallbackGradient}`} />
+  }
+
+  return (
+    <img
+      src={currentSrc}
+      alt={alt}
+      onError={() => {
+        if (currentSrc !== fallbackSrc) {
+          setCurrentSrc(fallbackSrc)
+        } else {
+          setHasError(true)
+        }
+      }}
+      className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-1000"
+    />
+  )
+}
+
 export default function HeroBanner({ banners }: Props) {
-  const active = banners.filter(b => b.isActive).sort((a, b) => a.order - b.order)
+  let active = banners.filter(b => b.isActive && b.title).sort((a, b) => a.order - b.order)
+  if (active.length === 0) {
+    active = fallbackBanners.filter(b => b.isActive).sort((a, b) => a.order - b.order)
+  }
   const [cur, setCur] = useState(0)
   const [sliding, setSliding] = useState(false)
 
@@ -30,11 +101,11 @@ export default function HeroBanner({ banners }: Props) {
   if (active.length === 0) return null
 
   return (
-    <section className="max-w-[1840px] mx-auto px-4 sm:px-6 pt-3 sm:pt-4 pb-3 sm:pb-4">
-      <div className="flex flex-col sm:flex-row gap-3">
+    <section className="w-full max-w-[1840px] mx-auto px-4 sm:px-6 pt-3 sm:pt-4 pb-3 sm:pb-4 relative z-10">
+      <div className="w-full flex flex-col gap-4">
 
         {/* ── Main banner slider ── */}
-        <div className="flex-1 rounded-[26px] overflow-hidden relative h-[220px] sm:h-[280px] lg:h-[310px] bg-[#211b42] shadow-[0_18px_45px_rgba(0,0,0,0.35)]">
+        <div className="w-full rounded-[26px] overflow-hidden relative h-[340px] sm:h-[420px] lg:h-[480px] bg-[#1a1435] border border-white/5 shadow-[0_20px_50px_rgba(0,0,0,0.4)]">
 
           {/* Slides Container using premium absolute fade transition */}
           <div className="relative w-full h-full">
@@ -48,38 +119,47 @@ export default function HeroBanner({ banners }: Props) {
                 }`}
               >
                 {/* Background */}
-                {slide.imageUrl ? (
-                  <img
-                    src={slide.imageUrl}
-                    alt={slide.title}
-                    className="absolute inset-0 w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className={`absolute inset-0 bg-gradient-to-br ${slide.imageGradient}`} />
-                )}
+                <BannerImage
+                  src={slide.imageUrl}
+                  alt={slide.title}
+                  fallbackSrc={idx % 3 === 0 ? '/hero-2.png' : idx % 3 === 1 ? '/hero-1.png' : '/hero-3.png'}
+                  fallbackGradient={slide.imageGradient}
+                />
 
                 {/* Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-r from-slate-950/75 via-slate-950/35 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-r from-[#09051f]/95 via-[#09051f]/40 to-transparent" />
 
                 {/* Content */}
-                <div className="absolute inset-0 flex flex-col justify-center px-6 sm:px-8 lg:px-10">
+                <div className="absolute inset-0 flex flex-col justify-center px-6 sm:px-10 lg:px-16">
                   {slide.tag && (
-                    <span className="inline-flex w-fit items-center px-3 py-1 rounded-full bg-white/20 backdrop-blur-sm text-white text-[10px] font-black uppercase tracking-widest mb-2">
+                    <span className={`inline-flex w-fit items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest mb-3.5 shadow-md ${
+                      slide.tag.includes('CHÍNH HÃNG')
+                        ? 'bg-[#00b4a8] text-white'
+                        : 'bg-[#00e3d2]/10 border border-[#00e3d2]/25 text-[#00e3d2]'
+                    }`}>
                       {slide.tag}
                     </span>
                   )}
-                  <h2 className="text-2xl sm:text-3xl font-black text-white leading-tight mb-1.5 max-w-sm drop-shadow">
-                    {slide.title}
+                  <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-tight mb-3 max-w-lg drop-shadow-md whitespace-pre-line">
+                    {slide.title.replace(' & ', ' & \n')}
                   </h2>
-                  <p className="text-white/85 text-xs sm:text-sm mb-4 max-w-sm line-clamp-2 drop-shadow-sm">
+                  <p className="text-white/70 text-xs sm:text-sm lg:text-base mb-6 max-w-sm sm:max-w-md line-clamp-2 drop-shadow-sm leading-relaxed">
                     {slide.subtitle}
                   </p>
-                  <Link
-                    to={slide.ctaLink}
-                    className="inline-flex items-center gap-2 w-fit px-5 py-2.5 rounded-xl bg-[#1677ff] text-white font-black text-xs sm:text-sm hover:bg-[#0f66df] active:scale-95 transition-all duration-200 shadow"
-                  >
-                    {slide.ctaText}
-                  </Link>
+                  <div className="flex flex-col gap-2.5 w-fit">
+                    <Link
+                      to={slide.ctaLink}
+                      className="inline-flex items-center justify-center gap-2 w-[180px] py-3.5 rounded-xl bg-gradient-to-r from-[#00c6ff] to-[#8a2be2] hover:from-[#00b4e5] hover:to-[#7822c7] text-white font-black text-xs sm:text-sm active:scale-95 transition-all duration-200 shadow-[0_4px_15px_rgba(0,198,255,0.25)]"
+                    >
+                      {slide.ctaText}
+                    </Link>
+                    <a
+                      href="#products"
+                      className="inline-flex items-center justify-center gap-2 w-[180px] py-3.5 rounded-xl bg-transparent hover:bg-white/5 text-white font-black text-xs sm:text-sm border border-white/20 active:scale-95 transition-all duration-200"
+                    >
+                      Xem bảng giá
+                    </a>
+                  </div>
                 </div>
               </div>
             ))}
@@ -90,19 +170,19 @@ export default function HeroBanner({ banners }: Props) {
             <>
               <button
                 onClick={prev}
-                className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center text-white transition-colors z-20 backdrop-blur-sm"
+                className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors z-20 backdrop-blur-sm border border-white/5"
               >
-                <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <ChevronLeft className="w-4 h-4" />
               </button>
               <button
                 onClick={next}
-                className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center text-white transition-colors z-20 backdrop-blur-sm"
+                className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors z-20 backdrop-blur-sm border border-white/5"
               >
-                <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <ChevronRight className="w-4 h-4" />
               </button>
 
               {/* Dots */}
-              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-20">
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-20">
                 {active.map((_, i) => (
                   <button
                     key={i}
@@ -117,44 +197,51 @@ export default function HeroBanner({ banners }: Props) {
           )}
         </div>
 
-        {/* ── Right side cards ── */}
-        <div className="hidden sm:flex flex-col gap-3 w-44 lg:w-56 flex-shrink-0 h-[280px] lg:h-[310px]">
+        {/* ── Bottom horizontal cards stacked ── */}
+        <div className="flex flex-col gap-4 w-full">
 
           {/* Netflix card */}
-          <div className="flex-1 rounded-[22px] overflow-hidden relative cursor-pointer group bg-[#211b42] shadow-[0_18px_45px_rgba(0,0,0,0.25)]">
-            <img
-              src="/side-card-netflix.png"
-              alt="Netflix Flash Sale"
-              className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-            <div className="absolute inset-0 flex flex-col justify-end p-4">
-              <span className="inline-block bg-red-500 text-white text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-lg mb-1.5 w-fit">
+          <Link
+            to="/accounts"
+            className="w-full rounded-[26px] overflow-hidden relative flex flex-col md:flex-row bg-[#15122e] border border-white/5 shadow-[0_15px_35px_rgba(0,0,0,0.35)] min-h-[150px] sm:min-h-[170px] group cursor-pointer"
+          >
+            <div className="flex-1 flex flex-col justify-center p-6 sm:p-8 z-10">
+              <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-red-600 text-white text-[9px] font-black uppercase tracking-widest mb-2 w-fit">
                 FLASH SALE
               </span>
-              <h3 className="text-white font-black text-sm leading-snug drop-shadow">Netflix Premium</h3>
-              <p className="text-white/80 text-[11px] mt-0.5 drop-shadow-sm">Từ 49k/tháng · Bảo hành</p>
+              <h3 className="text-white font-black text-xl sm:text-2xl drop-shadow">Gói Netflix Premium</h3>
+              <p className="text-white/60 text-xs sm:text-sm mt-1 max-w-md">Chỉ từ 49k/tháng — Bảo hành trọn đời</p>
             </div>
-          </div>
+            <div className="relative w-full md:w-[45%] lg:w-[40%] h-[140px] md:h-auto overflow-hidden">
+              <img
+                src="/side-card-netflix.png"
+                alt="Netflix Flash Sale"
+                className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-[#15122e] via-[#15122e]/40 to-transparent md:block hidden" />
+            </div>
+          </Link>
 
           {/* MacBook card */}
-          <div className="flex-1 rounded-[22px] overflow-hidden relative cursor-pointer group bg-[#211b42] shadow-[0_18px_45px_rgba(0,0,0,0.25)]">
-            <img
-              src="/side-card-macbook.png"
-              alt="MacBook Air M3"
-              className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
-            <div className="absolute inset-0 flex flex-col justify-end p-4">
-              <h3 className="text-white font-black text-sm leading-snug drop-shadow">MacBook Air M3</h3>
-              <a
-                href="#macbook"
-                className="flex items-center gap-1 text-blue-300 font-semibold text-xs mt-1 hover:text-white transition-colors"
-              >
-                Xem ngay <ChevronRight className="w-3.5 h-3.5" />
-              </a>
+          <Link
+            to="/laptops"
+            className="w-full rounded-[26px] overflow-hidden relative flex flex-col md:flex-row bg-[#15122e] border border-white/5 shadow-[0_15px_35px_rgba(0,0,0,0.35)] min-h-[150px] sm:min-h-[170px] group cursor-pointer"
+          >
+            <div className="flex-1 flex flex-col justify-center p-6 sm:p-8 z-10">
+              <h3 className="text-white font-black text-xl sm:text-2xl drop-shadow">MacBook Air M3</h3>
+              <p className="text-[#00e3d2] font-black text-xs sm:text-sm mt-1 hover:text-white transition-colors duration-200 flex items-center gap-1">
+                Sức mạnh không giới hạn <ChevronRight className="w-3.5 h-3.5" />
+              </p>
             </div>
-          </div>
+            <div className="relative w-full md:w-[45%] lg:w-[40%] h-[140px] md:h-auto overflow-hidden">
+              <img
+                src="/side-card-macbook.png"
+                alt="MacBook Air M3"
+                className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-[#15122e] via-[#15122e]/40 to-transparent md:block hidden" />
+            </div>
+          </Link>
 
         </div>
 

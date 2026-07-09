@@ -137,14 +137,14 @@ export default function ProductCard({
   return (
     <Link
       to={`${to}/${id}`}
-      className="group grid min-h-[198px] overflow-hidden rounded-[22px] border border-[#3d63ff]/20 bg-[#29244f] text-white shadow-[0_18px_40px_rgba(0,0,0,0.22)] transition-all hover:-translate-y-0.5 hover:border-[#4c75ff] hover:bg-[#302a5f]"
+      className="group grid min-h-[198px] overflow-hidden rounded-[26px] border border-white/5 bg-[#120d2b] text-white shadow-[0_20px_45px_rgba(0,0,0,0.35)] transition-all duration-300 hover:-translate-y-1 hover:border-white/10 hover:bg-[#1a1435]"
     >
-      <div className="relative min-h-[160px] overflow-hidden bg-[#171233]">
-        <div className="absolute left-3 top-3 z-10 rounded-md bg-[#1677ff] px-2 py-1 text-[10px] font-black uppercase tracking-wide text-white">
+      <div className="relative min-h-[160px] overflow-hidden bg-[#09051f]">
+        <div className="absolute left-3 top-3 z-10 rounded-md bg-gradient-to-r from-[#00c6ff] to-[#8a2be2] px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-white shadow-md">
           PC/ACC
         </div>
         {isOutOfStock && (
-          <div className="absolute right-3 top-3 z-10 rounded-md bg-rose-500 px-2 py-1 text-[10px] font-black uppercase tracking-wide text-white">
+          <div className="absolute right-3 top-3 z-10 rounded-md bg-rose-500/90 backdrop-blur-sm px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-white shadow-md">
             Hết hàng
           </div>
         )}
@@ -152,31 +152,31 @@ export default function ProductCard({
           <img
             src={image}
             alt={name}
-            className={`h-full min-h-[190px] w-full object-cover transition-transform duration-300 group-hover:scale-105 ${isOutOfStock ? 'opacity-45 grayscale' : ''}`}
+            className={`h-full min-h-[190px] w-full object-cover transition-transform duration-700 group-hover:scale-105 ${isOutOfStock ? 'opacity-40 grayscale' : ''}`}
           />
         ) : (
-          <div className="flex h-full min-h-[190px] w-full items-center justify-center text-sm font-black text-[#8d86b6]">
-            HÌNH ẢNH
+          <div className="flex h-full min-h-[190px] w-full items-center justify-center text-xs font-black text-white/30 uppercase tracking-widest bg-[#140f30]">
+            No image
           </div>
         )}
       </div>
 
-      <div className="flex flex-col p-4">
-        <h3 className="line-clamp-2 min-h-[44px] text-[15px] font-black leading-snug text-white group-hover:text-[#79a7ff]">
+      <div className="flex flex-col p-5">
+        <h3 className="line-clamp-2 min-h-[44px] text-[15px] font-black leading-snug text-white group-hover:text-[#00c6ff] transition-colors duration-200">
           {name}
         </h3>
 
-        <p className="mt-2 line-clamp-2 min-h-[38px] text-[12px] leading-5 text-[#b9b4d7]">
+        <p className="mt-2 line-clamp-2 min-h-[38px] text-[12px] leading-relaxed text-white/50">
           {subtitle}
         </p>
 
-        <p className="mt-4 text-[18px] font-black text-[#ffd54a]">
+        <p className="mt-4 text-lg font-black text-[#00c6ff] drop-shadow-[0_2px_10px_rgba(0,198,255,0.15)]">
           {formatPrice(displayPrice)}
         </p>
 
-        <div className="mt-3 flex items-center gap-1 text-[#ffd54a]">
+        <div className="mt-3 flex items-center gap-1 text-yellow-500">
           {Array.from({ length: 5 }).map((_, index) => (
-            <Star key={index} size={15} fill="currentColor" />
+            <Star key={index} size={13} fill="currentColor" className="stroke-none" />
           ))}
         </div>
 
@@ -184,16 +184,16 @@ export default function ProductCard({
           type="button"
           onClick={handleAddToCart}
           disabled={isAdding || isCheckingStock || isOutOfStock}
-          className="mt-4 flex h-[42px] w-full items-center justify-center gap-2 rounded-xl bg-[#1677ff] text-sm font-black text-white transition-colors hover:bg-[#0f66df] disabled:cursor-not-allowed disabled:bg-[#625b84]"
+          className="mt-5 flex h-[42px] w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#00c6ff] to-[#8a2be2] text-xs font-black uppercase tracking-wider text-white hover:opacity-90 active:scale-95 transition-all duration-200 disabled:cursor-not-allowed disabled:from-white/5 disabled:to-white/5 disabled:text-white/30 disabled:border disabled:border-white/5 disabled:scale-100 disabled:opacity-50"
         >
-          <ShoppingCart size={16} />
+          <ShoppingCart size={14} />
           {isCheckingStock ? 'Đang kiểm tra...' : isOutOfStock ? 'Hết hàng' : isAdding ? 'Đang thêm...' : 'Thêm giỏ hàng'}
         </button>
 
         {message && (
           <p
-            className={`mt-2 text-center text-xs ${
-              message.includes('Đã thêm') ? 'text-[#35d07f]' : 'text-[#ff7b8f]'
+            className={`mt-3 text-center text-xs font-bold ${
+              message.includes('Đã thêm') ? 'text-teal-400' : 'text-rose-400'
             }`}
           >
             {message}
