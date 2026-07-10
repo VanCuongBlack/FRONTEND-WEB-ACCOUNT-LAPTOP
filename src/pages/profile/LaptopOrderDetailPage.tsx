@@ -219,7 +219,7 @@ export default function LaptopOrderDetailPage() {
   if (isLoading && !order) {
     return (
       <div className="min-h-screen bg-[#07031a] px-4 py-8 text-white">
-        <div className="mx-auto max-w-[980px] rounded-2xl border border-[#3d63ff]/25 bg-[#151036] p-8">
+        <div className="mx-auto max-w-[980px] rounded-2xl border border-[#1e3a62] bg-[#151036] p-8">
           Đang tải chi tiết đơn hàng...
         </div>
       </div>
@@ -229,7 +229,7 @@ export default function LaptopOrderDetailPage() {
   if (!order) {
     return (
       <div className="min-h-screen bg-[#07031a] px-4 py-8 text-white">
-        <div className="mx-auto max-w-[980px] rounded-2xl border border-[#3d63ff]/25 bg-[#151036] p-8">
+        <div className="mx-auto max-w-[980px] rounded-2xl border border-[#1e3a62] bg-[#151036] p-8">
           <button
             type="button"
             onClick={() => navigate('/profile/history')}
@@ -247,7 +247,7 @@ export default function LaptopOrderDetailPage() {
   return (
     <div className="min-h-screen bg-[#07031a] px-4 py-6 font-sans text-white md:px-8">
       <div className="mx-auto w-full max-w-[1560px] space-y-6">
-        <section className="rounded-2xl border border-[#3d63ff]/25 bg-[#151036] p-5 shadow-[0_20px_60px_rgba(0,0,0,0.28)] md:p-7">
+        <section className="rounded-2xl border border-[#1e3a62] bg-[#151036] p-5 shadow-[0_20px_60px_rgba(0,0,0,0.28)] md:p-7">
           <div className="flex flex-col justify-between gap-4 border-b border-white/10 pb-6 sm:flex-row sm:items-center">
             <div className="flex items-center gap-3">
               <button
@@ -339,7 +339,7 @@ export default function LaptopOrderDetailPage() {
                       <button
                         type="button"
                         onClick={() => copyText(getBankValue(payment, 'account_number'))}
-                        className="inline-flex items-center gap-2 font-bold text-white hover:text-[#7db3ff]"
+                        className="inline-flex items-center gap-2 font-bold text-white hover:text-[#74b7ff]"
                       >
                         STK: {String(getBankValue(payment, 'account_number') ?? '-')}
                         <Copy size={14} />
@@ -347,7 +347,7 @@ export default function LaptopOrderDetailPage() {
                       <button
                         type="button"
                         onClick={() => copyText(getBankValue(payment, 'transfer_content'))}
-                        className="block font-bold text-[#7db3ff] hover:text-white"
+                        className="block font-bold text-[#74b7ff] hover:text-white"
                       >
                         Nội dung CK: {String(getBankValue(payment, 'transfer_content') ?? '-')}
                       </button>
@@ -356,7 +356,7 @@ export default function LaptopOrderDetailPage() {
                 </div>
 
                 {isBankTransfer && !isPaid && qrUrl && (
-                  <div className="mt-4 rounded-2xl border border-[#3d63ff]/25 bg-white p-3">
+                  <div className="mt-4 rounded-2xl border border-[#1e3a62] bg-white p-3">
                     <img src={qrUrl} alt="QR chuyển khoản" className="mx-auto w-full max-w-[260px]" />
                   </div>
                 )}

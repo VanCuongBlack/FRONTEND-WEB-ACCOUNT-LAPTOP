@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Edit, Eye, Lock, Plus, RefreshCw, Search, Shield } from 'lucide-react'
+import { Edit, Eye, Lock, LockOpen, Plus, RefreshCw, Search, Shield } from 'lucide-react'
 import AdminLayout from '@/layouts/AdminLayout'
 import AppModal from '@/components/common/AppModal'
 import {
@@ -172,7 +172,17 @@ export default function EmployeeManagementPage() {
   const lockStaff = async (staff: AdminUser) => {
     try {
       if (staff.isActive === false) {
-        await updateStaff(staff._id, { isActive: true })
+        if (!staff.phone) {
+          setError('Nhân viên này thiếu số điện thoại nên BE chưa cho mở khóa. Hãy cập nhật SĐT trước.')
+          return
+        }
+        await updateStaff(staff._id, {
+          fullname: staff.fullname || 'Nhân viên',
+          phone: staff.phone || '',
+          address: staff.address || '',
+          position: staff.position || '',
+          isActive: true,
+        })
       } else {
         await deleteStaff(staff._id)
       }
@@ -271,7 +281,18 @@ export default function EmployeeManagementPage() {
                       <button onClick={() => { setSelectedStaff(staff); setOpenViewModal(true) }} className="rounded-lg bg-blue-600 px-3 py-2 text-white hover:bg-blue-500 cursor-pointer" title="Xem chi tiết"><Eye size={16} /></button>
                       <button onClick={() => openEdit(staff)} className="rounded-lg bg-slate-800 border border-white/10 px-3 py-2 text-slate-300 hover:bg-slate-700 cursor-pointer" title="Chỉnh sửa"><Edit size={16} /></button>
                       <button onClick={() => openRole(staff)} className="rounded-lg bg-emerald-600 px-3 py-2 text-white hover:bg-emerald-500 cursor-pointer" title="Phân quyền"><Shield size={16} /></button>
-                      <button onClick={() => lockStaff(staff)} className="rounded-lg bg-rose-600 px-3 py-2 text-white hover:bg-rose-500 cursor-pointer" title={staff.isActive === false ? 'Mở khóa' : 'Khóa'}><Lock size={16} /></button>
+                      <button
+                        onClick={() => lockStaff(staff)}
+                        className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-bold text-white cursor-pointer ${
+                          staff.isActive === false
+                            ? 'bg-emerald-600 hover:bg-emerald-500'
+                            : 'bg-rose-600 hover:bg-rose-500'
+                        }`}
+                        title={staff.isActive === false ? 'Mở khóa' : 'Khóa'}
+                      >
+                        {staff.isActive === false ? <LockOpen size={16} /> : <Lock size={16} />}
+                        {staff.isActive === false ? 'Mở khóa' : 'Khóa'}
+                      </button>
                     </div>
                   </div>
                 ))

@@ -3,7 +3,7 @@ import { CheckCircle2, Clock3, Copy, Home, ReceiptText, ShoppingBag } from 'luci
 import { useLocation, useNavigate } from 'react-router-dom'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
-import type { Order } from '@/services/order.service'
+import { getOrderById, type Order } from '@/services/order.service'
 import { getPaymentByOrder, type Payment } from '@/services/payment.service'
 import { toast } from 'sonner'
 
@@ -107,23 +107,53 @@ export default function OrderSuccessPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const { order, payment: statePayment } = (location.state ?? {}) as SuccessState
+  const [currentOrder, setCurrentOrder] = useState<Order | undefined>(order)
   const [payment, setPayment] = useState<Payment | undefined>(statePayment)
 
   useEffect(() => {
-    if (!order?._id || order.payment_method !== 'bank_transfer') return
-    if (payment?.bank_info || payment?.transfer_content) return
+    setCurrentOrder(order)
+  }, [order])
 
-    getPaymentByOrder(order._id)
-      .then((response) => setPayment(response.data.data))
-      .catch(() => {
-        // Trang vẫn hiển thị thông tin đơn nếu payment tạm thời chưa lấy được.
-      })
-  }, [order?._id, order?.payment_method, payment?.bank_info, payment?.transfer_content])
+  useEffect(() => {
+    if (!currentOrder?._id || currentOrder.payment_method !== 'bank_transfer') return
 
-  const isCOD = order?.payment_method === 'cod'
-  const isPaid = payment?.status === 'paid' || order?.status === 'confirmed' || order?.status === 'completed'
-  const isBankTransfer = order?.payment_method === 'bank_transfer'
+    let cancelled = false
+
+    const refreshPaymentStatus = async () => {
+      try {
+        const [paymentResult, orderResult] = await Promise.allSettled([
+          getPaymentByOrder(currentOrder._id),
+          getOrderById(currentOrder._id),
+        ])
+
+        if (cancelled) return
+
+        if (paymentResult.status === 'fulfilled') {
+          setPayment(paymentResult.value.data.data)
+        }
+
+        if (orderResult.status === 'fulfilled' && orderResult.value.data.data) {
+          setCurrentOrder(orderResult.value.data.data)
+        }
+      } catch {
+        // Giữ nguyên dữ liệu đang có để khách vẫn thấy QR và thông tin chuyển khoản.
+      }
+    }
+
+    refreshPaymentStatus()
+    const intervalId = window.setInterval(refreshPaymentStatus, 5000)
+
+    return () => {
+      cancelled = true
+      window.clearInterval(intervalId)
+    }
+  }, [currentOrder?._id, currentOrder?.payment_method])
+
+  const isCOD = currentOrder?.payment_method === 'cod'
+  const isPaid = payment?.status === 'paid' || currentOrder?.status === 'confirmed' || currentOrder?.status === 'completed'
+  const isBankTransfer = currentOrder?.payment_method === 'bank_transfer'
   const qrUrl = buildVietQrUrl(payment)
+  const shouldShowQr = isBankTransfer && !isPaid
   const title = isCOD ? 'Đặt hàng thành công' : isPaid ? 'Thanh toán thành công' : 'Đã tạo đơn hàng'
   const description = isCOD
     ? 'Đơn hàng COD đã được ghi nhận. Nhân viên sẽ gọi xác nhận trước khi giao hàng.'
@@ -132,11 +162,11 @@ export default function OrderSuccessPage() {
       : 'Đơn hàng đã được tạo. Vui lòng chuyển khoản đúng nội dung thanh toán để hệ thống xác nhận.'
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#09051f] font-sans text-white">
+    <div className="flex min-h-screen flex-col bg-[#050914] font-sans text-white">
       <Header />
 
-      <main className="mx-auto flex w-full max-w-[1200px] flex-1 items-center justify-center px-4 py-10">
-        <section className="w-full max-w-[760px] rounded-[22px] border border-[#3d63ff]/20 bg-[#211b42] p-6 text-center shadow-[0_18px_45px_rgba(0,0,0,0.28)] sm:p-10">
+      <main className="flex w-full max-w-none flex-1 items-center justify-center px-3 py-10 sm:px-5 lg:px-8">
+        <section className={`w-full rounded-[22px] border border-[#1e3a62] bg-[#0a1628] p-6 text-center shadow-[0_18px_45px_rgba(0,0,0,0.28)] sm:p-8 ${shouldShowQr ? 'max-w-[980px]' : 'max-w-[760px]'}`}>
           <div className={`mx-auto flex h-20 w-20 items-center justify-center rounded-full ${isPaid || isCOD ? 'bg-emerald-500/12' : 'bg-amber-400/12'}`}>
             {isPaid || isCOD ? (
               <CheckCircle2 size={48} className="text-emerald-400" />
@@ -151,68 +181,75 @@ export default function OrderSuccessPage() {
             {description}
           </p>
 
-          <div className="mt-8 rounded-2xl bg-[#151033] p-5 text-left">
-            <h2 className="mb-4 text-lg font-black text-white">Thông tin đơn hàng</h2>
+          <div className={`mt-8 grid gap-5 ${shouldShowQr ? 'lg:grid-cols-[340px_1fr] lg:items-stretch' : ''}`}>
+            {shouldShowQr && (
+              <div className="rounded-2xl border border-[#1e3a62] bg-[#071120] p-5 text-left">
+                <div className="space-y-4">
+                  <div>
+                    <h2 className="text-lg font-black text-white">Quét mã QR để thanh toán</h2>
+                    <p className="mt-2 text-sm leading-6 text-[#c8c1e8]">
+                      FE sẽ tự kiểm tra trạng thái từ BE. Khi SePay xác nhận, màn hình sẽ đổi sang đã thanh toán.
+                    </p>
+                  </div>
 
-            <div className="space-y-3 text-sm">
-              <InfoRow label="Mã đơn hàng" value={order?._id ? `#${order._id.slice(-8).toUpperCase()}` : 'Đơn vừa tạo'} />
-              <InfoRow label="Ngày đặt" value={formatDate(order?.createdAt)} />
-              <InfoRow label="Phương thức thanh toán" value={paymentLabel(order?.payment_method)} />
+                  <div className="rounded-2xl bg-white p-3">
+                    {qrUrl ? (
+                      <img src={qrUrl} alt="QR chuyển khoản" className="mx-auto w-full max-w-[260px]" />
+                    ) : (
+                      <div className="flex h-[260px] items-center justify-center rounded-xl bg-slate-100 px-4 text-center text-sm font-bold text-slate-500">
+                        Chưa có đủ thông tin QR
+                      </div>
+                    )}
+                  </div>
 
-              <div className="flex items-center justify-between gap-4">
-                <span className="text-[#b9b4d7]">Trạng thái</span>
-                <span className={`rounded-full px-3 py-1 text-xs font-black ${
-                  isPaid || isCOD ? 'bg-emerald-500/15 text-emerald-300' : 'bg-amber-400/15 text-amber-200'
-                }`}>
-                  {statusText(order, payment)}
-                </span>
+                </div>
               </div>
+            )}
 
-              <div className="border-t border-[#3d63ff]/20 pt-3">
+            <div className="rounded-2xl bg-[#071120] p-5 text-left">
+              <h2 className="mb-4 text-lg font-black text-white">Thông tin đơn hàng</h2>
+
+              <div className="space-y-3 text-sm">
+                <InfoRow label="Mã đơn hàng" value={currentOrder?._id ? `#${currentOrder._id.slice(-8).toUpperCase()}` : 'Đơn vừa tạo'} />
+                <InfoRow label="Ngày đặt" value={formatDate(currentOrder?.createdAt)} />
+                <InfoRow label="Phương thức thanh toán" value={paymentLabel(currentOrder?.payment_method)} />
+
                 <div className="flex items-center justify-between gap-4">
-                  <span className="font-semibold text-[#d9d6ee]">Tổng thanh toán</span>
-                  <span className="text-xl font-black text-[#ffd84d]">
-                    {formatPrice(order?.total_amount ?? payment?.amount)}
+                  <span className="text-[#b9b4d7]">Trạng thái</span>
+                  <span className={`rounded-full px-3 py-1 text-xs font-black ${
+                    isPaid || isCOD ? 'bg-emerald-500/15 text-emerald-300' : 'bg-amber-400/15 text-amber-200'
+                  }`}>
+                    {statusText(currentOrder, payment)}
                   </span>
                 </div>
+
+                <div className="border-t border-[#1e3a62] pt-3">
+                  <div className="flex items-center justify-between gap-4">
+                    <span className="font-semibold text-[#d9d6ee]">Tổng thanh toán</span>
+                    <span className="text-xl font-black text-[#ffd84d]">
+                      {formatPrice(currentOrder?.total_amount ?? payment?.amount)}
+                    </span>
+                  </div>
+                </div>
+
+                {shouldShowQr && (
+                  <div className="space-y-3 border-t border-[#1e3a62] pt-3">
+                    <BankRow label="Ngân hàng" value={getBankValue(payment, 'bank_name')} />
+                    <BankRow label="Số tài khoản" value={getBankValue(payment, 'account_number')} copy />
+                    <BankRow label="Chủ tài khoản" value={getBankValue(payment, 'account_name')} />
+                    <BankRow label="Nội dung chuyển khoản" value={getBankValue(payment, 'transfer_content')} copy />
+                    <BankRow label="Số tiền cần thanh toán" value={formatPrice(Number(getBankValue(payment, 'amount') ?? currentOrder?.total_amount ?? 0))} />
+                  </div>
+                )}
               </div>
             </div>
           </div>
-
-          {isBankTransfer && !isPaid && (
-            <div className="mt-5 rounded-2xl border border-[#3d63ff]/25 bg-[#151033] p-5 text-left">
-              <div className="grid gap-5 md:grid-cols-[220px_1fr] md:items-center">
-                <div className="rounded-2xl bg-white p-3">
-                  {qrUrl ? (
-                    <img src={qrUrl} alt="QR chuyển khoản" className="mx-auto w-full max-w-[200px]" />
-                  ) : (
-                    <div className="flex h-[200px] items-center justify-center rounded-xl bg-slate-100 px-4 text-center text-sm font-bold text-slate-500">
-                      Chưa có đủ thông tin QR
-                    </div>
-                  )}
-                </div>
-
-                <div className="space-y-3 text-sm">
-                  <h2 className="text-lg font-black text-white">Quét QR để chuyển khoản</h2>
-                  <p className="leading-6 text-[#c8c1e8]">
-                    Vui lòng chuyển đúng số tiền và nội dung bên dưới để SePay tự động xác nhận đơn.
-                  </p>
-
-                  <BankRow label="Ngân hàng" value={getBankValue(payment, 'bank_name')} />
-                  <BankRow label="Số tài khoản" value={getBankValue(payment, 'account_number')} copy />
-                  <BankRow label="Chủ tài khoản" value={getBankValue(payment, 'account_name')} />
-                  <BankRow label="Nội dung chuyển khoản" value={getBankValue(payment, 'transfer_content')} copy />
-                  <BankRow label="Số tiền cần thanh toán" value={formatPrice(Number(getBankValue(payment, 'amount') ?? order?.total_amount ?? 0))} />
-                </div>
-              </div>
-            </div>
-          )}
 
           <div className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-3">
             <button
               type="button"
               onClick={() => navigate('/profile/history')}
-              className="flex h-[48px] items-center justify-center gap-2 rounded-xl bg-[#3783EC] text-sm font-bold text-white transition-all hover:bg-[#206ed6]"
+              className="flex h-[48px] items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#36b8f2] via-[#2668ff] to-[#8b3df5] text-sm font-bold text-white transition-all hover:brightness-110"
             >
               <ReceiptText size={18} />
               Xem đơn hàng
@@ -221,7 +258,7 @@ export default function OrderSuccessPage() {
             <button
               type="button"
               onClick={() => navigate('/')}
-              className="flex h-[48px] items-center justify-center gap-2 rounded-xl border border-[#5a5480] text-sm font-bold text-[#d9d6ee] transition-all hover:bg-[#151033] hover:text-white"
+              className="flex h-[48px] items-center justify-center gap-2 rounded-xl border border-[#1e3a62] text-sm font-bold text-[#d9d6ee] transition-all hover:bg-[#071120] hover:text-white"
             >
               <Home size={18} />
               Về trang chủ
@@ -230,7 +267,7 @@ export default function OrderSuccessPage() {
             <button
               type="button"
               onClick={() => navigate('/laptops')}
-              className="flex h-[48px] items-center justify-center gap-2 rounded-xl bg-[#3783EC] text-sm font-bold text-white transition-all hover:bg-[#206ed6]"
+              className="flex h-[48px] items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#36b8f2] via-[#2668ff] to-[#8b3df5] text-sm font-bold text-white transition-all hover:brightness-110"
             >
               <ShoppingBag size={18} />
               Tiếp tục mua
@@ -257,7 +294,7 @@ function BankRow({ label, value, copy }: { label: string; value: unknown; copy?:
   const display = String(value ?? '-')
 
   return (
-    <div className="flex flex-col gap-1 rounded-xl bg-[#0f0a2c] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-1 rounded-xl bg-[#071120] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
       <span className="text-[#b9b4d7]">{label}</span>
       <button
         type="button"
@@ -266,7 +303,7 @@ function BankRow({ label, value, copy }: { label: string; value: unknown; copy?:
         className="inline-flex items-center gap-2 text-left font-black text-white disabled:cursor-default"
       >
         <span className="break-all">{display}</span>
-        {copy && value ? <Copy size={15} className="shrink-0 text-[#79a7ff]" /> : null}
+        {copy && value ? <Copy size={15} className="shrink-0 text-[#74b7ff]" /> : null}
       </button>
     </div>
   )

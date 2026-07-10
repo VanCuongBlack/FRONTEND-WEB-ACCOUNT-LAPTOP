@@ -6,7 +6,7 @@ import Footer from '@/components/layout/Footer'
 import { useUser } from '@/hooks/useUser'
 
 const inputClass =
-  'h-[48px] w-full rounded-xl border border-[#3d63ff]/30 bg-[#151033] px-4 text-sm text-white outline-none placeholder:text-[#8d86b6] focus:border-[#3783EC] focus:ring-2 focus:ring-[#3783EC]/20'
+  'h-[48px] w-full rounded-xl border border-[#1e3a62] bg-[#071120] px-4 text-sm text-white outline-none placeholder:text-[#8d86b6] focus:border-[#3783EC] focus:ring-2 focus:ring-[#3783EC]/20'
 const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/
 
 export default function EditProfilePage() {
@@ -77,10 +77,10 @@ export default function EditProfilePage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#09051f] text-white">
+    <div className="flex min-h-screen flex-col bg-[#050914] text-white">
       <Header pageLabel="Sửa hồ sơ" />
 
-      <main className="mx-auto w-full max-w-[1840px] flex-1 px-4 py-6">
+      <main className="mx-auto w-full max-w-none flex-1 px-4 py-6">
         <button
           type="button"
           onClick={() => navigate('/profile')}
@@ -90,9 +90,9 @@ export default function EditProfilePage() {
         </button>
 
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_420px]">
-          <section className="rounded-[22px] border border-[#3d63ff]/20 bg-[#211b42] p-5 shadow-[0_18px_40px_rgba(0,0,0,0.18)] sm:p-7">
-            <div className="mb-6 flex items-center gap-3 border-b border-[#3d63ff]/20 pb-5">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#3783EC]/15 text-[#7db3ff]">
+          <section className="rounded-[22px] border border-[#1e3a62] bg-[#0a1628] p-5 shadow-[0_18px_40px_rgba(0,0,0,0.18)] sm:p-7">
+            <div className="mb-6 flex items-center gap-3 border-b border-[#1e3a62] pb-5">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-r from-[#36b8f2] via-[#2668ff] to-[#8b3df5]/15 text-[#74b7ff]">
                 <UserRound size={24} />
               </div>
               <div>
@@ -151,7 +151,7 @@ export default function EditProfilePage() {
                 <button
                   type="submit"
                   disabled={profileSaving}
-                  className="inline-flex h-[46px] items-center justify-center gap-2 rounded-xl bg-[#3783EC] px-6 text-sm font-bold text-white hover:bg-[#206ed6] disabled:cursor-not-allowed disabled:bg-gray-500"
+                  className="inline-flex h-[46px] items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#36b8f2] via-[#2668ff] to-[#8b3df5] px-6 text-sm font-bold text-white hover:brightness-110 disabled:cursor-not-allowed disabled:bg-gray-500"
                 >
                   <Save size={18} />
                   {profileSaving ? 'Đang lưu...' : 'Lưu hồ sơ'}
@@ -160,9 +160,9 @@ export default function EditProfilePage() {
             </form>
           </section>
 
-          <section className="rounded-[22px] border border-[#3d63ff]/20 bg-[#211b42] p-5 shadow-[0_18px_40px_rgba(0,0,0,0.18)] sm:p-7">
-            <div className="mb-6 flex items-center gap-3 border-b border-[#3d63ff]/20 pb-5">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#3783EC]/15 text-[#7db3ff]">
+          <section className="rounded-[22px] border border-[#1e3a62] bg-[#0a1628] p-5 shadow-[0_18px_40px_rgba(0,0,0,0.18)] sm:p-7">
+            <div className="mb-6 flex items-center gap-3 border-b border-[#1e3a62] pb-5">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-r from-[#36b8f2] via-[#2668ff] to-[#8b3df5]/15 text-[#74b7ff]">
                 <Lock size={24} />
               </div>
               <div>
@@ -196,7 +196,7 @@ export default function EditProfilePage() {
               <button
                 type="button"
                 onClick={() => setShowPassword((value) => !value)}
-                className="inline-flex items-center gap-2 text-sm font-semibold text-[#7db3ff] hover:text-white"
+                className="inline-flex items-center gap-2 text-sm font-semibold text-[#74b7ff] hover:text-white"
               >
                 {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
                 {showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
@@ -211,7 +211,7 @@ export default function EditProfilePage() {
               <button
                 type="submit"
                 disabled={passwordSaving}
-                className="h-[46px] w-full rounded-xl bg-[#3783EC] text-sm font-bold text-white hover:bg-[#206ed6] disabled:cursor-not-allowed disabled:bg-gray-500"
+                className="h-[46px] w-full rounded-xl bg-gradient-to-r from-[#36b8f2] via-[#2668ff] to-[#8b3df5] text-sm font-bold text-white hover:brightness-110 disabled:cursor-not-allowed disabled:bg-gray-500"
               >
                 {passwordSaving ? 'Đang đổi mật khẩu...' : 'Đổi mật khẩu'}
               </button>

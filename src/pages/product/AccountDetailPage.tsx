@@ -103,10 +103,10 @@ export default function AccountDetailPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#09051f] font-sans text-white">
+    <div className="flex min-h-screen flex-col bg-[#050914] font-sans text-white">
       <Header />
 
-      <main className="mx-auto w-full max-w-[1840px] flex-1 px-4 py-6">
+      <main className="w-full max-w-none flex-1 px-3 py-6 sm:px-5 lg:px-8">
         <button
           type="button"
           onClick={() => navigate(-1)}
@@ -130,14 +130,14 @@ export default function AccountDetailPage() {
               Trang chủ / Account số / {product.name}
             </p>
 
-            <div className="mt-6 grid grid-cols-1 gap-8 lg:grid-cols-2">
-              <section className="rounded-[22px] border border-[#3d63ff]/20 bg-[#211b42] p-6 shadow-[0_18px_40px_rgba(0,0,0,0.22)]">
-                <div className="flex h-[360px] items-center justify-center overflow-hidden rounded-[20px] bg-[#171233]">
+            <div className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.08fr)_minmax(460px,0.92fr)]">
+              <section className="rounded-[22px] border border-[#1e3a62] bg-[#0a1628] p-6 shadow-[0_18px_40px_rgba(0,0,0,0.22)]">
+                <div className="flex h-[520px] items-center justify-center overflow-hidden rounded-[22px] border border-[#1e3a62] bg-[#071120]">
                   {productImage ? (
                     <img
                       src={productImage}
                       alt={product.name}
-                      className="h-full w-full object-cover"
+                      className="h-full w-full object-contain p-5"
                     />
                   ) : (
                     <span className="text-2xl font-black text-[#8d86b6]">
@@ -147,10 +147,10 @@ export default function AccountDetailPage() {
                 </div>
               </section>
 
-              <section className="rounded-[22px] border border-[#3d63ff]/20 bg-[#211b42] p-8 shadow-[0_18px_40px_rgba(0,0,0,0.22)]">
+              <section className="rounded-[22px] border border-[#1e3a62] bg-[#0a1628] p-8 shadow-[0_18px_40px_rgba(0,0,0,0.22)]">
                 <h1 className="text-[30px] font-black text-white">{product.name}</h1>
 
-                <p className="mt-6 text-[36px] font-black text-[#ffd54a]">
+                <p className="mt-6 text-[36px] font-black text-[#ffd84d]">
                   {formatPrice(productPrice)}
                 </p>
 
@@ -184,7 +184,7 @@ export default function AccountDetailPage() {
                         const next = Number(event.target.value)
                         setQuantity(Number.isNaN(next) ? 1 : Math.min(Math.max(next, 1), maxQuantity))
                       }}
-                      className="h-full w-16 border-x border-[#3d63ff]/20 bg-transparent text-center font-black text-white outline-none"
+                      className="h-full w-16 border-x border-[#1e3a62] bg-transparent text-center font-black text-white outline-none"
                     />
                     <button
                       type="button"
@@ -206,7 +206,7 @@ export default function AccountDetailPage() {
                     type="button"
                     onClick={handleBuyNow}
                     disabled={addingCart || !product.availableItem}
-                    className="h-[52px] rounded-xl bg-[#1677ff] px-12 font-black text-white hover:bg-[#0f66df] disabled:cursor-not-allowed disabled:opacity-60"
+                    className="h-[52px] rounded-xl bg-gradient-to-r from-[#36b8f2] via-[#2668ff] to-[#8b3df5] px-12 shadow-[0_14px_28px_rgba(38,104,255,0.24)] font-black text-white hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {addingCart ? 'Đang xử lý...' : 'Mua ngay'}
                   </button>
@@ -215,14 +215,14 @@ export default function AccountDetailPage() {
                     type="button"
                     onClick={handleAddToCart}
                     disabled={addingCart}
-                    className="h-[52px] rounded-xl bg-[#4a4568] px-12 font-black text-white hover:bg-[#5a5378] disabled:cursor-not-allowed disabled:opacity-60"
+                    className="h-[52px] rounded-xl border border-[#1e3a62] bg-[#0f2036] px-12 font-black text-white hover:bg-[#143459] disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {addingCart ? 'Đang thêm...' : 'Thêm giỏ hàng'}
                   </button>
                 </div>
               </section>
 
-              <section className="rounded-[22px] border border-[#3d63ff]/20 bg-[#211b42] p-8 shadow-[0_18px_40px_rgba(0,0,0,0.18)] lg:col-span-2">
+              <section className="rounded-[22px] border border-[#1e3a62] bg-[#0a1628] p-8 shadow-[0_18px_40px_rgba(0,0,0,0.18)] lg:col-span-2">
                 <h2 className="text-[24px] font-black text-white">Mô tả account</h2>
                 <p className="mt-6 leading-8 text-[#b9b4d7]">
                   {product.description || 'Chưa có mô tả sản phẩm.'}

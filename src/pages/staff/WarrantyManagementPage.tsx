@@ -78,6 +78,13 @@ function assigneeLabel(ticket: SupportTicket) {
   return assignee.fullname || assignee.email || assignee._id || 'Đã gán'
 }
 
+function assigneeId(ticket: SupportTicket) {
+  const assignee = ticket.assigned_to
+  if (!assignee) return ''
+  if (typeof assignee === 'string') return assignee
+  return assignee._id || ''
+}
+
 function ticketAssignLabel(ticket: SupportTicket) {
   const typeName = typeLabels[ticket.type] ?? 'ticket'
   return `Gán ${typeName.toLowerCase()}`
@@ -181,7 +188,7 @@ export default function WarrantyManagementPage() {
       setRefundReason('')
       setRejectReason('')
       setRestockPhysical(false)
-      setAssignStaffId('')
+      setAssignStaffId(res.data?.data?.ticket ? assigneeId(res.data.data.ticket) : '')
     } catch (err: any) {
       setError(err?.response?.data?.message || err?.message || 'Không thể tải chi tiết ticket.')
     }
@@ -222,11 +229,6 @@ export default function WarrantyManagementPage() {
 
   useEffect(() => {
     const loadStaffOptions = async () => {
-      if (role !== 'admin') {
-        setStaffOptions([])
-        return
-      }
-
       try {
         const res = await getStaffs({ page: 1, limit: 100 })
         setStaffOptions(res.data?.data?.staff ?? [])
@@ -287,19 +289,20 @@ export default function WarrantyManagementPage() {
 
   const assignSelectedTicket = async () => {
     if (!selectedTicket) return
-    if (!objectIdPattern.test(assignStaffId.trim())) {
-      setError('Mã nhân viên chưa đúng định dạng.')
+    const nextStaffId = assignStaffId.trim()
+    if (!objectIdPattern.test(nextStaffId)) {
+      setError(staffOptions.length > 0 ? 'Vui lòng chọn nhân viên xử lý.' : 'Mã nhân viên chưa đúng định dạng.')
       setSuccess('')
       return
     }
     try {
-      const nextStaffId = assignStaffId.trim()
       setError('')
       setSuccess('')
       await assignTicket(selectedTicket._id, nextStaffId)
       await openTicket(selectedTicket._id)
       await loadTickets(selectedTicket._id)
-      setSuccess(`Đã gán ticket cho nhân viên ${nextStaffId}.`)
+      const staff = staffOptions.find((item) => item._id === nextStaffId)
+      setSuccess(`Đã gán ticket cho ${staff?.fullname || staff?.email || nextStaffId}.`)
     } catch (err: any) {
       setSuccess('')
       setError(err?.response?.data?.message || err?.message || 'Không thể gán nhân viên xử lý.')
@@ -562,7 +565,9 @@ export default function WarrantyManagementPage() {
                 <div>
                   <h3 className="text-sm font-bold text-white">{ticketAssignLabel(selectedTicket)} cho nhân viên xử lý</h3>
                   <p className="mt-1 text-xs text-[#909AAB]">
-                    Nhập mã nhân viên được cấp trong màn quản lý nhân viên. Hiện đang gán: {assigneeLabel(selectedTicket)}.
+                    {staffOptions.length > 0
+                      ? `Chọn nhân viên trong danh sách. Hiện đang gán: ${assigneeLabel(selectedTicket)}.`
+                      : `Không tải được danh sách nhân viên, có thể nhập mã thủ công. Hiện đang gán: ${assigneeLabel(selectedTicket)}.`}
                   </p>
                   <div className="mt-2 flex flex-col gap-2 sm:flex-row">
                     {staffOptions.length > 0 ? (

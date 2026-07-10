@@ -24,7 +24,7 @@ export default function LandingPage() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-[#f7f7f7]">
+    <div className="min-h-screen overflow-x-hidden bg-gradient-to-b from-[#071120] via-[#0a1628] to-[#050914]">
       {/* Sticky Header from layout */}
       <Header />
 
@@ -34,7 +34,7 @@ export default function LandingPage() {
       {/* Category icons: Sinh Viên / Macbook / Tool AI / Cloud & VPS */}
       <CategoryBar />
 
-      <div className="flex flex-col gap-6 sm:gap-8">
+      <div className="flex w-full flex-col gap-6 sm:gap-8">
         {/* Section 1: Sản phẩm bán chạy */}
         <FeaturedProducts
           products={products}

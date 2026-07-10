@@ -70,7 +70,7 @@ function BannerImage({ src, alt, fallbackSrc, fallbackGradient }: { src?: string
           setHasError(true)
         }
       }}
-      className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-1000"
+      className="absolute inset-0 h-full w-full object-cover object-center transition-transform duration-1000"
     />
   )
 }
@@ -101,11 +101,11 @@ export default function HeroBanner({ banners }: Props) {
   if (active.length === 0) return null
 
   return (
-    <section className="w-full max-w-[1840px] mx-auto px-4 sm:px-6 pt-3 sm:pt-4 pb-3 sm:pb-4 relative z-10">
-      <div className="w-full flex flex-col gap-4">
+    <section className="w-full max-w-none px-3 sm:px-5 lg:px-8 pt-4 pb-4 relative z-10">
+      <div className="grid w-full gap-4 lg:grid-cols-[minmax(0,2.65fr)_minmax(340px,0.95fr)]">
 
         {/* ── Main banner slider ── */}
-        <div className="w-full rounded-[26px] overflow-hidden relative h-[340px] sm:h-[420px] lg:h-[480px] bg-[#1a1435] border border-white/5 shadow-[0_20px_50px_rgba(0,0,0,0.4)]">
+        <div className="w-full rounded-[26px] overflow-hidden relative h-[360px] sm:h-[460px] lg:h-[560px] bg-[#0a1628] border border-[#1e3a62] shadow-[0_20px_50px_rgba(0,0,0,0.4)]">
 
           {/* Slides Container using premium absolute fade transition */}
           <div className="relative w-full h-full">
@@ -127,7 +127,7 @@ export default function HeroBanner({ banners }: Props) {
                 />
 
                 {/* Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-r from-[#09051f]/95 via-[#09051f]/40 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-r from-[#050914]/95 via-[#071120]/50 to-transparent" />
 
                 {/* Content */}
                 <div className="absolute inset-0 flex flex-col justify-center px-6 sm:px-10 lg:px-16">
@@ -135,7 +135,7 @@ export default function HeroBanner({ banners }: Props) {
                     <span className={`inline-flex w-fit items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest mb-3.5 shadow-md ${
                       slide.tag.includes('CHÍNH HÃNG')
                         ? 'bg-[#00b4a8] text-white'
-                        : 'bg-[#00e3d2]/10 border border-[#00e3d2]/25 text-[#00e3d2]'
+                        : 'bg-[#00e3d2]/10 border border-[#00e3d2]/25 text-[#39bdf8]'
                     }`}>
                       {slide.tag}
                     </span>
@@ -149,7 +149,7 @@ export default function HeroBanner({ banners }: Props) {
                   <div className="flex flex-col gap-2.5 w-fit">
                     <Link
                       to={slide.ctaLink}
-                      className="inline-flex items-center justify-center gap-2 w-[180px] py-3.5 rounded-xl bg-gradient-to-r from-[#00c6ff] to-[#8a2be2] hover:from-[#00b4e5] hover:to-[#7822c7] text-white font-black text-xs sm:text-sm active:scale-95 transition-all duration-200 shadow-[0_4px_15px_rgba(0,198,255,0.25)]"
+                      className="inline-flex items-center justify-center gap-2 w-[180px] py-3.5 rounded-xl bg-gradient-to-r from-[#36b8f2] via-[#2668ff] to-[#8b3df5] hover:brightness-110 text-white font-black text-xs sm:text-sm active:scale-95 transition-all duration-200 shadow-[0_4px_15px_rgba(0,198,255,0.25)]"
                     >
                       {slide.ctaText}
                     </Link>
@@ -170,13 +170,13 @@ export default function HeroBanner({ banners }: Props) {
             <>
               <button
                 onClick={prev}
-                className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors z-20 backdrop-blur-sm border border-white/5"
+                className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors z-20 backdrop-blur-sm border border-[#1e3a62]"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
               <button
                 onClick={next}
-                className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors z-20 backdrop-blur-sm border border-white/5"
+                className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors z-20 backdrop-blur-sm border border-[#1e3a62]"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
@@ -197,13 +197,13 @@ export default function HeroBanner({ banners }: Props) {
           )}
         </div>
 
-        {/* ── Bottom horizontal cards stacked ── */}
-        <div className="flex flex-col gap-4 w-full">
+        {/* ── Side promo cards ── */}
+        <div className="grid w-full gap-4 lg:h-[560px] lg:grid-rows-2">
 
           {/* Netflix card */}
           <Link
             to="/accounts"
-            className="w-full rounded-[26px] overflow-hidden relative flex flex-col md:flex-row bg-[#15122e] border border-white/5 shadow-[0_15px_35px_rgba(0,0,0,0.35)] min-h-[150px] sm:min-h-[170px] group cursor-pointer"
+            className="group relative flex min-h-[150px] w-full cursor-pointer flex-col overflow-hidden rounded-[26px] border border-[#1e3a62] bg-[#0a1628] shadow-[0_15px_35px_rgba(0,0,0,0.35)] sm:min-h-[170px] md:flex-row lg:min-h-0"
           >
             <div className="flex-1 flex flex-col justify-center p-6 sm:p-8 z-10">
               <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-red-600 text-white text-[9px] font-black uppercase tracking-widest mb-2 w-fit">
@@ -225,11 +225,11 @@ export default function HeroBanner({ banners }: Props) {
           {/* MacBook card */}
           <Link
             to="/laptops"
-            className="w-full rounded-[26px] overflow-hidden relative flex flex-col md:flex-row bg-[#15122e] border border-white/5 shadow-[0_15px_35px_rgba(0,0,0,0.35)] min-h-[150px] sm:min-h-[170px] group cursor-pointer"
+            className="group relative flex min-h-[150px] w-full cursor-pointer flex-col overflow-hidden rounded-[26px] border border-[#1e3a62] bg-[#0a1628] shadow-[0_15px_35px_rgba(0,0,0,0.35)] sm:min-h-[170px] md:flex-row lg:min-h-0"
           >
             <div className="flex-1 flex flex-col justify-center p-6 sm:p-8 z-10">
               <h3 className="text-white font-black text-xl sm:text-2xl drop-shadow">MacBook Air M3</h3>
-              <p className="text-[#00e3d2] font-black text-xs sm:text-sm mt-1 hover:text-white transition-colors duration-200 flex items-center gap-1">
+              <p className="text-[#39bdf8] font-black text-xs sm:text-sm mt-1 hover:text-white transition-colors duration-200 flex items-center gap-1">
                 Sức mạnh không giới hạn <ChevronRight className="w-3.5 h-3.5" />
               </p>
             </div>

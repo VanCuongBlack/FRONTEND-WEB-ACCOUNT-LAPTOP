@@ -77,7 +77,7 @@ export default function Header({
 
   return (
     <header className="sticky top-0 z-50 border-b border-white/5 bg-[#09051f]/90 backdrop-blur-md text-white shadow-[0_10px_30px_rgba(0,0,0,0.25)]">
-      <div className="mx-auto max-w-[1840px] px-4 sm:px-6">
+      <div className="w-full max-w-none px-4 sm:px-6 lg:px-8">
         <div className="flex h-[70px] items-center justify-between gap-4">
           
           {/* Logo and Search bar on the left */}
@@ -87,7 +87,7 @@ export default function Header({
               <span className="text-sm font-black text-[#00d6ff]">.com</span>
             </Link>
 
-            <form onSubmit={handleSearch} className="hidden flex-1 max-w-[420px] md:flex">
+            <form onSubmit={handleSearch} className="hidden flex-1 max-w-[620px] md:flex">
               <div className="flex h-[42px] w-full items-center gap-2.5 rounded-full bg-white/5 border border-white/10 px-4 text-[#c3bddb] focus-within:border-[#00d6ff]/40 focus-within:bg-white/10 transition-all duration-300">
                 <Search className="h-4.5 w-4.5 text-white/40" />
                 <input

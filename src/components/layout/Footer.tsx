@@ -15,7 +15,7 @@ const SUPPORT_LINKS = [
 export default function Footer() {
   return (
     <footer className="mt-auto border-t border-[#2d2852] bg-[#0d0826]" id="contact">
-      <div className="mx-auto max-w-[1840px] px-4 pb-8 pt-10 sm:px-6">
+      <div className="w-full max-w-none px-4 pb-8 pt-10 sm:px-6 lg:px-8">
         <div className="mb-8 grid grid-cols-1 gap-8 md:grid-cols-3">
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-2">
@@ -83,7 +83,7 @@ export default function Footer() {
       </div>
 
       <div className="border-t border-[#2d2852] bg-[#09051f]">
-        <div className="mx-auto max-w-[1840px] px-4 py-4 text-center sm:flex sm:items-center sm:justify-between sm:px-6">
+        <div className="w-full max-w-none px-4 py-4 text-center sm:flex sm:items-center sm:justify-between sm:px-6 lg:px-8">
           <p className="text-xs text-[#b9b4d7]">
             © 2026 PCAcc.com. Tất cả quyền được bảo lưu.
           </p>
