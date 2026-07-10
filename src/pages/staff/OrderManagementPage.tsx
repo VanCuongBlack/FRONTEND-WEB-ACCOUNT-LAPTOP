@@ -12,7 +12,6 @@ import {
 } from 'lucide-react'
 import StaffLayout from '@/layouts/StaffLayout'
 import { confirmCOD } from '@/services/payment.service'
-import { getRefundsByOrder, processRefund, type RefundRecord } from '@/services/refund.service'
 import {
   getStaffOrderById,
   getStaffOrders,
@@ -31,6 +30,12 @@ const statusOptions: Array<{ value: OrderStatus; label: string }> = [
   { value: 'completed', label: 'Hoàn tất' },
   { value: 'cancelled', label: 'Đã hủy' },
   { value: 'failed', label: 'Thất bại' },
+]
+
+const statusFilterOptions: Array<{ value: OrderStatus; label: string }> = [
+  ...statusOptions,
+  { value: 'partially_refunded', label: 'Đã hoàn một phần' },
+  { value: 'refunded', label: 'Đã hoàn tiền' },
 ]
 
 const statusLabels: Record<OrderStatus, string> = {
@@ -87,10 +92,6 @@ function isWaitingBankTransfer(order: Order) {
   return order.payment_method === 'bank_transfer' && order.status === 'pending'
 }
 
-function canProcessRefund(order: Order) {
-  return ['confirmed', 'processing', 'completed'].includes(order.status)
-}
-
 function canMarkProcessingOrder(order: Order) {
   return !isWaitingBankTransfer(order) && canMarkProcessing(order.status)
 }
@@ -119,11 +120,6 @@ export default function OrderManagementPage() {
   const [isActionLoading, setIsActionLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
-  const [refundHistory, setRefundHistory] = useState<RefundRecord[]>([])
-  const [refundReason, setRefundReason] = useState('')
-  const [refundMethod, setRefundMethod] = useState<'original_payment' | 'bank_transfer' | 'store_credit'>('original_payment')
-  const [refundRestockPhysical, setRefundRestockPhysical] = useState(false)
-  const [refundSelectedItemIds, setRefundSelectedItemIds] = useState<string[]>([])
 
   const statisticMap = useMemo(() => {
     return statistics.reduce<Record<string, number>>((map, item) => {
@@ -160,15 +156,8 @@ export default function OrderManagementPage() {
 
   const refreshSelectedOrder = async (orderId: string) => {
     try {
-      const [orderRes, refundsRes] = await Promise.all([
-        getStaffOrderById(orderId),
-        getRefundsByOrder(orderId),
-      ])
+      const orderRes = await getStaffOrderById(orderId)
       setSelectedOrder(orderRes.data.data ?? null)
-      setRefundHistory(Array.isArray(refundsRes.data.data) ? refundsRes.data.data : [])
-      setRefundReason('')
-      setRefundRestockPhysical(false)
-      setRefundSelectedItemIds([])
     } catch {
       // Giữ chi tiết hiện tại nếu refresh nền lỗi tạm thời.
     }
@@ -198,12 +187,8 @@ export default function OrderManagementPage() {
     setMessage('')
 
     try {
-      const [orderRes, refundsRes] = await Promise.all([
-        getStaffOrderById(orderId),
-        getRefundsByOrder(orderId),
-      ])
+      const orderRes = await getStaffOrderById(orderId)
       setSelectedOrder(orderRes.data.data ?? null)
-      setRefundHistory(Array.isArray(refundsRes.data.data) ? refundsRes.data.data : [])
     } catch (err: any) {
       setError(err?.response?.data?.message || err?.message || 'Không thể tải chi tiết đơn hàng.')
     } finally {
@@ -248,46 +233,6 @@ export default function OrderManagementPage() {
     setStatusFilter(status)
     setPage(1)
     setSelectedOrder(null)
-    setRefundHistory([])
-    setRefundSelectedItemIds([])
-  }
-
-  const handleProcessRefund = async (order: Order) => {
-    const reason = refundReason.trim()
-    if (reason.length < 10) {
-      setError('Lý do hoàn tiền cần ít nhất 10 ký tự.')
-      setMessage('')
-      return
-    }
-
-    setIsActionLoading(true)
-    setError('')
-    setMessage('')
-
-    try {
-      await processRefund(order._id, {
-        ...(refundSelectedItemIds.length ? { order_item_ids: refundSelectedItemIds } : {}),
-        reason,
-        refund_method: refundMethod,
-        restock_physical: refundRestockPhysical,
-      })
-      setMessage('Đã gửi yêu cầu hoàn tiền đơn hàng sang BE.')
-      setRefundReason('')
-      setRefundSelectedItemIds([])
-      await Promise.all([loadOrders(page, statusFilter), handleSelectOrder(order._id)])
-    } catch (err: any) {
-      setError(err?.response?.data?.message || err?.message || 'Không thể xử lý hoàn tiền đơn hàng.')
-    } finally {
-      setIsActionLoading(false)
-    }
-  }
-
-  const toggleRefundItem = (itemId: string) => {
-    setRefundSelectedItemIds((current) =>
-      current.includes(itemId)
-        ? current.filter((id) => id !== itemId)
-        : [...current, itemId]
-    )
   }
 
   return (
@@ -337,7 +282,7 @@ export default function OrderManagementPage() {
               className="h-11 rounded-xl border border-white/10 bg-[#181B22] px-4 text-sm font-semibold text-white outline-none focus:border-blue-600 cursor-pointer"
             >
               <option value="">Tất cả trạng thái</option>
-              {statusOptions.map((status) => (
+              {statusFilterOptions.map((status) => (
                 <option key={status.value} value={status.value}>
                   {status.label}
                 </option>
@@ -569,7 +514,6 @@ export default function OrderManagementPage() {
                 <table className="min-w-full divide-y divide-white/5">
                   <thead className="bg-[#181B22]">
                     <tr>
-                      <TableHead>Hoàn</TableHead>
                       <TableHead>Sản phẩm</TableHead>
                       <TableHead>Loại</TableHead>
                       <TableHead>Giá bán</TableHead>
@@ -577,24 +521,9 @@ export default function OrderManagementPage() {
                   </thead>
                   <tbody className="divide-y divide-white/5">
                     {selectedOrder.items.map((item) => {
-                      const itemId = item._id ?? ''
                       const isRefunded = Boolean(item.is_refunded)
                       return (
                         <tr key={item._id ?? item.item_id}>
-                          <TableCell>
-                            {itemId ? (
-                              <input
-                                type="checkbox"
-                                checked={refundSelectedItemIds.includes(itemId)}
-                                disabled={isRefunded || !canProcessRefund(selectedOrder)}
-                                onChange={() => toggleRefundItem(itemId)}
-                                className="h-4 w-4 accent-blue-600 disabled:opacity-40"
-                                title={isRefunded ? 'Sản phẩm này đã được hoàn' : 'Chọn sản phẩm cần hoàn'}
-                              />
-                            ) : (
-                              '-'
-                            )}
-                          </TableCell>
                           <TableCell className="font-semibold text-white">
                             {item.product_name}
                             {isRefunded && (
@@ -610,103 +539,6 @@ export default function OrderManagementPage() {
                     })}
                   </tbody>
                 </table>
-              </div>
-
-              <div className="mt-5 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-5 text-amber-200">
-                <div className="flex flex-col gap-1">
-                  <h3 className="text-base font-black text-amber-300">Hoàn tiền đơn hàng</h3>
-                  <p className="text-sm leading-6 text-amber-400">
-                    Chỉ áp dụng cho đơn đã xác nhận, đang xử lý hoặc hoàn tất. Chọn sản phẩm cần hoàn; nếu không chọn sản phẩm nào, BE sẽ hoàn toàn bộ đơn.
-                  </p>
-                </div>
-
-                {!canProcessRefund(selectedOrder) && (
-                  <p className="mt-4 rounded-xl border border-amber-500/30 bg-[#181B22] px-4 py-3 text-sm font-semibold text-amber-300">
-                    Đơn đang ở trạng thái "{getStatusLabel(selectedOrder.status)}" nên BE chưa cho phép hoàn tiền.
-                  </p>
-                )}
-
-                <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_260px]">
-                  <label className="block text-sm font-bold text-slate-300">
-                    Lý do hoàn tiền
-                    <textarea
-                      value={refundReason}
-                      onChange={(event) => setRefundReason(event.target.value)}
-                      className="mt-2 min-h-[96px] w-full rounded-xl border border-white/10 bg-[#181B22] p-3 text-sm text-white focus:border-blue-600 focus:outline-none"
-                      placeholder="Nhập lý do hoàn tiền..."
-                    />
-                  </label>
-
-                  <div className="space-y-3">
-                    <label className="block text-sm font-bold text-slate-300">
-                      Phương thức hoàn
-                      <select
-                        value={refundMethod}
-                        onChange={(event) => setRefundMethod(event.target.value as typeof refundMethod)}
-                        className="mt-2 h-11 w-full rounded-xl border border-white/10 bg-[#181B22] text-white px-3 text-sm font-semibold focus:border-blue-600 focus:outline-none cursor-pointer"
-                      >
-                        <option value="original_payment">Theo phương thức gốc</option>
-                        <option value="bank_transfer">Chuyển khoản</option>
-                        <option value="store_credit">Điểm cửa hàng</option>
-                      </select>
-                    </label>
-
-                    <label className="flex items-center gap-2 text-sm font-bold text-slate-300">
-                      <input
-                        type="checkbox"
-                        checked={refundRestockPhysical}
-                        onChange={(event) => setRefundRestockPhysical(event.target.checked)}
-                      />
-                      Nhập lại kho hàng vật lý
-                    </label>
-
-                    <button
-                      type="button"
-                      disabled={isActionLoading || !canProcessRefund(selectedOrder)}
-                      onClick={() => handleProcessRefund(selectedOrder)}
-                      className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 text-sm font-bold text-white hover:bg-emerald-500 disabled:opacity-60 cursor-pointer"
-                    >
-                      {isActionLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
-                      {refundSelectedItemIds.length > 0
-                        ? `Hoàn ${refundSelectedItemIds.length} sản phẩm`
-                        : 'Hoàn toàn bộ đơn'}
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-5 rounded-2xl border border-white/10 bg-[#181B22] p-5">
-                <div className="flex flex-col gap-1">
-                  <h3 className="text-base font-black text-white">Lịch sử hoàn tiền</h3>
-                  <p className="text-sm text-slate-400">Dữ liệu lấy từ API hoàn tiền của BE theo mã đơn hiện tại.</p>
-                </div>
-
-                <div className="mt-4 space-y-3">
-                  {refundHistory.length === 0 ? (
-                    <p className="rounded-xl bg-[#2A2F3B] border border-white/5 px-4 py-3 text-sm text-slate-400">
-                      Chưa có bản ghi hoàn tiền cho đơn này.
-                    </p>
-                  ) : (
-                    refundHistory.map((refund) => (
-                      <div key={refund._id} className="rounded-xl border border-white/5 bg-[#2A2F3B] p-4">
-                        <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                          <div>
-                            <p className="break-all text-sm font-black text-white">{refund._id}</p>
-                            <p className="mt-1 text-xs text-[#909AAB]">
-                              {formatDate(refund.createdAt)} • {refund.refund_method ?? 'original_payment'} • {refund.status ?? 'completed'}
-                            </p>
-                          </div>
-                          <p className="text-sm font-black text-emerald-400">
-                            {formatPrice(refund.total_refund_amount ?? refund.amount)}
-                          </p>
-                        </div>
-                        {refund.reason && (
-                          <p className="mt-3 whitespace-pre-line text-sm leading-6 text-slate-300">{refund.reason}</p>
-                        )}
-                      </div>
-                    ))
-                  )}
-                </div>
               </div>
             </section>
           </div>

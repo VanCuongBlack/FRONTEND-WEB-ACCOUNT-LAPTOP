@@ -67,15 +67,15 @@ export default function NotificationPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#09051f] font-sans text-white">
+    <div className="flex min-h-screen flex-col bg-[#050914] font-sans text-white">
       <Header pageLabel="Thông báo" cartCount={0} />
 
-      <main className="mx-auto w-full max-w-[1840px] flex-1 px-4 py-6">
-        <section className="rounded-[22px] border border-[#3d63ff]/20 bg-[#211b42] p-6 shadow-[0_18px_40px_rgba(0,0,0,0.18)]">
+      <main className="mx-auto w-full max-w-none flex-1 px-4 py-6">
+        <section className="rounded-[22px] border border-[#1e3a62] bg-[#0a1628] p-6 shadow-[0_18px_40px_rgba(0,0,0,0.18)]">
           <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
             <div>
               <h1 className="flex items-center gap-3 text-[28px] font-black">
-                <Bell className="text-[#79a7ff]" size={28} />
+                <Bell className="text-[#74b7ff]" size={28} />
                 Thông báo
               </h1>
               <p className="mt-2 text-sm text-[#b9b4d7]">
@@ -88,7 +88,7 @@ export default function NotificationPage() {
                 type="button"
                 onClick={handleMarkAllRead}
                 disabled={unreadCount === 0}
-                className="inline-flex h-10 items-center gap-2 rounded-xl bg-[#1677ff] px-4 text-sm font-black text-white hover:bg-[#0f66df] disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex h-10 items-center gap-2 rounded-xl bg-gradient-to-r from-[#36b8f2] via-[#2668ff] to-[#8b3df5] px-4 text-sm font-black text-white hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <CheckCheck className="h-4 w-4" />
                 Đánh dấu đã đọc
@@ -111,13 +111,13 @@ export default function NotificationPage() {
           )}
 
           {loading ? (
-            <div className="flex min-h-[280px] items-center justify-center gap-3 rounded-[20px] bg-[#171233] text-[#b9b4d7]">
+            <div className="flex min-h-[280px] items-center justify-center gap-3 rounded-[20px] bg-[#071120] text-[#b9b4d7]">
               <Loader2 className="h-5 w-5 animate-spin" />
               Đang tải thông báo...
             </div>
           ) : notifications.length === 0 ? (
-            <div className="flex min-h-[280px] flex-col items-center justify-center rounded-[20px] border border-dashed border-[#3d63ff]/30 bg-[#171233] p-8 text-center">
-              <Bell className="h-10 w-10 text-[#79a7ff]" />
+            <div className="flex min-h-[280px] flex-col items-center justify-center rounded-[20px] border border-dashed border-[#1e3a62] bg-[#071120] p-8 text-center">
+              <Bell className="h-10 w-10 text-[#74b7ff]" />
               <h2 className="mt-4 text-lg font-black text-white">
                 Chưa có thông báo
               </h2>
@@ -134,8 +134,8 @@ export default function NotificationPage() {
                   onClick={() => handleOpenNotification(notification)}
                   className={`w-full rounded-2xl border px-5 py-4 text-left transition-colors ${
                     notification.is_read
-                      ? 'border-[#3d63ff]/15 bg-[#171233] hover:border-[#3d63ff]/40'
-                      : 'border-[#3d63ff]/45 bg-[#282255] hover:border-[#79a7ff]'
+                      ? 'border-[#1e3a62]/80 bg-[#071120] hover:border-[#3d63ff]/40'
+                      : 'border-[#2d7cff]/70 bg-[#0d1d34] hover:border-[#79a7ff]'
                   }`}
                 >
                   <div className="flex items-start gap-4">

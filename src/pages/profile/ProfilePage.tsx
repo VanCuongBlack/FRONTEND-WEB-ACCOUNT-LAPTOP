@@ -48,7 +48,7 @@ export default function ProfilePage() {
       status: "pending",
       icon: (
         <svg
-          className="w-8 h-8 text-[#3783EC]"
+          className="w-8 h-8 text-[#39bdf8]"
           fill="none"
           stroke="currentColor"
           strokeWidth="1.8"
@@ -75,7 +75,7 @@ export default function ProfilePage() {
       status: "processing",
       icon: (
         <svg
-          className="w-8 h-8 text-[#3783EC]"
+          className="w-8 h-8 text-[#39bdf8]"
           fill="none"
           stroke="currentColor"
           strokeWidth="1.8"
@@ -104,7 +104,7 @@ export default function ProfilePage() {
       status: "completed",
       icon: (
         <svg
-          className="w-8 h-8 text-[#3783EC]"
+          className="w-8 h-8 text-[#39bdf8]"
           fill="none"
           stroke="currentColor"
           strokeWidth="1.8"
@@ -156,12 +156,12 @@ export default function ProfilePage() {
     new Date(isoDate).toLocaleDateString("vi-VN");
 
   return (
-    <div className="w-full min-h-screen flex flex-col bg-[#09051f] text-white">
+    <div className="w-full min-h-screen flex flex-col bg-[#050914] text-white">
       <Header pageLabel="Hồ sơ của tôi" cartCount={2} />
 
-      <main className="w-full max-w-7xl mx-auto px-4 py-6 flex-1">
+      <main className="w-full max-w-none px-3 sm:px-5 lg:px-8 py-6 flex-1">
         {/* PROFILE */}
-        <div className="bg-[#211b42] rounded-2xl shadow-[0_18px_40px_rgba(0,0,0,0.18)] p-5 md:p-7 mb-6">
+        <div className="bg-[#0a1628] rounded-2xl shadow-[0_18px_40px_rgba(0,0,0,0.18)] p-5 md:p-7 mb-6">
           <div className="flex flex-col sm:flex-row sm:items-center gap-5">
             <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-[#3783EC]/10 shadow-[0_18px_40px_rgba(0,0,0,0.18)] bg-gray-200 flex items-center justify-center">
               {displayUser?.avatar ? (
@@ -188,7 +188,7 @@ export default function ProfilePage() {
                 <button
                   type="button"
                   onClick={() => navigate("/profile/edit")}
-                  className="h-[40px] px-5 rounded-lg border border-[#3783EC] text-[#3783EC] hover:bg-[#3783EC] hover:text-white transition-all text-[14px] font-medium"
+                  className="h-[40px] px-5 rounded-lg border border-[#3783EC] text-[#39bdf8] hover:bg-gradient-to-r from-[#36b8f2] via-[#2668ff] to-[#8b3df5] hover:text-white transition-all text-[14px] font-medium"
                 >
                   Sửa hồ sơ
                 </button>
@@ -213,7 +213,7 @@ export default function ProfilePage() {
 
             <Link
               to="/profile/history"
-              className="text-[#3783EC] text-[14px] hover:underline"
+              className="text-[#39bdf8] text-[14px] hover:underline"
             >
               Xem lịch sử mua hàng →
             </Link>
@@ -232,9 +232,9 @@ export default function ProfilePage() {
                     key={item.title}
                     type="button"
                     onClick={() => setActiveStatusKey(item.key)}
-                    className="bg-[#211b42] rounded-2xl shadow-[0_18px_40px_rgba(0,0,0,0.18)] p-4 sm:p-6 flex flex-col items-center hover:shadow-md transition-all cursor-pointer text-center"
+                    className="bg-[#0a1628] rounded-2xl shadow-[0_18px_40px_rgba(0,0,0,0.18)] p-4 sm:p-6 flex flex-col items-center hover:shadow-md transition-all cursor-pointer text-center"
                   >
-                    <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-[#3783EC]/10 flex items-center justify-center">
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-r from-[#36b8f2] via-[#2668ff] to-[#8b3df5]/10 flex items-center justify-center">
                       {item.icon}
                     </div>
 
@@ -242,7 +242,7 @@ export default function ProfilePage() {
                       {item.title}
                     </span>
 
-                    <span className="mt-2 text-[20px] font-bold text-[#3783EC]">
+                    <span className="mt-2 text-[20px] font-bold text-[#39bdf8]">
                       {ordersForStatus.length}
                     </span>
                   </button>
@@ -252,7 +252,7 @@ export default function ProfilePage() {
           )}
 
           {activeStatusCard && filteredOrders.length > 0 && (
-            <div className="mt-4 bg-[#211b42] rounded-2xl shadow-[0_18px_40px_rgba(0,0,0,0.18)] p-4 sm:p-6">
+            <div className="mt-4 bg-[#0a1628] rounded-2xl shadow-[0_18px_40px_rgba(0,0,0,0.18)] p-4 sm:p-6">
               <h4 className="text-[16px] font-bold text-white mb-4">
                 {activeStatusCard.title}
               </h4>
@@ -262,7 +262,7 @@ export default function ProfilePage() {
                   <div
                     key={order._id}
                     onClick={() => handleOpenOrderDetail(order._id)}
-                    className="p-4 border border-[#3d63ff]/20 rounded-lg hover:bg-gray-50 cursor-pointer transition-all"
+                    className="p-4 border border-[#1e3a62] rounded-lg hover:bg-gray-50 cursor-pointer transition-all"
                   >
                     <div className="flex justify-between items-start">
                       <div>
@@ -273,7 +273,7 @@ export default function ProfilePage() {
                           {order.items.length} sản phẩm
                         </p>
                       </div>
-                      <p className="font-bold text-[#3783EC]">
+                      <p className="font-bold text-[#39bdf8]">
                         {order.total_amount.toLocaleString()}đ
                       </p>
                     </div>
@@ -292,7 +292,7 @@ export default function ProfilePage() {
 
           <div className="flex flex-col gap-4">
             {supportLoading && (
-              <div className="bg-[#211b42] border border-dashed border-[#3d63ff]/20 rounded-2xl p-5 text-[14px] text-[#b9b4d7]">
+              <div className="bg-[#0a1628] border border-dashed border-[#1e3a62] rounded-2xl p-5 text-[14px] text-[#b9b4d7]">
                 Đang tải yêu cầu hỗ trợ...
               </div>
             )}
@@ -307,7 +307,7 @@ export default function ProfilePage() {
               return (
                 <div
                   key={req._id}
-                  className="bg-[#211b42] border border-[#3d63ff]/20 rounded-2xl p-5 shadow-[0_18px_40px_rgba(0,0,0,0.18)] hover:shadow-md transition-all flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+                  className="bg-[#0a1628] border border-[#1e3a62] rounded-2xl p-5 shadow-[0_18px_40px_rgba(0,0,0,0.18)] hover:shadow-md transition-all flex flex-col md:flex-row md:items-center md:justify-between gap-4"
                 >
                   <div>
                     <p className="font-semibold text-[15px] text-white">
@@ -329,7 +329,7 @@ export default function ProfilePage() {
                   <button
                     type="button"
                     onClick={() => navigate(`/profile/support/${req._id}`)}
-                    className="h-[42px] px-5 rounded-xl bg-[#3783EC]/10 text-[#3783EC] font-medium text-[14px] hover:bg-[#3783EC] hover:text-white transition-all"
+                    className="h-[42px] px-5 rounded-xl bg-gradient-to-r from-[#36b8f2] via-[#2668ff] to-[#8b3df5]/10 text-[#39bdf8] font-medium text-[14px] hover:bg-gradient-to-r from-[#36b8f2] via-[#2668ff] to-[#8b3df5] hover:text-white transition-all"
                   >
                     Chi tiết yêu cầu
                   </button>
@@ -338,7 +338,7 @@ export default function ProfilePage() {
             })}
 
             {!supportLoading && supportRequests.length === 0 && (
-              <div className="bg-[#211b42] border border-dashed border-[#3d63ff]/20 rounded-2xl p-5 text-[14px] text-[#b9b4d7]">
+              <div className="bg-[#0a1628] border border-dashed border-[#1e3a62] rounded-2xl p-5 text-[14px] text-[#b9b4d7]">
                 Chưa có yêu cầu hỗ trợ nào.
               </div>
             )}

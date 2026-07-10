@@ -33,64 +33,11 @@ const PROVINCES = [
   'Đà Nẵng',
   'Hải Phòng',
   'Cần Thơ',
-  'An Giang',
-  'Bà Rịa - Vũng Tàu',
-  'Bắc Giang',
-  'Bắc Kạn',
-  'Bạc Liêu',
-  'Bắc Ninh',
-  'Bến Tre',
-  'Bình Định',
   'Bình Dương',
-  'Bình Phước',
-  'Bình Thuận',
-  'Cà Mau',
-  'Cao Bằng',
-  'Đắk Lắk',
-  'Đắk Nông',
-  'Điện Biên',
   'Đồng Nai',
-  'Đồng Tháp',
-  'Gia Lai',
-  'Hà Giang',
-  'Hà Nam',
-  'Hà Tĩnh',
-  'Hải Dương',
-  'Hậu Giang',
-  'Hòa Bình',
-  'Hưng Yên',
+  'Bà Rịa - Vũng Tàu',
   'Khánh Hòa',
-  'Kiên Giang',
-  'Kon Tum',
-  'Lai Châu',
   'Lâm Đồng',
-  'Lạng Sơn',
-  'Lào Cai',
-  'Long An',
-  'Nam Định',
-  'Nghệ An',
-  'Ninh Bình',
-  'Ninh Thuận',
-  'Phú Thọ',
-  'Phú Yên',
-  'Quảng Bình',
-  'Quảng Nam',
-  'Quảng Ngãi',
-  'Quảng Ninh',
-  'Quảng Trị',
-  'Sóc Trăng',
-  'Sơn La',
-  'Tây Ninh',
-  'Thái Bình',
-  'Thái Nguyên',
-  'Thanh Hóa',
-  'Thừa Thiên Huế',
-  'Tiền Giang',
-  'Trà Vinh',
-  'Tuyên Quang',
-  'Vĩnh Long',
-  'Vĩnh Phúc',
-  'Yên Bái'
 ]
 
 const DISTRICTS_BY_PROVINCE: Record<string, string[]> = {
@@ -99,51 +46,38 @@ const DISTRICTS_BY_PROVINCE: Record<string, string[]> = {
     'Quận 3',
     'Quận 4',
     'Quận 5',
-    'Quận 6',
     'Quận 7',
-    'Quận 8',
     'Quận 10',
-    'Quận 11',
     'Quận 12',
     'Quận Bình Tân',
     'Quận Bình Thạnh',
     'Quận Gò Vấp',
-    'Quận Phú Nhuận',
     'Quận Tân Bình',
-    'Quận Tân Phú',
     'Thành phố Thủ Đức',
     'Huyện Bình Chánh',
-    'Huyện Cần Giờ',
     'Huyện Củ Chi',
     'Huyện Hóc Môn',
-    'Huyện Nhà Bè',
   ],
   'Hà Nội': [
     'Quận Ba Đình',
     'Quận Hoàn Kiếm',
     'Quận Hai Bà Trưng',
     'Quận Đống Đa',
-    'Quận Tây Hồ',
     'Quận Cầu Giấy',
     'Quận Thanh Xuân',
     'Quận Hoàng Mai',
-    'Quận Long Biên',
     'Quận Hà Đông',
     'Quận Nam Từ Liêm',
     'Quận Bắc Từ Liêm',
-    'Huyện Thanh Trì',
-    'Huyện Gia Lâm',
-    'Huyện Đông Anh',
-    'Huyện Sóc Sơn',
   ],
-  'Đà Nẵng': ['Quận Hải Châu', 'Quận Thanh Khê', 'Quận Sơn Trà', 'Quận Ngũ Hành Sơn', 'Quận Liên Chiểu', 'Quận Cẩm Lệ', 'Huyện Hòa Vang'],
-  'Hải Phòng': ['Quận Hồng Bàng', 'Quận Ngô Quyền', 'Quận Lê Chân', 'Quận Hải An', 'Quận Kiến An', 'Quận Đồ Sơn', 'Huyện An Dương', 'Huyện Thủy Nguyên'],
-  'Cần Thơ': ['Quận Ninh Kiều', 'Quận Bình Thủy', 'Quận Cái Răng', 'Quận Ô Môn', 'Quận Thốt Nốt', 'Huyện Phong Điền', 'Huyện Cờ Đỏ'],
-  'Bình Dương': ['Thành phố Thủ Dầu Một', 'Thành phố Dĩ An', 'Thành phố Thuận An', 'Thành phố Tân Uyên', 'Huyện Bàu Bàng', 'Huyện Dầu Tiếng'],
-  'Đồng Nai': ['Thành phố Biên Hòa', 'Thành phố Long Khánh', 'Huyện Nhơn Trạch', 'Huyện Long Thành', 'Huyện Trảng Bom', 'Huyện Vĩnh Cửu'],
-  'Bà Rịa - Vũng Tàu': ['Thành phố Vũng Tàu', 'Thành phố Bà Rịa', 'Thị xã Phú Mỹ', 'Huyện Long Điền', 'Huyện Đất Đỏ', 'Huyện Xuyên Mộc'],
-  'Khánh Hòa': ['Thành phố Nha Trang', 'Thành phố Cam Ranh', 'Thị xã Ninh Hòa', 'Huyện Diên Khánh', 'Huyện Cam Lâm'],
-  'Lâm Đồng': ['Thành phố Đà Lạt', 'Thành phố Bảo Lộc', 'Huyện Đức Trọng', 'Huyện Di Linh', 'Huyện Lâm Hà'],
+  'Đà Nẵng': ['Quận Hải Châu', 'Quận Thanh Khê', 'Quận Sơn Trà', 'Quận Ngũ Hành Sơn', 'Quận Liên Chiểu', 'Huyện Hòa Vang'],
+  'Hải Phòng': ['Quận Hồng Bàng', 'Quận Ngô Quyền', 'Quận Lê Chân', 'Quận Hải An', 'Quận Kiến An', 'Huyện Thủy Nguyên'],
+  'Cần Thơ': ['Quận Ninh Kiều', 'Quận Bình Thủy', 'Quận Cái Răng', 'Quận Ô Môn', 'Quận Thốt Nốt'],
+  'Bình Dương': ['Thành phố Thủ Dầu Một', 'Thành phố Dĩ An', 'Thành phố Thuận An', 'Thành phố Tân Uyên'],
+  'Đồng Nai': ['Thành phố Biên Hòa', 'Thành phố Long Khánh', 'Huyện Nhơn Trạch', 'Huyện Long Thành', 'Huyện Trảng Bom'],
+  'Bà Rịa - Vũng Tàu': ['Thành phố Vũng Tàu', 'Thành phố Bà Rịa', 'Thị xã Phú Mỹ', 'Huyện Long Điền'],
+  'Khánh Hòa': ['Thành phố Nha Trang', 'Thành phố Cam Ranh', 'Thị xã Ninh Hòa', 'Huyện Diên Khánh'],
+  'Lâm Đồng': ['Thành phố Đà Lạt', 'Thành phố Bảo Lộc', 'Huyện Đức Trọng', 'Huyện Di Linh'],
 }
 
 function getDistrictOptions(province: string) {
@@ -319,10 +253,10 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#09051f] font-sans text-white">
+    <div className="flex min-h-screen flex-col bg-[#050914] font-sans text-white">
       <Header cartCount={totalItems} />
 
-      <main className="mx-auto w-full max-w-[1840px] flex-1 px-4 py-6">
+      <main className="w-full max-w-none flex-1 px-3 py-6 sm:px-5 lg:px-8">
         <button
           type="button"
           onClick={() => navigate(-1)}
@@ -337,15 +271,15 @@ export default function CheckoutPage() {
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_380px]">
           <section className="space-y-6">
             {hasDigitalOnlyItems && (
-              <div className="rounded-[18px] border border-[#3d63ff]/30 bg-[#151033] p-4 text-sm text-[#d9d6ee]">
+              <div className="rounded-[18px] border border-[#1e3a62] bg-[#071120] p-4 text-sm text-[#d9d6ee]">
                 Giỏ hàng chỉ có tài khoản/account nên hệ thống chỉ cho phép chuyển khoản
                 ngân hàng.
               </div>
             )}
 
-            <div className="rounded-[22px] bg-[#211b42] p-6 shadow-[0_18px_40px_rgba(0,0,0,0.18)]">
+            <div className="rounded-[22px] bg-[#0a1628] p-6 shadow-[0_18px_40px_rgba(0,0,0,0.18)]">
               <div className="mb-5 flex items-center gap-3">
-                <MapPin className="text-[#3783EC]" size={22} />
+                <MapPin className="text-[#39bdf8]" size={22} />
                 <h2 className="text-xl font-bold">Địa chỉ nhận hàng</h2>
               </div>
 
@@ -362,7 +296,7 @@ export default function CheckoutPage() {
                           setSelectedProvince(e.target.value)
                           setSelectedDistrict('')
                         }}
-                        className="w-full h-[46px] rounded-xl border border-[#3d63ff]/30 bg-[#151033] px-4 pr-10 text-sm text-white outline-none focus:border-[#3783EC] appearance-none cursor-pointer"
+                        className="w-full h-[46px] rounded-xl border border-[#1e3a62] bg-[#071120] px-4 pr-10 text-sm text-white outline-none focus:border-[#3783EC] appearance-none cursor-pointer"
                         style={{
                           backgroundImage: `url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%23b9b4d7' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3E%3C/svg%3E")`,
                           backgroundPosition: 'right 1rem center',
@@ -370,11 +304,11 @@ export default function CheckoutPage() {
                           backgroundRepeat: 'no-repeat'
                         }}
                       >
-                        <option value="" disabled className="bg-[#151033] text-[#8d86b6]">
+                        <option value="" disabled className="bg-[#071120] text-[#8d86b6]">
                           -- Chọn Tỉnh / Thành phố --
                         </option>
                         {PROVINCES.map((p) => (
-                          <option key={p} value={p} className="bg-[#151033] text-white">
+                          <option key={p} value={p} className="bg-[#071120] text-white">
                             {p}
                           </option>
                         ))}
@@ -390,7 +324,7 @@ export default function CheckoutPage() {
                         value={selectedDistrict}
                         disabled={!selectedProvince}
                         onChange={(e) => setSelectedDistrict(e.target.value)}
-                        className="w-full h-[46px] rounded-xl border border-[#3d63ff]/30 bg-[#151033] px-4 pr-10 text-sm text-white outline-none focus:border-[#3783EC] appearance-none cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+                        className="w-full h-[46px] rounded-xl border border-[#1e3a62] bg-[#071120] px-4 pr-10 text-sm text-white outline-none focus:border-[#3783EC] appearance-none cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
                         style={{
                           backgroundImage: `url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%23b9b4d7' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3E%3C/svg%3E")`,
                           backgroundPosition: 'right 1rem center',
@@ -398,11 +332,11 @@ export default function CheckoutPage() {
                           backgroundRepeat: 'no-repeat'
                         }}
                       >
-                        <option value="" disabled className="bg-[#151033] text-[#8d86b6]">
+                        <option value="" disabled className="bg-[#071120] text-[#8d86b6]">
                           {selectedProvince ? '-- Chọn Quận / Huyện --' : '-- Chọn Tỉnh / Thành phố trước --'}
                         </option>
                         {districtOptions.map((district) => (
-                          <option key={district} value={district} className="bg-[#151033] text-white">
+                          <option key={district} value={district} className="bg-[#071120] text-white">
                             {district}
                           </option>
                         ))}
@@ -418,18 +352,18 @@ export default function CheckoutPage() {
                       value={exactAddress}
                       onChange={(e) => setExactAddress(e.target.value)}
                       placeholder="Ví dụ: 123 Nguyễn Trãi, Phường 5"
-                      className="w-full h-[46px] rounded-xl border border-[#3d63ff]/30 bg-[#151033] px-4 text-sm text-white outline-none placeholder:text-[#8d86b6] focus:border-[#3783EC]"
+                      className="w-full h-[46px] rounded-xl border border-[#1e3a62] bg-[#071120] px-4 text-sm text-white outline-none placeholder:text-[#8d86b6] focus:border-[#3783EC]"
                     />
                   </div>
                 </div>
               ) : (
-                <div className="rounded-xl border border-[#3d63ff]/20 bg-[#151033] p-4 text-sm text-[#c9c4e8]">
+                <div className="rounded-xl border border-[#1e3a62] bg-[#071120] p-4 text-sm text-[#c9c4e8]">
                   Đơn hàng tài khoản/account không cần địa chỉ giao hàng.
                 </div>
               )}
             </div>
 
-            <div className="rounded-[22px] bg-[#211b42] p-6 shadow-[0_18px_40px_rgba(0,0,0,0.18)]">
+            <div className="rounded-[22px] bg-[#0a1628] p-6 shadow-[0_18px_40px_rgba(0,0,0,0.18)]">
               <h2 className="text-xl font-bold">Chọn phương thức thanh toán</h2>
               <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
                 {paymentMethods.map((method) => {
@@ -445,22 +379,22 @@ export default function CheckoutPage() {
                       onClick={() => handleSelectPaymentMethod(method.id)}
                       className={`flex items-center gap-4 rounded-2xl border p-4 text-left transition-all disabled:cursor-not-allowed disabled:opacity-45 ${
                         active
-                          ? 'border-[#3783EC] bg-[#3783EC]/10'
-                          : 'border-[#3d63ff]/20 hover:border-[#3783EC]'
+                          ? 'border-[#3783EC] bg-gradient-to-r from-[#36b8f2] via-[#2668ff] to-[#8b3df5]/10'
+                          : 'border-[#1e3a62] hover:border-[#3783EC]'
                       }`}
                     >
                       <span
                         className={`flex h-5 w-5 items-center justify-center rounded-full border ${
-                          active ? 'border-[#3783EC]' : 'border-[#3d63ff]/30'
+                          active ? 'border-[#3783EC]' : 'border-[#1e3a62]'
                         }`}
                       >
                         {active && (
-                          <span className="h-2.5 w-2.5 rounded-full bg-[#3783EC]" />
+                          <span className="h-2.5 w-2.5 rounded-full bg-gradient-to-r from-[#36b8f2] via-[#2668ff] to-[#8b3df5]" />
                         )}
                       </span>
 
-                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#09051f]">
-                        <Icon size={22} className="text-[#3783EC]" />
+                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#050914]">
+                        <Icon size={22} className="text-[#39bdf8]" />
                       </div>
 
                       <div>
@@ -478,20 +412,20 @@ export default function CheckoutPage() {
             </div>
           </section>
 
-          <aside className="h-fit rounded-[22px] bg-[#211b42] p-6 shadow-[0_18px_40px_rgba(0,0,0,0.18)]">
+          <aside className="h-fit rounded-[22px] bg-[#0a1628] p-6 shadow-[0_18px_40px_rgba(0,0,0,0.18)]">
             <h2 className="text-xl font-bold">Chi tiết đơn hàng</h2>
 
             {cartLoading ? (
-              <div className="mt-6 rounded-xl border border-[#3d63ff]/20 bg-[#151033] p-4 text-sm text-[#c9c4e8]">
+              <div className="mt-6 rounded-xl border border-[#1e3a62] bg-[#071120] p-4 text-sm text-[#c9c4e8]">
                 Đang tải giỏ hàng...
               </div>
             ) : cartItems.length === 0 ? (
-              <div className="mt-6 rounded-xl border border-[#3d63ff]/20 bg-[#151033] p-4 text-sm text-[#c9c4e8]">
+              <div className="mt-6 rounded-xl border border-[#1e3a62] bg-[#071120] p-4 text-sm text-[#c9c4e8]">
                 Không có sản phẩm nào trong giỏ hàng.
                 <button
                   type="button"
                   onClick={() => navigate('/cart')}
-                  className="mt-3 block font-semibold text-[#7db3ff] hover:underline"
+                  className="mt-3 block font-semibold text-[#74b7ff] hover:underline"
                 >
                   Quay lại giỏ hàng
                 </button>
@@ -505,7 +439,7 @@ export default function CheckoutPage() {
                     return (
                       <div
                         key={getCartItemId(item)}
-                        className="flex items-start justify-between gap-4 border-b border-[#3d63ff]/20 pb-4"
+                        className="flex items-start justify-between gap-4 border-b border-[#1e3a62] pb-4"
                       >
                         <div>
                           <p className="font-medium text-white">{getCartItemName(item)}</p>
@@ -519,7 +453,7 @@ export default function CheckoutPage() {
                           </p>
                         </div>
 
-                        <p className="font-semibold text-[#7db3ff]">
+                        <p className="font-semibold text-[#74b7ff]">
                           {formatPrice(price * item.quantity)}
                         </p>
                       </div>
@@ -536,7 +470,7 @@ export default function CheckoutPage() {
                     <span>Phí vận chuyển</span>
                     <span>{formatPrice(shippingFee)}</span>
                   </div>
-                  <div className="border-t border-[#3d63ff]/20 pt-4">
+                  <div className="border-t border-[#1e3a62] pt-4">
                     <div className="flex justify-between text-lg font-bold">
                       <span>Tổng thanh toán</span>
                       <span className="text-[#7ee2a8]">{formatPrice(total)}</span>
@@ -548,7 +482,7 @@ export default function CheckoutPage() {
                   type="button"
                   disabled={orderLoading}
                   onClick={handleConfirmPayment}
-                  className="mt-6 h-[52px] w-full rounded-xl bg-[#3783EC] font-semibold text-white hover:bg-[#206ed6] disabled:cursor-not-allowed disabled:bg-gray-500"
+                  className="mt-6 h-[52px] w-full rounded-xl bg-gradient-to-r from-[#36b8f2] via-[#2668ff] to-[#8b3df5] font-black text-white shadow-[0_14px_28px_rgba(38,104,255,0.24)] hover:brightness-110 disabled:cursor-not-allowed disabled:bg-none disabled:bg-white/10"
                 >
                   {orderLoading ? 'Đang tạo đơn...' : 'Xác nhận thanh toán'}
                 </button>
@@ -566,7 +500,7 @@ export default function CheckoutPage() {
           <button
             type="button"
             onClick={() => setOpenNoticeModal(false)}
-            className="h-[42px] rounded-xl bg-[#3783EC] px-6 text-sm font-semibold text-white hover:bg-[#206ed6]"
+            className="h-[42px] rounded-xl bg-gradient-to-r from-[#36b8f2] via-[#2668ff] to-[#8b3df5] px-6 text-sm font-semibold text-white hover:brightness-110"
           >
             Đã hiểu
           </button>

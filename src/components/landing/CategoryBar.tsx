@@ -12,11 +12,11 @@ const CATEGORIES = [
   {
     id: 'laptop',
     label: 'Laptop & Máy tính',
-    desc: 'Giao nhận nhanh chóng, cấu hình mạnh, rẻ',
+    desc: 'Giao nhận nhanh chóng, cấu hình mạnh, giá rõ ràng',
     href: '/laptops',
     icon: Laptop,
-    iconColor: 'text-[#00c6ff]',
-    bgIcon: 'bg-[#00c6ff]/10',
+    iconColor: 'text-[#39bdf8]',
+    bgIcon: 'bg-[#123b70]/65',
   },
   {
     id: 'account',
@@ -24,51 +24,49 @@ const CATEGORIES = [
     desc: 'Netflix, Adobe, Spotify, Canva, v.v.',
     href: '/accounts',
     icon: Key,
-    iconColor: 'text-[#d946ef]',
-    bgIcon: 'bg-[#d946ef]/10',
+    iconColor: 'text-[#b86cff]',
+    bgIcon: 'bg-[#3b1d6a]/65',
   },
   {
     id: 'best-seller',
     label: 'Ưu đãi bán chạy',
-    desc: 'Sản phẩm được săn đón nhiều nhất',
+    desc: 'Sản phẩm được chọn mua nhiều nhất',
     href: '/best-seller',
     icon: Sparkles,
-    iconColor: 'text-[#ffd54a]',
-    bgIcon: 'bg-[#ffd54a]/10',
+    iconColor: 'text-[#ffd84d]',
+    bgIcon: 'bg-[#664d11]/55',
   },
 ]
 
 export default function CategoryBar() {
   return (
-    <section className="mx-auto max-w-[1840px] px-4 pb-6 sm:px-6 relative z-10">
-      {/* Trust Features Row */}
-      <div className="flex flex-wrap items-center justify-around gap-4 py-4 mb-6 border-b border-white/5 text-[10px] font-black tracking-widest text-white/60">
+    <section className="relative z-10 w-full max-w-none px-3 pb-6 sm:px-5 lg:px-8">
+      <div className="mb-6 flex flex-wrap items-center justify-around gap-4 border-y border-[#1e3a62]/70 bg-[#071120]/70 py-4 text-[10px] font-black tracking-widest text-[#a8b8d4]">
         {FEATURES.map((feat, idx) => {
           const Icon = feat.icon
           return (
-            <div key={idx} className="flex items-center gap-2 hover:text-white transition-colors duration-200">
-              <Icon className="h-4 w-4 text-[#00d6ff]" />
+            <div key={idx} className="flex items-center gap-2 transition-colors duration-200 hover:text-white">
+              <Icon className="h-4 w-4 text-[#39bdf8]" />
               <span>{feat.label}</span>
             </div>
           )
         })}
       </div>
 
-      {/* Category Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 rounded-[26px] bg-gradient-to-b from-[#1c1739] to-[#120d2b] border border-white/5 p-6 shadow-[0_20px_50px_rgba(0,0,0,0.3)]">
+      <div className="grid grid-cols-1 gap-5 rounded-[24px] border border-[#1e3a62] bg-[#0a1628] p-5 shadow-[0_18px_42px_rgba(0,0,0,0.28)] md:grid-cols-3">
         {CATEGORIES.map((cat) => {
           const Icon = cat.icon
           return (
             <Link
               key={cat.id}
               to={cat.href}
-              className="group flex flex-col items-center justify-center p-6 rounded-2xl bg-white/5 border border-white/5 transition-all duration-300 hover:bg-white/10 hover:border-white/10 hover:scale-[1.02]"
+              className="group flex flex-col items-center justify-center rounded-2xl border border-[#1e3a62]/80 bg-[#071120] p-7 transition-all duration-300 hover:-translate-y-1 hover:border-[#2d7cff]/70 hover:bg-[#0d1d34]"
             >
-              <div className={`flex h-14 w-14 items-center justify-center rounded-2xl ${cat.bgIcon} ${cat.iconColor} shadow-inner mb-4 group-hover:scale-110 transition-transform duration-300`}>
+              <div className={`mb-4 flex h-14 w-14 items-center justify-center rounded-2xl ${cat.bgIcon} ${cat.iconColor} shadow-inner transition-transform duration-300 group-hover:scale-110`}>
                 <Icon className="h-7 w-7" />
               </div>
-              <h3 className="text-white font-black text-base group-hover:text-[#00d6ff] transition-colors">{cat.label}</h3>
-              <p className="text-center text-xs text-white/50 mt-1 max-w-[200px] leading-relaxed">{cat.desc}</p>
+              <h3 className="text-base font-black text-white transition-colors group-hover:text-[#74b7ff]">{cat.label}</h3>
+              <p className="mt-1 max-w-[220px] text-center text-xs leading-relaxed text-[#a8b8d4]">{cat.desc}</p>
             </Link>
           )
         })}

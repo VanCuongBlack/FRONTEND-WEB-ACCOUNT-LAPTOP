@@ -70,7 +70,7 @@ function QuantityInput({ quantity, cartItemId, onUpdate, disabled }: QuantityInp
   }
 
   return (
-    <div className="flex overflow-hidden rounded-lg border border-white/15 bg-[#171233] text-white">
+    <div className="flex overflow-hidden rounded-lg border border-white/15 bg-[#071120] text-white">
       <button
         type="button"
         disabled={disabled || quantity <= 1}
@@ -135,16 +135,16 @@ export default function CartPage() {
   }
 
   return (
-    <div className="flex min-h-screen w-full flex-col bg-[#09051f] text-white">
+    <div className="flex min-h-screen w-full flex-col bg-[#050914] text-white">
       <Header pageLabel="Giỏ hàng" cartCount={totalItems} />
 
-      <main className="mx-auto w-full max-w-[1840px] flex-1 px-4 py-6">
+      <main className="w-full max-w-none flex-1 px-3 py-6 sm:px-5 lg:px-8">
         <h1 className="mb-6 text-3xl font-bold">Giỏ hàng</h1>
 
         {isLoading ? (
           <div className="py-20 text-center text-[#b9b4d7]">Đang tải giỏ hàng...</div>
         ) : items.length === 0 ? (
-          <div className="rounded-[22px] bg-[#211b42] p-10 text-center shadow-[0_18px_40px_rgba(0,0,0,0.18)]">
+          <div className="rounded-[22px] bg-[#0a1628] p-10 text-center shadow-[0_18px_40px_rgba(0,0,0,0.18)]">
             <h2 className="text-xl font-semibold">Giỏ hàng đang trống</h2>
             <button
               type="button"
@@ -157,7 +157,7 @@ export default function CartPage() {
         ) : (
           <>
             {/* Desktop View */}
-            <div className="hidden flex-col overflow-hidden rounded-[22px] bg-[#211b42] shadow-[0_18px_40px_rgba(0,0,0,0.18)] md:flex">
+            <div className="hidden flex-col overflow-hidden rounded-[22px] bg-[#0a1628] shadow-[0_18px_40px_rgba(0,0,0,0.18)] md:flex">
               <div className="flex items-center border-b border-white/10 p-4 font-semibold text-[#b9b4d7]">
                 <div className="flex-1">Sản phẩm</div>
                 <div className="w-[150px] text-center">Đơn giá</div>
@@ -182,7 +182,7 @@ export default function CartPage() {
                       {productLink ? (
                         <Link
                           to={productLink}
-                          className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-[#171233] transition-transform hover:scale-[1.03]"
+                          className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-[#071120] transition-transform hover:scale-[1.03]"
                         >
                           {productImage ? (
                             <img src={productImage} alt={getProductName(item)} className="h-full w-full object-cover" />
@@ -191,7 +191,7 @@ export default function CartPage() {
                           )}
                         </Link>
                       ) : (
-                        <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-[#171233]">
+                        <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-[#071120]">
                           <span className="text-2xl">📦</span>
                         </div>
                       )}
@@ -262,12 +262,12 @@ export default function CartPage() {
                 const cartItemId = getCartItemId(item)
 
                 return (
-                  <div key={cartItemId ?? item.item_id} className="rounded-[22px] bg-[#211b42] p-4 shadow-[0_18px_40px_rgba(0,0,0,0.18)]">
+                  <div key={cartItemId ?? item.item_id} className="rounded-[22px] bg-[#0a1628] p-4 shadow-[0_18px_40px_rgba(0,0,0,0.18)]">
                     <div className="flex gap-3">
                       {productLink ? (
                         <Link
                           to={productLink}
-                          className="flex h-[90px] w-[90px] shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-[#171233]"
+                          className="flex h-[90px] w-[90px] shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-[#071120]"
                         >
                           {productImage ? (
                             <img src={productImage} alt={getProductName(item)} className="h-full w-full object-cover" />
@@ -276,7 +276,7 @@ export default function CartPage() {
                           )}
                         </Link>
                       ) : (
-                        <div className="flex h-[90px] w-[90px] shrink-0 items-center justify-center rounded-xl border border-white/10 bg-[#171233]">
+                        <div className="flex h-[90px] w-[90px] shrink-0 items-center justify-center rounded-xl border border-white/10 bg-[#071120]">
                           <span className="text-2xl">📦</span>
                         </div>
                       )}
@@ -328,7 +328,7 @@ export default function CartPage() {
             </div>
 
             {/* Checkout Summary */}
-            <div className="mt-6 flex flex-col gap-5 rounded-[22px] bg-[#211b42] p-4 shadow-[0_18px_40px_rgba(0,0,0,0.18)] md:p-6 lg:flex-row lg:items-center lg:justify-between">
+            <div className="mt-6 flex flex-col gap-5 rounded-[22px] bg-[#0a1628] p-4 shadow-[0_18px_40px_rgba(0,0,0,0.18)] md:p-6 lg:flex-row lg:items-center lg:justify-between">
               <div className="text-[15px] text-[#b9b4d7]">
                 Thanh toán toàn bộ {items.length} sản phẩm trong giỏ hàng.
               </div>

@@ -345,7 +345,7 @@ export default function BestSellerPage() {
   }
 
   return (
-    <div className="flex min-h-screen w-full flex-col bg-[#09051f] text-white">
+    <div className="flex min-h-screen w-full flex-col bg-[#050914] text-white">
       <style>
         {`
           @keyframes flyToCart {
@@ -403,7 +403,7 @@ export default function BestSellerPage() {
         cartIconClassName={isCartBumping ? 'cart-bump' : ''}
       />
 
-      <main className="mx-auto w-full max-w-[1840px] flex-1 px-4 py-6">
+      <main className="w-full max-w-none flex-1 px-3 py-6 sm:px-5 lg:px-8">
         <h1 className="mb-2 text-3xl font-bold">Sản phẩm bán chạy</h1>
 
         <p className="mb-8 text-[#b9b4d7]">
@@ -412,7 +412,7 @@ export default function BestSellerPage() {
         </p>
 
         <div className="flex gap-6">
-          <aside className="hidden h-fit w-[280px] rounded-2xl bg-[#211b42] p-5 shadow-[0_18px_40px_rgba(0,0,0,0.18)] lg:block">
+          <aside className="hidden h-fit w-[280px] rounded-2xl bg-[#0a1628] p-5 shadow-[0_18px_40px_rgba(0,0,0,0.18)] lg:block">
             <h2 className="mb-5 text-lg font-bold">Bộ lọc sản phẩm</h2>
 
             <div className="space-y-6">
@@ -493,19 +493,19 @@ export default function BestSellerPage() {
 
           <section className="flex-1">
             {isLoading && (
-              <div className="rounded-[22px] bg-[#211b42] p-8 text-center text-[#b9b4d7]">
+              <div className="rounded-[22px] bg-[#0a1628] p-8 text-center text-[#b9b4d7]">
                 Đang tải sản phẩm...
               </div>
             )}
 
             {!isLoading && error && (
-              <div className="rounded-[22px] bg-[#211b42] p-8 text-center text-red-500">
+              <div className="rounded-[22px] bg-[#0a1628] p-8 text-center text-red-500">
                 {error}
               </div>
             )}
 
             {!isLoading && !error && filteredProducts.length === 0 && (
-              <div className="rounded-[22px] bg-[#211b42] p-8 text-center text-[#b9b4d7]">
+              <div className="rounded-[22px] bg-[#0a1628] p-8 text-center text-[#b9b4d7]">
                 Chưa có sản phẩm nào.
               </div>
             )}
@@ -520,7 +520,7 @@ export default function BestSellerPage() {
                     <Link
                       key={item._id}
                       to={getProductLink(item)}
-                      className="group overflow-hidden rounded-2xl bg-[#211b42] shadow-[0_18px_40px_rgba(0,0,0,0.18)] transition-all hover:shadow-md"
+                      className="group overflow-hidden rounded-2xl bg-[#0a1628] shadow-[0_18px_40px_rgba(0,0,0,0.18)] transition-all hover:shadow-md"
                     >
                       <div className="overflow-hidden">
                         <img

@@ -80,8 +80,8 @@ export default function LaptopListPage() {
 
   const tabClass = (tab: LaptopTab) =>
     activeTab === tab
-      ? 'bg-gradient-to-r from-[#00c6ff] to-[#8a2be2] text-white border-none'
-      : 'border border-white/5 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white'
+      ? 'bg-gradient-to-r from-[#36b8f2] via-[#2668ff] to-[#8b3df5] text-white border-none'
+      : 'border border-[#1e3a62]/70 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white'
 
   const pageTitle = search && activeTab === ''
     ? `Kết quả tìm kiếm: "${search}"`
@@ -135,10 +135,10 @@ export default function LaptopListPage() {
   }, [search, activeTab, selectedPrices, selectedBrands, laptops, products])
 
   return (
-    <div className="flex min-h-screen flex-col bg-gradient-to-b from-[#0b0726] via-[#150e3d] to-[#040214] font-sans text-white">
+    <div className="flex min-h-screen flex-col bg-gradient-to-b from-[#071120] via-[#0a1628] to-[#050914] font-sans text-white">
       <Header />
 
-      <main className="mx-auto w-full max-w-[1840px] flex-1 px-4 py-6">
+      <main className="w-full max-w-none flex-1 px-3 py-6 sm:px-5 lg:px-8">
         <button
           type="button"
           onClick={() => navigate(-1)}
@@ -148,11 +148,11 @@ export default function LaptopListPage() {
           Quay lại
         </button>
 
-        <nav className="flex flex-wrap items-center gap-3 rounded-[26px] bg-[#1a1435]/60 backdrop-blur-md border border-white/5 px-4 py-4 text-sm shadow-[0_20px_50px_rgba(0,0,0,0.3)] sm:px-6">
+        <nav className="flex flex-wrap items-center gap-3 rounded-[26px] bg-[#0d1d34]/88 backdrop-blur-md border border-[#1e3a62]/70 px-4 py-4 text-sm shadow-[0_20px_50px_rgba(0,0,0,0.3)] sm:px-6">
           <button
             type="button"
             onClick={() => navigate('/')}
-            className="rounded-full border border-white/5 bg-white/5 px-5 py-3 font-bold text-white/70 hover:bg-white/10 hover:text-white transition-all duration-200"
+            className="rounded-full border border-[#1e3a62]/70 bg-white/5 px-5 py-3 font-bold text-white/70 hover:bg-white/10 hover:text-white transition-all duration-200"
           >
             Trang chủ
           </button>
@@ -171,14 +171,14 @@ export default function LaptopListPage() {
           <button
             type="button"
             onClick={() => { window.location.href = 'tel:19001234' }}
-            className="rounded-full bg-[#00c6ff]/10 border border-[#00c6ff]/20 px-5 py-3 font-bold text-[#00c6ff] hover:bg-[#00c6ff]/25 transition-all duration-200"
+            className="rounded-full bg-[#123b70]/65 border border-[#1e6fb7]/60 px-5 py-3 font-bold text-[#39bdf8] hover:bg-[#143459] transition-all duration-200"
           >
             Hotline: 1900 1234
           </button>
         </nav>
 
         <section className="mt-8">
-          <span className="text-[#00c6ff] bg-[#00c6ff]/10 px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest shadow-sm">
+          <span className="text-[#39bdf8] bg-[#123b70]/65 px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest shadow-sm">
             PC / Laptop
           </span>
           <h1 className="mt-4 text-3xl sm:text-4xl font-black text-white leading-tight">
@@ -189,8 +189,8 @@ export default function LaptopListPage() {
           </p>
         </section>
 
-        <div className="mt-6 rounded-[26px] bg-[#1a1435]/60 backdrop-blur-md border border-white/5 p-4 shadow-[0_20px_50px_rgba(0,0,0,0.3)]">
-          <div className="flex h-[52px] items-center gap-3 rounded-2xl border border-white/5 bg-white/5 px-4 focus-within:border-[#00c6ff]/50 transition-all duration-250">
+        <div className="mt-6 rounded-[26px] bg-[#0d1d34]/88 backdrop-blur-md border border-[#1e3a62]/70 p-4 shadow-[0_20px_50px_rgba(0,0,0,0.3)]">
+          <div className="flex h-[52px] items-center gap-3 rounded-2xl border border-[#1e3a62]/70 bg-white/5 px-4 focus-within:border-[#00c6ff]/50 transition-all duration-250">
             <Search size={18} className="text-white/40" />
             <input
               type="text"
@@ -209,7 +209,7 @@ export default function LaptopListPage() {
                   setSearch('')
                   setActiveTab('')
                 }}
-                className="text-xs font-bold text-[#00c6ff] hover:text-[#00d6ff]"
+                className="text-xs font-bold text-[#39bdf8] hover:text-[#00d6ff]"
               >
                 Xóa
               </button>
@@ -258,7 +258,7 @@ export default function LaptopListPage() {
                   />
                 ))
               ) : (
-                <div className="col-span-full rounded-[26px] bg-[#1a1435]/60 backdrop-blur-md border border-white/5 p-8 text-center text-white/40 shadow-sm">
+                <div className="col-span-full rounded-[26px] bg-[#0d1d34]/88 backdrop-blur-md border border-[#1e3a62]/70 p-8 text-center text-white/40 shadow-sm">
                   Không tìm thấy sản phẩm phù hợp.
                 </div>
               )}

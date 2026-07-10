@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
-import { Edit3, EyeOff, Plus, Search, Settings2, Trash2 } from 'lucide-react'
+import { Edit3, Eye, EyeOff, Plus, Search, Settings2, Trash2 } from 'lucide-react'
 import AppModal from '@/components/common/AppModal'
 import ImageUploadField from '@/components/common/ImageUploadField'
 import StaffLayout from '@/layouts/StaffLayout'
@@ -18,7 +18,7 @@ import {
 } from '@/services/staff-product.service'
 
 type ProductType = 'physical' | 'digital'
-type ActionKind = 'deactivate' | 'delete'
+type ActionKind = 'activate' | 'deactivate' | 'delete'
 
 interface ProductRow {
   id: string
@@ -626,6 +626,13 @@ export default function ProductManagementPage() {
     try {
       if (actionKind === 'deactivate') {
         await deactivateProduct(selectedProduct.id)
+      } else if (actionKind === 'activate') {
+        const payload = { productData: { is_active: true } }
+        if (selectedProduct.type === 'physical') {
+          await updatePhysicalProduct(selectedProduct.id, payload)
+        } else {
+          await updateDigitalProduct(selectedProduct.id, payload)
+        }
       } else {
         await deleteProduct(selectedProduct.id)
       }
@@ -741,9 +748,15 @@ export default function ProductManagementPage() {
                         <IconButton title="Sửa item" onClick={() => openEditItem(item)}>
                           <Settings2 className="h-4 w-4" />
                         </IconButton>
-                        <IconButton title="Ẩn sản phẩm" onClick={() => openAction(item, 'deactivate')}>
-                          <EyeOff className="h-4 w-4" />
-                        </IconButton>
+                        {item.active ? (
+                          <IconButton title="Ẩn sản phẩm" onClick={() => openAction(item, 'deactivate')}>
+                            <EyeOff className="h-4 w-4" />
+                          </IconButton>
+                        ) : (
+                          <IconButton title="Mở bán lại" onClick={() => openAction(item, 'activate')}>
+                            <Eye className="h-4 w-4" />
+                          </IconButton>
+                        )}
                         <IconButton title="Xóa hẳn" danger onClick={() => openAction(item, 'delete')}>
                           <Trash2 className="h-4 w-4" />
                         </IconButton>
@@ -788,7 +801,13 @@ export default function ProductManagementPage() {
         <AppModal
           open={openActionModal}
           theme="dark"
-          title={actionKind === 'deactivate' ? 'Ẩn sản phẩm' : 'Xóa hẳn sản phẩm'}
+          title={
+            actionKind === 'activate'
+              ? 'Mở bán lại sản phẩm'
+              : actionKind === 'deactivate'
+                ? 'Ẩn sản phẩm'
+                : 'Xóa hẳn sản phẩm'
+          }
           onClose={() => setOpenActionModal(false)}
           footer={
             <>
@@ -804,18 +823,30 @@ export default function ProductManagementPage() {
                 disabled={saving}
                 onClick={confirmAction}
                 className={`h-[42px] rounded-xl px-6 text-sm font-semibold text-white disabled:opacity-60 cursor-pointer ${
-                  actionKind === 'deactivate' ? 'bg-slate-600 hover:bg-slate-500' : 'bg-rose-600 hover:bg-rose-500'
+                  actionKind === 'activate'
+                    ? 'bg-emerald-600 hover:bg-emerald-500'
+                    : actionKind === 'deactivate'
+                      ? 'bg-slate-600 hover:bg-slate-500'
+                      : 'bg-rose-600 hover:bg-rose-500'
                 }`}
               >
-                {saving ? 'Đang xử lý...' : actionKind === 'deactivate' ? 'Ẩn sản phẩm' : 'Xóa hẳn'}
+                {saving
+                  ? 'Đang xử lý...'
+                  : actionKind === 'activate'
+                    ? 'Mở bán lại'
+                    : actionKind === 'deactivate'
+                      ? 'Ẩn sản phẩm'
+                      : 'Xóa hẳn'}
               </button>
             </>
           }
         >
           <p className="text-sm leading-6 text-slate-300">
-            {actionKind === 'deactivate'
-              ? 'Sản phẩm sẽ ngừng hiển thị để khách mua, nhưng dữ liệu vẫn được giữ lại.'
-              : 'Sản phẩm sẽ bị xóa vĩnh viễn khỏi hệ thống. Chỉ dùng khi thật sự cần.'}
+            {actionKind === 'activate'
+              ? 'Sản phẩm sẽ được hiển thị lại cho khách xem và mua nếu còn hàng.'
+              : actionKind === 'deactivate'
+                ? 'Sản phẩm sẽ ngừng hiển thị để khách mua, nhưng dữ liệu vẫn được giữ lại.'
+                : 'Sản phẩm sẽ bị xóa vĩnh viễn khỏi hệ thống. Chỉ dùng khi thật sự cần.'}
           </p>
         </AppModal>
       </div>
