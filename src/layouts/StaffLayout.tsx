@@ -26,7 +26,7 @@ export default function StaffLayout({
     'Nhân viên'
 
   return (
-    <div className="flex h-screen bg-gray-100 overflow-hidden font-sans">
+    <div className="flex h-screen bg-[#1E2229] text-white overflow-hidden font-sans">
       <StaffSidebar />
 
       <div className="flex-1 flex flex-col overflow-hidden min-w-0">

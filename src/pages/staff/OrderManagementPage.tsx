@@ -64,11 +64,11 @@ function getStatusLabel(status?: string) {
 }
 
 function getStatusBadgeClass(status?: string) {
-  if (status === 'completed' || status === 'confirmed') return 'bg-emerald-50 text-emerald-700'
-  if (status === 'processing') return 'bg-blue-50 text-blue-700'
-  if (status === 'partially_refunded' || status === 'refunded') return 'bg-purple-50 text-purple-700'
-  if (status === 'cancelled' || status === 'failed') return 'bg-rose-50 text-rose-700'
-  return 'bg-amber-50 text-amber-700'
+  if (status === 'completed' || status === 'confirmed') return 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400'
+  if (status === 'processing') return 'bg-blue-500/10 border border-blue-500/20 text-blue-400'
+  if (status === 'partially_refunded' || status === 'refunded') return 'bg-purple-500/10 border border-purple-500/20 text-purple-400'
+  if (status === 'cancelled' || status === 'failed') return 'bg-rose-500/10 border border-rose-500/20 text-rose-400'
+  return 'bg-amber-500/10 border border-amber-500/20 text-amber-400'
 }
 
 function getCustomer(order: Order): OrderUser {
@@ -292,11 +292,11 @@ export default function OrderManagementPage() {
 
   return (
     <StaffLayout title="Quản lý đơn hàng" notificationCount={0}>
-      <div className="mx-auto w-full max-w-[1840px] space-y-6 font-sans text-slate-800">
+      <div className="mx-auto w-full max-w-[1840px] space-y-6 font-sans text-white">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900">Quản lý đơn hàng</h1>
-            <p className="mt-1 text-sm text-slate-500">
+            <h1 className="text-2xl font-bold tracking-tight text-white">Quản lý đơn hàng</h1>
+            <p className="mt-1 text-sm text-slate-400">
               Theo dõi đơn hàng, kiểm tra thanh toán và xác nhận COD sau khi đã gọi khách.
             </p>
           </div>
@@ -305,7 +305,7 @@ export default function OrderManagementPage() {
             type="button"
             onClick={() => loadOrders(page, statusFilter)}
             disabled={isLoading}
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 text-sm font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-60"
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-white/10 bg-[#181B22] px-5 text-sm font-bold text-slate-300 hover:bg-slate-800 disabled:opacity-60 cursor-pointer"
           >
             <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
             Làm mới
@@ -313,28 +313,28 @@ export default function OrderManagementPage() {
         </div>
 
         <div className="grid grid-cols-1 gap-5 md:grid-cols-3 xl:grid-cols-6">
-          <InfoCard icon={<ClipboardList className="h-7 w-7 text-blue-600" />} label="Tổng đơn" value={totalOrders.toLocaleString('vi-VN')} />
+          <InfoCard icon={<ClipboardList className="h-7 w-7 text-blue-400" />} label="Tổng đơn" value={totalOrders.toLocaleString('vi-VN')} />
           {statusOptions.slice(0, 5).map((status) => (
             <InfoCard
               key={status.value}
-              icon={<PackageCheck className="h-7 w-7 text-emerald-600" />}
+              icon={<PackageCheck className="h-7 w-7 text-emerald-400" />}
               label={status.label}
               value={(statisticMap[status.value] ?? 0).toLocaleString('vi-VN')}
             />
           ))}
         </div>
 
-        <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <section className="rounded-2xl border border-white/10 bg-[#2A2F3B] p-5 shadow-sm">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
-              <h2 className="text-lg font-extrabold text-slate-900">Danh sách đơn hàng</h2>
-              <p className="mt-1 text-sm text-slate-500">Theo dõi đơn mới nhất và xử lý theo trạng thái.</p>
+              <h2 className="text-lg font-extrabold text-white">Danh sách đơn hàng</h2>
+              <p className="mt-1 text-sm text-slate-400">Theo dõi đơn mới nhất và xử lý theo trạng thái.</p>
             </div>
 
             <select
               value={statusFilter}
               onChange={(event) => handleFilterChange(event.target.value as OrderStatus | '')}
-              className="h-11 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 outline-none focus:border-blue-500"
+              className="h-11 rounded-xl border border-white/10 bg-[#181B22] px-4 text-sm font-semibold text-white outline-none focus:border-blue-600 cursor-pointer"
             >
               <option value="">Tất cả trạng thái</option>
               {statusOptions.map((status) => (
@@ -345,10 +345,10 @@ export default function OrderManagementPage() {
             </select>
           </div>
 
-          <div className="mt-5 overflow-hidden rounded-2xl border border-slate-100">
+          <div className="mt-5 overflow-hidden rounded-2xl border border-white/10 bg-[#2A2F3B]">
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-slate-100">
-                <thead className="bg-slate-50">
+              <table className="min-w-full divide-y divide-white/5">
+                <thead className="bg-[#181B22]">
                   <tr>
                     <TableHead>Mã đơn</TableHead>
                     <TableHead>Khách hàng</TableHead>
@@ -359,16 +359,16 @@ export default function OrderManagementPage() {
                     <TableHead>Thao tác</TableHead>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 bg-white">
+                <tbody className="divide-y divide-white/5 bg-[#2A2F3B]">
                   {isLoading ? (
                     <tr>
-                      <td colSpan={7} className="px-6 py-10 text-center text-sm text-slate-500">
+                      <td colSpan={7} className="px-6 py-10 text-center text-sm text-[#909AAB]">
                         Đang tải đơn hàng...
                       </td>
                     </tr>
                   ) : orders.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="px-6 py-10 text-center text-sm text-slate-500">
+                      <td colSpan={7} className="px-6 py-10 text-center text-sm text-[#909AAB]">
                         Chưa có đơn hàng phù hợp.
                       </td>
                     </tr>
@@ -377,22 +377,22 @@ export default function OrderManagementPage() {
                       const customer = getCustomer(order)
 
                       return (
-                        <tr key={order._id} className="hover:bg-slate-50">
+                        <tr key={order._id} className="hover:bg-[#202530] transition-colors">
                           <TableCell>
                             <button
                               type="button"
                               onClick={() => handleSelectOrder(order._id)}
-                              className="font-bold text-blue-700 hover:underline"
+                              className="font-bold text-blue-400 hover:underline cursor-pointer"
                             >
                               {order._id}
                             </button>
                           </TableCell>
                           <TableCell>
-                            <p className="font-semibold text-slate-900">{customer.fullname ?? '-'}</p>
-                            <p className="text-xs text-slate-500">{customer.phone ?? customer.email ?? '-'}</p>
+                            <p className="font-semibold text-white">{customer.fullname ?? '-'}</p>
+                            <p className="text-xs text-[#909AAB]">{customer.phone ?? customer.email ?? '-'}</p>
                           </TableCell>
                           <TableCell>{formatPaymentMethod(order.payment_method)}</TableCell>
-                          <TableCell className="font-bold text-slate-900">{formatPrice(order.total_amount)}</TableCell>
+                          <TableCell className="font-bold text-white">{formatPrice(order.total_amount)}</TableCell>
                           <TableCell>
                             <span className={`rounded-full px-3 py-1 text-xs font-bold ${getStatusBadgeClass(order.status)}`}>
                               {getStatusLabel(order.status)}
@@ -404,7 +404,7 @@ export default function OrderManagementPage() {
                               <button
                                 type="button"
                                 onClick={() => handleSelectOrder(order._id)}
-                                className="inline-flex h-9 items-center gap-1 rounded-lg border border-slate-200 px-3 text-xs font-bold text-slate-700 hover:bg-slate-50"
+                                className="inline-flex h-9 items-center gap-1 rounded-lg border border-white/10 bg-[#181B22] px-3 text-xs font-bold text-slate-300 hover:bg-[#202530] cursor-pointer"
                               >
                                 <Eye className="h-3.5 w-3.5" />
                                 Chi tiết
@@ -414,7 +414,7 @@ export default function OrderManagementPage() {
                                   type="button"
                                   disabled={isActionLoading}
                                   onClick={() => handleConfirmCOD(order)}
-                                  className="inline-flex h-9 items-center gap-1 rounded-lg bg-blue-600 px-3 text-xs font-bold text-white hover:bg-blue-500 disabled:opacity-60"
+                                  className="inline-flex h-9 items-center gap-1 rounded-lg bg-blue-600 px-3 text-xs font-bold text-white hover:bg-blue-500 disabled:opacity-60 cursor-pointer"
                                 >
                                   <CheckCircle2 className="h-3.5 w-3.5" />
                                   Xác nhận COD
@@ -425,7 +425,7 @@ export default function OrderManagementPage() {
                                   type="button"
                                   disabled={isActionLoading}
                                   onClick={() => handleUpdateStatus(order._id, 'processing')}
-                                  className="inline-flex h-9 items-center gap-1 rounded-lg bg-amber-500 px-3 text-xs font-bold text-white hover:bg-amber-400 disabled:opacity-60"
+                                  className="inline-flex h-9 items-center gap-1 rounded-lg bg-amber-500 px-3 text-xs font-bold text-white hover:bg-amber-400 disabled:opacity-60 cursor-pointer"
                                 >
                                   <PackageCheck className="h-3.5 w-3.5" />
                                   Đang giao
@@ -436,7 +436,7 @@ export default function OrderManagementPage() {
                                   type="button"
                                   disabled={isActionLoading}
                                   onClick={() => handleUpdateStatus(order._id, 'completed')}
-                                  className="inline-flex h-9 items-center gap-1 rounded-lg bg-emerald-600 px-3 text-xs font-bold text-white hover:bg-emerald-500 disabled:opacity-60"
+                                  className="inline-flex h-9 items-center gap-1 rounded-lg bg-emerald-600 px-3 text-xs font-bold text-white hover:bg-emerald-500 disabled:opacity-60 cursor-pointer"
                                 >
                                   <CheckCircle2 className="h-3.5 w-3.5" />
                                   Đã giao
@@ -453,7 +453,7 @@ export default function OrderManagementPage() {
             </div>
           </div>
 
-          <div className="mt-4 flex items-center justify-between text-sm text-slate-600">
+          <div className="mt-4 flex items-center justify-between text-sm text-slate-400">
             <span>
               Trang {page}/{Math.max(totalPages, 1)}
             </span>
@@ -462,7 +462,7 @@ export default function OrderManagementPage() {
                 type="button"
                 disabled={page <= 1 || isLoading}
                 onClick={() => setPage((prev) => Math.max(1, prev - 1))}
-                className="h-9 rounded-lg border border-slate-200 px-4 font-bold disabled:opacity-50"
+                className="h-9 rounded-lg border border-white/10 bg-[#181B22] px-4 font-bold text-slate-300 hover:bg-slate-800 disabled:opacity-50 cursor-pointer"
               >
                 Trước
               </button>
@@ -470,7 +470,7 @@ export default function OrderManagementPage() {
                 type="button"
                 disabled={page >= totalPages || isLoading}
                 onClick={() => setPage((prev) => prev + 1)}
-                className="h-9 rounded-lg border border-slate-200 px-4 font-bold disabled:opacity-50"
+                className="h-9 rounded-lg border border-white/10 bg-[#181B22] px-4 font-bold text-slate-300 hover:bg-slate-800 disabled:opacity-50 cursor-pointer"
               >
                 Sau
               </button>
@@ -479,12 +479,12 @@ export default function OrderManagementPage() {
         </section>
 
         {selectedOrder && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/55 px-4 py-8 backdrop-blur-sm">
-            <section className="max-h-[88vh] w-full max-w-5xl overflow-y-auto rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#181B22]/80 px-4 py-8 backdrop-blur-sm">
+            <section className="max-h-[88vh] w-full max-w-5xl overflow-y-auto rounded-3xl border border-white/10 bg-[#2A2F3B] p-6 shadow-2xl text-white">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div>
-                  <h2 className="text-xl font-extrabold text-slate-900">Chi tiết đơn hàng</h2>
-                  <p className="mt-1 break-all text-sm font-semibold text-blue-700">{selectedOrder._id}</p>
+                  <h2 className="text-xl font-extrabold text-white">Chi tiết đơn hàng</h2>
+                  <p className="mt-1 break-all text-sm font-semibold text-blue-400">{selectedOrder._id}</p>
                 </div>
 
                 <div className="flex flex-wrap gap-3">
@@ -492,7 +492,7 @@ export default function OrderManagementPage() {
                     value={selectedOrder.status}
                     disabled={isActionLoading}
                     onChange={(event) => handleUpdateStatus(selectedOrder._id, event.target.value as OrderStatus)}
-                    className="h-11 rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-700 outline-none focus:border-blue-500"
+                    className="h-11 rounded-xl border border-white/10 bg-[#181B22] px-4 text-sm font-bold text-white outline-none focus:border-blue-600 cursor-pointer"
                   >
                     {getStatusOptionsForOrder(selectedOrder).map((status) => (
                       <option key={status.value} value={status.value}>
@@ -506,7 +506,7 @@ export default function OrderManagementPage() {
                       type="button"
                       disabled={isActionLoading}
                       onClick={() => handleConfirmCOD(selectedOrder)}
-                      className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 text-sm font-bold text-white hover:bg-blue-500 disabled:opacity-60"
+                      className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 text-sm font-bold text-white hover:bg-blue-500 disabled:opacity-60 cursor-pointer"
                     >
                       {isActionLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" />}
                       Xác nhận COD
@@ -517,7 +517,7 @@ export default function OrderManagementPage() {
                       type="button"
                       disabled={isActionLoading}
                       onClick={() => handleUpdateStatus(selectedOrder._id, 'processing')}
-                      className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-amber-500 px-5 text-sm font-bold text-white hover:bg-amber-400 disabled:opacity-60"
+                      className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-amber-500 px-5 text-sm font-bold text-white hover:bg-amber-400 disabled:opacity-60 cursor-pointer"
                     >
                       <PackageCheck className="h-4 w-4" />
                       Đang giao
@@ -528,7 +528,7 @@ export default function OrderManagementPage() {
                       type="button"
                       disabled={isActionLoading}
                       onClick={() => handleUpdateStatus(selectedOrder._id, 'completed')}
-                      className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 text-sm font-bold text-white hover:bg-emerald-500 disabled:opacity-60"
+                      className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 text-sm font-bold text-white hover:bg-emerald-500 disabled:opacity-60 cursor-pointer"
                     >
                       <CheckCircle2 className="h-4 w-4" />
                       Đã giao hàng
@@ -537,7 +537,7 @@ export default function OrderManagementPage() {
                   <button
                     type="button"
                     onClick={() => setSelectedOrder(null)}
-                    className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50"
+                    className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-[#181B22] text-slate-300 hover:bg-slate-800 cursor-pointer"
                     aria-label="Đóng chi tiết đơn hàng"
                   >
                     <X className="h-5 w-5" />
@@ -546,7 +546,7 @@ export default function OrderManagementPage() {
               </div>
 
               {isWaitingBankTransfer(selectedOrder) && (
-                <div className="mt-4 rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm leading-6 text-blue-800">
+                <div className="mt-4 rounded-xl border border-blue-500/30 bg-blue-500/10 p-4 text-sm leading-6 text-blue-300">
                   Đơn chuyển khoản đang chờ SePay xác nhận thanh toán. Nhân viên không xác nhận tiền thủ công cho đơn này.
                 </div>
               )}
@@ -559,15 +559,15 @@ export default function OrderManagementPage() {
               </div>
 
               {(selectedOrder.shipping_address) && (
-                <div className="mt-4 rounded-xl bg-slate-50 p-4 text-sm text-slate-700">
-                  <span className="font-bold text-slate-900">Địa chỉ giao hàng: </span>
+                <div className="mt-4 rounded-xl bg-[#181B22] border border-white/5 p-4 text-sm text-slate-300">
+                  <span className="font-bold text-white">Địa chỉ giao hàng: </span>
                   {selectedOrder.shipping_address}
                 </div>
               )}
 
-              <div className="mt-5 overflow-hidden rounded-2xl border border-slate-100">
-                <table className="min-w-full divide-y divide-slate-100">
-                  <thead className="bg-slate-50">
+              <div className="mt-5 overflow-hidden rounded-2xl border border-white/10">
+                <table className="min-w-full divide-y divide-white/5">
+                  <thead className="bg-[#181B22]">
                     <tr>
                       <TableHead>Hoàn</TableHead>
                       <TableHead>Sản phẩm</TableHead>
@@ -575,7 +575,7 @@ export default function OrderManagementPage() {
                       <TableHead>Giá bán</TableHead>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
+                  <tbody className="divide-y divide-white/5">
                     {selectedOrder.items.map((item) => {
                       const itemId = item._id ?? ''
                       const isRefunded = Boolean(item.is_refunded)
@@ -588,17 +588,17 @@ export default function OrderManagementPage() {
                                 checked={refundSelectedItemIds.includes(itemId)}
                                 disabled={isRefunded || !canProcessRefund(selectedOrder)}
                                 onChange={() => toggleRefundItem(itemId)}
-                                className="h-4 w-4 accent-emerald-600 disabled:opacity-40"
+                                className="h-4 w-4 accent-blue-600 disabled:opacity-40"
                                 title={isRefunded ? 'Sản phẩm này đã được hoàn' : 'Chọn sản phẩm cần hoàn'}
                               />
                             ) : (
                               '-'
                             )}
                           </TableCell>
-                          <TableCell className="font-semibold text-slate-900">
+                          <TableCell className="font-semibold text-white">
                             {item.product_name}
                             {isRefunded && (
-                              <span className="ml-2 rounded-full bg-purple-50 px-2 py-1 text-[11px] font-black text-purple-700">
+                              <span className="ml-2 rounded-full bg-purple-500/10 border border-purple-500/25 px-2 py-1 text-[11px] font-black text-purple-400">
                                 Đã hoàn
                               </span>
                             )}
@@ -612,38 +612,38 @@ export default function OrderManagementPage() {
                 </table>
               </div>
 
-              <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50/70 p-5">
+              <div className="mt-5 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-5 text-amber-200">
                 <div className="flex flex-col gap-1">
-                  <h3 className="text-base font-black text-amber-950">Hoàn tiền đơn hàng</h3>
-                  <p className="text-sm leading-6 text-amber-800">
+                  <h3 className="text-base font-black text-amber-300">Hoàn tiền đơn hàng</h3>
+                  <p className="text-sm leading-6 text-amber-400">
                     Chỉ áp dụng cho đơn đã xác nhận, đang xử lý hoặc hoàn tất. Chọn sản phẩm cần hoàn; nếu không chọn sản phẩm nào, BE sẽ hoàn toàn bộ đơn.
                   </p>
                 </div>
 
                 {!canProcessRefund(selectedOrder) && (
-                  <p className="mt-4 rounded-xl border border-amber-200 bg-white px-4 py-3 text-sm font-semibold text-amber-800">
+                  <p className="mt-4 rounded-xl border border-amber-500/30 bg-[#181B22] px-4 py-3 text-sm font-semibold text-amber-300">
                     Đơn đang ở trạng thái "{getStatusLabel(selectedOrder.status)}" nên BE chưa cho phép hoàn tiền.
                   </p>
                 )}
 
                 <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_260px]">
-                  <label className="block text-sm font-bold text-slate-800">
+                  <label className="block text-sm font-bold text-slate-300">
                     Lý do hoàn tiền
                     <textarea
                       value={refundReason}
                       onChange={(event) => setRefundReason(event.target.value)}
-                      className="mt-2 min-h-[96px] w-full rounded-xl border border-amber-200 bg-white p-3 text-sm focus:border-amber-500 focus:outline-none"
+                      className="mt-2 min-h-[96px] w-full rounded-xl border border-white/10 bg-[#181B22] p-3 text-sm text-white focus:border-blue-600 focus:outline-none"
                       placeholder="Nhập lý do hoàn tiền..."
                     />
                   </label>
 
                   <div className="space-y-3">
-                    <label className="block text-sm font-bold text-slate-800">
+                    <label className="block text-sm font-bold text-slate-300">
                       Phương thức hoàn
                       <select
                         value={refundMethod}
                         onChange={(event) => setRefundMethod(event.target.value as typeof refundMethod)}
-                        className="mt-2 h-11 w-full rounded-xl border border-amber-200 bg-white px-3 text-sm font-semibold focus:border-amber-500 focus:outline-none"
+                        className="mt-2 h-11 w-full rounded-xl border border-white/10 bg-[#181B22] text-white px-3 text-sm font-semibold focus:border-blue-600 focus:outline-none cursor-pointer"
                       >
                         <option value="original_payment">Theo phương thức gốc</option>
                         <option value="bank_transfer">Chuyển khoản</option>
@@ -651,7 +651,7 @@ export default function OrderManagementPage() {
                       </select>
                     </label>
 
-                    <label className="flex items-center gap-2 text-sm font-bold text-slate-700">
+                    <label className="flex items-center gap-2 text-sm font-bold text-slate-300">
                       <input
                         type="checkbox"
                         checked={refundRestockPhysical}
@@ -664,7 +664,7 @@ export default function OrderManagementPage() {
                       type="button"
                       disabled={isActionLoading || !canProcessRefund(selectedOrder)}
                       onClick={() => handleProcessRefund(selectedOrder)}
-                      className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 text-sm font-bold text-white hover:bg-emerald-500 disabled:opacity-60"
+                      className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 text-sm font-bold text-white hover:bg-emerald-500 disabled:opacity-60 cursor-pointer"
                     >
                       {isActionLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
                       {refundSelectedItemIds.length > 0
@@ -675,33 +675,33 @@ export default function OrderManagementPage() {
                 </div>
               </div>
 
-              <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-5">
+              <div className="mt-5 rounded-2xl border border-white/10 bg-[#181B22] p-5">
                 <div className="flex flex-col gap-1">
-                  <h3 className="text-base font-black text-slate-950">Lịch sử hoàn tiền</h3>
-                  <p className="text-sm text-slate-600">Dữ liệu lấy từ API hoàn tiền của BE theo mã đơn hiện tại.</p>
+                  <h3 className="text-base font-black text-white">Lịch sử hoàn tiền</h3>
+                  <p className="text-sm text-slate-400">Dữ liệu lấy từ API hoàn tiền của BE theo mã đơn hiện tại.</p>
                 </div>
 
                 <div className="mt-4 space-y-3">
                   {refundHistory.length === 0 ? (
-                    <p className="rounded-xl bg-white px-4 py-3 text-sm text-slate-500">
+                    <p className="rounded-xl bg-[#2A2F3B] border border-white/5 px-4 py-3 text-sm text-slate-400">
                       Chưa có bản ghi hoàn tiền cho đơn này.
                     </p>
                   ) : (
                     refundHistory.map((refund) => (
-                      <div key={refund._id} className="rounded-xl border border-slate-200 bg-white p-4">
+                      <div key={refund._id} className="rounded-xl border border-white/5 bg-[#2A2F3B] p-4">
                         <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                           <div>
-                            <p className="break-all text-sm font-black text-slate-900">{refund._id}</p>
-                            <p className="mt-1 text-xs text-slate-500">
+                            <p className="break-all text-sm font-black text-white">{refund._id}</p>
+                            <p className="mt-1 text-xs text-[#909AAB]">
                               {formatDate(refund.createdAt)} • {refund.refund_method ?? 'original_payment'} • {refund.status ?? 'completed'}
                             </p>
                           </div>
-                          <p className="text-sm font-black text-emerald-700">
+                          <p className="text-sm font-black text-emerald-400">
                             {formatPrice(refund.total_refund_amount ?? refund.amount)}
                           </p>
                         </div>
                         {refund.reason && (
-                          <p className="mt-3 whitespace-pre-line text-sm leading-6 text-slate-700">{refund.reason}</p>
+                          <p className="mt-3 whitespace-pre-line text-sm leading-6 text-slate-300">{refund.reason}</p>
                         )}
                       </div>
                     ))
@@ -713,22 +713,22 @@ export default function OrderManagementPage() {
         )}
 
         {message && (
-          <p className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
+          <p className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm font-semibold text-emerald-300">
             {message}
           </p>
         )}
         {error && (
-          <p className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
+          <p className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm font-semibold text-rose-300">
             {error}
           </p>
         )}
 
-        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6">
+        <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 p-6">
           <div className="flex items-start gap-3">
-            <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
+            <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-amber-300" />
             <div>
-              <h2 className="font-bold text-amber-900">Lưu ý COD</h2>
-              <p className="mt-2 text-sm leading-6 text-amber-800">
+              <h2 className="font-bold text-amber-300">Lưu ý COD</h2>
+              <p className="mt-2 text-sm leading-6 text-amber-400">
                 Với đơn COD, nhân viên gọi khách trước rồi bấm xác nhận COD khi khách đồng ý nhận hàng. Đơn chuyển khoản do SePay tự xác nhận khi nhận đúng tiền và nội dung.
               </p>
             </div>
@@ -749,26 +749,26 @@ function InfoCard({
   value: string
 }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div className="rounded-2xl border border-white/10 bg-[#2A2F3B] p-5 shadow-sm">
       {icon}
-      <p className="mt-4 text-sm font-semibold text-slate-500">{label}</p>
-      <p className="mt-1 break-words text-xl font-black text-slate-900">{value}</p>
+      <p className="mt-4 text-sm font-semibold text-[#909AAB]">{label}</p>
+      <p className="mt-1 break-words text-xl font-black text-white">{value}</p>
     </div>
   )
 }
 
 function DetailItem({ label, value }: { label: string; value: ReactNode }) {
   return (
-    <div className="rounded-xl bg-slate-50 p-4">
-      <p className="text-xs font-bold uppercase tracking-wide text-slate-500">{label}</p>
-      <p className="mt-1 break-words text-sm font-bold text-slate-900">{value}</p>
+    <div className="rounded-xl bg-[#181B22] border border-white/5 p-4">
+      <p className="text-xs font-bold uppercase tracking-wide text-[#909AAB]">{label}</p>
+      <p className="mt-1 break-words text-sm font-bold text-white">{value}</p>
     </div>
   )
 }
 
 function TableHead({ children }: { children: ReactNode }) {
   return (
-    <th className="px-6 py-3 text-left text-xs font-black uppercase tracking-wide text-slate-500">
+    <th className="px-6 py-3 text-left text-xs font-black uppercase tracking-wide text-slate-300">
       {children}
     </th>
   )
@@ -781,5 +781,5 @@ function TableCell({
   children: ReactNode
   className?: string
 }) {
-  return <td className={`px-6 py-4 text-sm text-slate-700 ${className}`}>{children}</td>
+  return <td className={`px-6 py-4 text-sm text-slate-300 ${className}`}>{children}</td>
 }

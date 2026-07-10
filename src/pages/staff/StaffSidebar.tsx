@@ -67,7 +67,9 @@ export default function StaffSidebar({ activeKey }: Props) {
     <aside
       className={`
         ${collapsed ? 'w-16' : 'w-52 lg:w-56'}
-        bg-[#1e2130]
+        bg-[#181B22]
+        border-r
+        border-white/10
         flex
         flex-col
         flex-shrink-0

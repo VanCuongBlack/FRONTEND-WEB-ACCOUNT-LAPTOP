@@ -73,7 +73,7 @@ export default function ImageUploadField({
             className="hidden"
           />
         </label>
-        <span className="text-xs font-medium text-slate-500">
+        <span className="text-xs font-medium text-slate-400">
           Hỗ trợ JPG, PNG, WEBP. Có thể chọn nhiều ảnh cùng lúc.
         </span>
       </div>
@@ -81,12 +81,12 @@ export default function ImageUploadField({
       {imageList.length > 0 && (
         <div className="mb-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
           {imageList.map((image) => (
-            <div key={image.url} className="group relative overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
+            <div key={image.url} className="group relative overflow-hidden rounded-xl border border-white/10 bg-[#181B22]">
               <img src={image.url} alt="Ảnh đã tải" className="h-24 w-full object-cover" />
               <button
                 type="button"
                 onClick={() => removeImage(image.url)}
-                className="absolute right-2 top-2 rounded-full bg-black/65 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100"
+                className="absolute right-2 top-2 rounded-full bg-black/65 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100 cursor-pointer"
                 title="Xóa ảnh khỏi form"
               >
                 <X className="h-3.5 w-3.5" />

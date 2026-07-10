@@ -263,7 +263,7 @@ export default function Header({
               ) : (
                 <>
                   <Link to="/login" onClick={() => setMobileOpen(false)} className="rounded-xl px-3 py-2 hover:bg-white/10">
-                    <Đăng nhập></Đăng nhập>
+                    Đăng nhập
                   </Link>
                   <Link to="/register" onClick={() => setMobileOpen(false)} className="rounded-xl px-3 py-2 hover:bg-white/10">
                     Đăng ký

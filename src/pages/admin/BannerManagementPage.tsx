@@ -38,9 +38,9 @@ const emptyForm: BannerForm = {
 }
 
 const inputClass =
-  'h-11 w-full rounded-xl border border-slate-200 px-4 text-sm outline-none focus:border-blue-500'
+  'h-11 w-full rounded-xl border border-white/10 bg-[#181B22] text-white px-4 text-sm outline-none focus:border-blue-600 focus:bg-[#181B22] transition-colors'
 const textareaClass =
-  'w-full resize-none rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-blue-500'
+  'w-full resize-none rounded-xl border border-white/10 bg-[#181B22] text-white px-4 py-3 text-sm outline-none focus:border-blue-600 focus:bg-[#181B22] transition-colors'
 
 function toDateInput(value?: string | null) {
   if (!value) return ''
@@ -112,16 +112,15 @@ export default function BannerManagementPage() {
   }
 
   const openEdit = (banner: BannerRecord) => {
-    const image = banner.image ? [banner.image] : []
     setEditingBanner(banner)
     setForm({
-      title: banner.title,
-      imageUrls: banner.image?.url ?? '',
-      imageAssets: image,
-      linkUrl: banner.link_url ?? '',
-      position: banner.position,
+      title: banner.title || '',
+      imageUrls: banner.image?.url || '',
+      imageAssets: banner.image?.url && banner.image?.public_id ? [banner.image] : [],
+      linkUrl: banner.link_url || '',
+      position: banner.position || 'home_top',
       displayOrder: String(banner.display_order ?? 0),
-      isActive: banner.is_active,
+      isActive: banner.is_active !== false,
       startDate: toDateInput(banner.start_date),
       endDate: toDateInput(banner.end_date),
     })
@@ -131,42 +130,44 @@ export default function BannerManagementPage() {
   }
 
   const saveBanner = async () => {
-    const image = firstImageFromForm(form)
-    const order = Number(form.displayOrder)
-
-    if (form.title.trim().length < 1) {
-      setError('Tên banner không được để trống.')
+    const firstImg = firstImageFromForm(form)
+    if (!form.title.trim()) {
+      setError('Vui lòng nhập tên banner.')
       return
     }
-    if (!image) {
-      setError('Cần tải ảnh banner hoặc dán URL ảnh.')
-      return
-    }
-    if (Number.isNaN(order)) {
-      setError('Thứ tự hiển thị phải là số.')
+    if (!firstImg) {
+      setError('Vui lòng tải lên hoặc dán URL ảnh banner.')
       return
     }
 
     setSaving(true)
     setError('')
+    setSuccess('')
     try {
-      const payload = {
-        title: form.title.trim(),
-        image,
-        link_url: normalizeBannerLink(form.linkUrl),
-        position: form.position,
-        display_order: order,
-        is_active: form.isActive,
-        start_date: form.startDate || null,
-        end_date: form.endDate || null,
-      }
-
       if (editingBanner) {
-        await updateBanner(editingBanner._id, payload)
-        setSuccess('Đã cập nhật banner.')
+        await updateBanner(editingBanner._id, {
+          title: form.title.trim(),
+          image: firstImg,
+          link_url: normalizeBannerLink(form.linkUrl),
+          position: form.position,
+          display_order: Number(form.displayOrder) || 0,
+          is_active: form.isActive,
+          start_date: form.startDate || null,
+          end_date: form.endDate || null,
+        })
+        setSuccess('Cập nhật banner thành công!')
       } else {
-        await createBanner(payload)
-        setSuccess('Đã tạo banner.')
+        await createBanner({
+          title: form.title.trim(),
+          image: firstImg,
+          link_url: normalizeBannerLink(form.linkUrl),
+          position: form.position,
+          display_order: Number(form.displayOrder) || 0,
+          is_active: form.isActive,
+          start_date: form.startDate || null,
+          end_date: form.endDate || null,
+        })
+        setSuccess('Tạo banner mới thành công!')
       }
       setOpenModal(false)
       await loadBanners()
@@ -178,12 +179,13 @@ export default function BannerManagementPage() {
   }
 
   const removeBanner = async (banner: BannerRecord) => {
-    if (!window.confirm(`Xóa banner "${banner.title}"?`)) return
+    if (!window.confirm(`Xác nhận xóa banner: "${banner.title}"?`)) return
     setSaving(true)
     setError('')
+    setSuccess('')
     try {
       await deleteBanner(banner._id)
-      setSuccess('Đã xóa banner.')
+      setSuccess('Đã xóa banner thành công.')
       await loadBanners()
     } catch (err: any) {
       setError(err?.response?.data?.message || err?.message || 'Không thể xóa banner.')
@@ -193,13 +195,12 @@ export default function BannerManagementPage() {
   }
 
   return (
-    <AdminLayout title="Quản lý banner">
-      <div className="space-y-6 text-slate-900">
+    <AdminLayout title="Quản lý banner" notificationCount={0}>
+      <div className="mx-auto w-full max-w-[1840px] space-y-6 font-sans text-white">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-xs font-bold uppercase text-blue-600">Giao diện trang chủ</p>
-            <h1 className="mt-1 text-2xl font-black">Quản lý banner</h1>
-            <p className="mt-1 text-sm text-slate-500">
+            <h1 className="mt-1 text-2xl font-black text-white">Quản lý banner</h1>
+            <p className="mt-1 text-sm text-slate-400">
               Tạo banner, upload ảnh Cloudinary và bật/tắt hiển thị theo API BE.
             </p>
           </div>
@@ -211,22 +212,22 @@ export default function BannerManagementPage() {
               <option value="category_page">Trang danh mục</option>
               <option value="popup">Popup</option>
             </select>
-            <button type="button" onClick={loadBanners} className="inline-flex h-11 items-center gap-2 rounded-xl border border-slate-200 px-4 text-sm font-bold text-slate-700 hover:bg-slate-50">
+            <button type="button" onClick={loadBanners} className="inline-flex h-11 items-center gap-2 rounded-xl border border-white/10 bg-[#181B22] px-4 text-sm font-semibold text-slate-300 hover:bg-slate-800 cursor-pointer">
               <RefreshCw className="h-4 w-4" />
               Tải lại
             </button>
-            <button type="button" onClick={openCreate} className="inline-flex h-11 items-center gap-2 rounded-xl bg-blue-600 px-5 text-sm font-black text-white hover:bg-blue-500">
+            <button type="button" onClick={openCreate} className="inline-flex h-11 items-center gap-2 rounded-xl bg-blue-600 px-5 text-sm font-black text-white hover:bg-blue-500 cursor-pointer">
               <Plus className="h-4 w-4" />
               Thêm banner
             </button>
           </div>
         </div>
 
-        {error && <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">{error}</div>}
-        {success && <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">{success}</div>}
+        {error && <div className="rounded-2xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm font-semibold text-rose-200">{error}</div>}
+        {success && <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm font-semibold text-emerald-200">{success}</div>}
 
-        <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <div className="grid grid-cols-[1.2fr_1fr_120px_120px_120px] gap-4 border-b border-slate-100 bg-slate-50 px-5 py-3 text-xs font-black uppercase text-slate-500">
+        <section className="overflow-hidden rounded-2xl border border-white/10 bg-[#2A2F3B] shadow-sm">
+          <div className="grid grid-cols-[1.2fr_1fr_120px_120px_120px] gap-4 border-b border-white/10 bg-[#181B22] px-5 py-3 text-xs font-black uppercase text-slate-300">
             <span>Banner</span>
             <span>Link</span>
             <span>Vị trí</span>
@@ -234,50 +235,51 @@ export default function BannerManagementPage() {
             <span>Thao tác</span>
           </div>
           {loading ? (
-            <div className="p-6 text-sm text-slate-500">Đang tải banner...</div>
+            <div className="p-6 text-sm text-slate-400 bg-[#1E2229]/20">Đang tải banner...</div>
           ) : filteredBanners.length ? (
             filteredBanners.map((banner) => (
-              <div key={banner._id} className="grid grid-cols-[1.2fr_1fr_120px_120px_120px] items-center gap-4 border-b border-slate-100 px-5 py-4 last:border-b-0">
+              <div key={banner._id} className="grid grid-cols-[1.2fr_1fr_120px_120px_120px] items-center gap-4 border-b border-white/5 bg-[#1E2229]/20 px-5 py-4 last:border-b-0">
                 <div className="flex items-center gap-4">
-                  <img src={banner.image?.url} alt={banner.title} className="h-16 w-28 rounded-xl object-cover" />
+                  <img src={banner.image?.url} alt={banner.title} className="h-16 w-28 rounded-xl object-cover border border-white/5" />
                   <div>
-                    <p className="font-black text-slate-900">{banner.title}</p>
-                    <p className="mt-1 text-xs text-slate-500">
-                      Thứ tự {banner.display_order} · {formatDate(banner.start_date)} - {formatDate(banner.end_date)}
+                    <p className="font-black text-white">{banner.title}</p>
+                    <p className="mt-1 text-xs text-slate-400">
+                      Thứ tự {banner.display_order} • {formatDate(banner.start_date)} - {formatDate(banner.end_date)}
                     </p>
                   </div>
                 </div>
-                <span className="truncate text-sm text-slate-600">{banner.link_url || 'Không có'}</span>
-                <span className="text-sm font-bold text-slate-700">{banner.position}</span>
-                <span className={`w-fit rounded-full px-3 py-1 text-xs font-black ${banner.is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>
+                <span className="truncate text-sm text-slate-355">{banner.link_url || 'Không có'}</span>
+                <span className="text-sm font-bold text-slate-300">{banner.position}</span>
+                <span className={`w-fit rounded-full px-3 py-1 text-xs font-black ${banner.is_active ? 'bg-emerald-955/40 text-emerald-300 border border-emerald-500/20' : 'bg-slate-800 text-[#909AAB] border border-white/5'}`}>
                   {banner.is_active ? 'Đang bật' : 'Đã tắt'}
                 </span>
                 <div className="flex items-center gap-2">
-                  <button type="button" onClick={() => openEdit(banner)} className="rounded-lg p-2 text-slate-400 hover:bg-blue-50 hover:text-blue-600" title="Sửa banner">
+                  <button type="button" onClick={() => openEdit(banner)} className="rounded-lg p-2 text-slate-400 hover:bg-white/5 hover:text-blue-400 cursor-pointer" title="Sửa banner">
                     <Edit3 className="h-4 w-4" />
                   </button>
-                  <button type="button" disabled={saving} onClick={() => removeBanner(banner)} className="rounded-lg p-2 text-slate-400 hover:bg-rose-50 hover:text-rose-600" title="Xóa banner">
+                  <button type="button" disabled={saving} onClick={() => removeBanner(banner)} className="rounded-lg p-2 text-slate-400 hover:bg-white/5 hover:text-rose-400 cursor-pointer" title="Xóa banner">
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
               </div>
             ))
           ) : (
-            <div className="p-6 text-sm text-slate-500">Chưa có banner nào.</div>
+            <div className="p-6 text-sm text-slate-400 bg-[#1E2229]/20">Chưa có banner nào.</div>
           )}
         </section>
       </div>
 
       <AppModal
         open={openModal}
+        theme="dark"
         title={editingBanner ? 'Sửa banner' : 'Thêm banner'}
         onClose={() => setOpenModal(false)}
         footer={
           <>
-            <button type="button" onClick={() => setOpenModal(false)} className="h-11 rounded-xl border border-slate-200 px-5 text-sm font-bold text-slate-600 hover:bg-slate-50">
+            <button type="button" onClick={() => setOpenModal(false)} className="h-11 rounded-xl border border-white/10 bg-[#181B22] text-slate-300 hover:bg-slate-800 cursor-pointer px-5 text-sm font-bold">
               Hủy
             </button>
-            <button type="button" disabled={saving} onClick={saveBanner} className="h-11 rounded-xl bg-blue-600 px-6 text-sm font-black text-white hover:bg-blue-500 disabled:opacity-60">
+            <button type="button" disabled={saving} onClick={saveBanner} className="h-11 rounded-xl bg-blue-600 px-6 text-sm font-black text-white hover:bg-blue-500 disabled:opacity-60 cursor-pointer">
               {saving ? 'Đang lưu...' : 'Lưu banner'}
             </button>
           </>
@@ -334,7 +336,7 @@ export default function BannerManagementPage() {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-xs font-bold text-slate-500">{label}</span>
+      <span className="mb-1.5 block text-xs font-bold text-slate-300">{label}</span>
       {children}
     </label>
   )

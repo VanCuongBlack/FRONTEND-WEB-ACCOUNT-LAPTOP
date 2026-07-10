@@ -105,8 +105,8 @@ export default function AdminTopbar({
   }
 
   return (
-    <header className="flex h-14 flex-shrink-0 items-center justify-between gap-4 border-b border-gray-200 bg-white px-4 sm:px-6">
-      <h1 className="truncate text-base font-bold text-gray-900 sm:text-lg">
+    <header className="flex h-14 flex-shrink-0 items-center justify-between gap-4 border-b border-white/10 bg-[#2A2F3B] px-4 sm:px-6">
+      <h1 className="truncate text-base font-bold text-white sm:text-lg">
         {title}
       </h1>
 
@@ -117,7 +117,7 @@ export default function AdminTopbar({
           <button
             type="button"
             onClick={handleOpenNotifications}
-            className="relative rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-800"
+            className="relative rounded-lg p-2 text-slate-300 transition-colors hover:bg-white/5 hover:text-white cursor-pointer"
             title="Thông báo"
           >
             <Bell className="h-5 w-5" />
@@ -129,17 +129,17 @@ export default function AdminTopbar({
           </button>
 
           {openNotifications && (
-            <div className="absolute right-0 top-12 z-50 w-[360px] overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl">
-              <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
+            <div className="absolute right-0 top-12 z-50 w-[360px] overflow-hidden rounded-2xl border border-white/10 bg-[#2A2F3B] shadow-2xl text-white">
+              <div className="flex items-center justify-between border-b border-white/10 px-4 py-3 bg-[#181B22]">
                 <div>
-                  <p className="text-sm font-extrabold text-gray-900">Thông báo</p>
-                  <p className="text-xs text-gray-500">{unreadCount} chưa đọc</p>
+                  <p className="text-sm font-extrabold text-white">Thông báo</p>
+                  <p className="text-xs text-slate-400">{unreadCount} chưa đọc</p>
                 </div>
                 <div className="flex items-center gap-1">
                   <button
                     type="button"
                     onClick={handleMarkAllRead}
-                    className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-blue-600"
+                    className="rounded-lg p-2 text-slate-400 hover:bg-white/5 hover:text-blue-400 cursor-pointer"
                     title="Đánh dấu tất cả đã đọc"
                   >
                     <CheckCheck className="h-4 w-4" />
@@ -147,7 +147,7 @@ export default function AdminTopbar({
                   <button
                     type="button"
                     onClick={handleDeleteRead}
-                    className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-red-600"
+                    className="rounded-lg p-2 text-slate-400 hover:bg-white/5 hover:text-red-400 cursor-pointer"
                     title="Xóa thông báo đã đọc"
                   >
                     <Trash2 className="h-4 w-4" />
@@ -155,14 +155,14 @@ export default function AdminTopbar({
                 </div>
               </div>
 
-              <div className="max-h-[420px] overflow-y-auto">
+              <div className="max-h-[420px] overflow-y-auto bg-[#2A2F3B]">
                 {isLoadingNotifications ? (
-                  <div className="flex items-center justify-center gap-2 px-4 py-10 text-sm text-gray-500">
+                  <div className="flex items-center justify-center gap-2 px-4 py-10 text-sm text-slate-400">
                     <Loader2 className="h-4 w-4 animate-spin" />
                     Đang tải thông báo...
                   </div>
                 ) : notifications.length === 0 ? (
-                  <div className="px-4 py-10 text-center text-sm text-gray-500">
+                  <div className="px-4 py-10 text-center text-sm text-slate-400">
                     Chưa có thông báo.
                   </div>
                 ) : (
@@ -171,24 +171,24 @@ export default function AdminTopbar({
                       key={notification._id}
                       type="button"
                       onClick={() => handleNotificationClick(notification)}
-                      className={`block w-full border-b border-gray-100 px-4 py-3 text-left transition-colors hover:bg-blue-50 ${
-                        notification.is_read ? 'bg-white' : 'bg-blue-50/60'
+                      className={`block w-full border-b border-white/5 px-4 py-3 text-left transition-colors hover:bg-[#202530] cursor-pointer ${
+                        notification.is_read ? 'bg-[#2A2F3B]' : 'bg-blue-950/20'
                       }`}
                     >
                       <div className="flex items-start gap-3">
                         <span
                           className={`mt-1 h-2 w-2 rounded-full ${
-                            notification.is_read ? 'bg-gray-300' : 'bg-blue-600'
+                            notification.is_read ? 'bg-white/20' : 'bg-blue-400'
                           }`}
                         />
                         <div className="min-w-0 flex-1">
-                          <p className="line-clamp-1 text-sm font-bold text-gray-900">
+                          <p className="line-clamp-1 text-sm font-bold text-white">
                             {notification.title}
                           </p>
-                          <p className="mt-1 line-clamp-2 text-xs leading-5 text-gray-500">
+                          <p className="mt-1 line-clamp-2 text-xs leading-5 text-slate-355">
                             {notification.message}
                           </p>
-                          <p className="mt-1 text-[11px] font-semibold text-gray-400">
+                          <p className="mt-1 text-[11px] font-semibold text-[#909AAB]">
                             {notification.createdAt
                               ? new Date(notification.createdAt).toLocaleString('vi-VN')
                               : 'Vừa xong'}
@@ -205,12 +205,12 @@ export default function AdminTopbar({
 
         <Link
           to={settingsPath}
-          className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-800"
+          className="rounded-lg p-2 text-slate-300 transition-colors hover:bg-white/5 hover:text-white"
         >
           <Settings className="h-5 w-5" />
         </Link>
 
-        <div className="flex items-center gap-2 rounded-lg border border-gray-200 py-1.5 pl-2 pr-3 text-sm text-gray-700">
+        <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-[#181B22] py-1.5 pl-2 pr-3 text-sm text-slate-300">
           <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-blue-500">
             <span className="text-[10px] font-bold text-white">
               {adminName.charAt(0).toUpperCase()}

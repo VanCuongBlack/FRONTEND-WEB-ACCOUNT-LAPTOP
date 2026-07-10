@@ -91,12 +91,12 @@ const modeConfigs = {
   warranty: {
     eyebrow: 'Bảo hành & hoàn tiền',
     accent: 'emerald',
-    heroClass: 'border-emerald-200 bg-emerald-50/80',
+    heroClass: 'border-emerald-500/20 bg-emerald-950/20',
     iconClass: 'bg-emerald-600 text-white',
-    buttonClass: 'bg-emerald-600 hover:bg-emerald-500',
-    selectedClass: 'border-emerald-400 bg-emerald-50/70',
-    tabClass: 'bg-emerald-600 text-white shadow-sm',
-    detailTint: 'border-emerald-100 bg-emerald-50',
+    buttonClass: 'bg-emerald-600 hover:bg-emerald-500 cursor-pointer',
+    selectedClass: 'border-emerald-500/40 bg-emerald-950/40 text-white',
+    tabClass: 'bg-emerald-600 text-white shadow-sm cursor-pointer',
+    detailTint: 'border-emerald-500/20 bg-emerald-950/25',
     listTitle: 'Phiếu bảo hành / hoàn tiền',
     searchPlaceholder: 'Tìm mã phiếu, sản phẩm, lỗi bảo hành...',
     emptyHint: 'Ticket hỗ trợ kỹ thuật và khiếu nại nằm ở mục Hỗ trợ khách hàng.',
@@ -116,12 +116,12 @@ const modeConfigs = {
   support: {
     eyebrow: 'Hỗ trợ & khiếu nại',
     accent: 'blue',
-    heroClass: 'border-blue-200 bg-blue-50/80',
+    heroClass: 'border-blue-500/20 bg-blue-950/20',
     iconClass: 'bg-blue-600 text-white',
-    buttonClass: 'bg-blue-600 hover:bg-blue-500',
-    selectedClass: 'border-blue-400 bg-blue-50/70',
-    tabClass: 'bg-blue-600 text-white shadow-sm',
-    detailTint: 'border-blue-100 bg-blue-50',
+    buttonClass: 'bg-blue-600 hover:bg-blue-500 cursor-pointer',
+    selectedClass: 'border-blue-500/40 bg-blue-950/40 text-white',
+    tabClass: 'bg-blue-600 text-white shadow-sm cursor-pointer',
+    detailTint: 'border-blue-500/20 bg-blue-950/25',
     listTitle: 'Ticket hỗ trợ / khiếu nại',
     searchPlaceholder: 'Tìm ticket, nội dung hỗ trợ, sản phẩm...',
     emptyHint: 'Ticket bảo hành và hoàn tiền nằm ở mục Quản lý bảo hành.',
@@ -400,7 +400,7 @@ export default function WarrantyManagementPage() {
 
   return (
     <StaffLayout title={pageTitle} notificationCount={stats.open}>
-      <div className="mx-auto max-w-[1600px] space-y-6 pb-12 font-sans text-slate-800">
+      <div className="mx-auto max-w-[1600px] space-y-6 pb-12 font-sans text-white">
         <div className={`rounded-3xl border p-5 shadow-sm ${view.heroClass}`}>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-start gap-4">
@@ -408,11 +408,11 @@ export default function WarrantyManagementPage() {
                 <ViewIcon className="h-6 w-6" />
               </div>
               <div>
-                <p className="text-xs font-black uppercase tracking-wider text-slate-500">{view.eyebrow}</p>
-                <h1 className="mt-1 text-2xl font-black tracking-tight text-slate-900">
+                <p className="text-xs font-black uppercase tracking-wider text-[#909AAB]">{view.eyebrow}</p>
+                <h1 className="mt-1 text-2xl font-black tracking-tight text-white">
                   {pageTitle}
                 </h1>
-                <p className="mt-1 max-w-3xl text-sm leading-6 text-slate-600">{pageDescription}</p>
+                <p className="mt-1 max-w-3xl text-sm leading-6 text-slate-400">{pageDescription}</p>
               </div>
             </div>
             <button
@@ -423,26 +423,26 @@ export default function WarrantyManagementPage() {
               Tải lại
             </button>
           </div>
-          <div className="mt-5 rounded-2xl bg-white/70 p-4 text-sm text-slate-600 ring-1 ring-white/70">
+          <div className="mt-5 rounded-2xl bg-[#181B22]/50 p-4 text-sm text-slate-300 border border-white/10">
             <div className="flex items-start gap-3">
-              {mode === 'support' ? <MessageSquare className="mt-0.5 h-5 w-5 text-blue-600" /> : <Wrench className="mt-0.5 h-5 w-5 text-emerald-600" />}
+              {mode === 'support' ? <MessageSquare className="mt-0.5 h-5 w-5 text-blue-400" /> : <Wrench className="mt-0.5 h-5 w-5 text-emerald-400" />}
               <div>
-                <p className="font-black text-slate-900">{view.guideTitle}</p>
+                <p className="font-black text-white">{view.guideTitle}</p>
                 <p className="mt-1 leading-6">{view.guideText}</p>
               </div>
             </div>
           </div>
         </div>
 
-        {error && <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">{error}</p>}
-        {success && <p className="rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{success}</p>}
+        {error && <p className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">{error}</p>}
+        {success && <p className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">{success}</p>}
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
           {statCards.map(([label, value, Icon, color]) => (
-            <div key={label} className="flex items-center justify-between rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
+            <div key={label} className="flex items-center justify-between rounded-2xl border border-white/10 bg-[#2A2F3B] p-5 shadow-sm">
               <div>
-                <p className="text-xs font-bold uppercase tracking-wider text-slate-400">{label}</p>
-                <h3 className="mt-1 text-2xl font-extrabold text-slate-900">{value.toLocaleString('vi-VN')}</h3>
+                <p className="text-xs font-bold uppercase tracking-wider text-[#909AAB]">{label}</p>
+                <h3 className="mt-1 text-2xl font-extrabold text-white">{value.toLocaleString('vi-VN')}</h3>
               </div>
               <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${color}`}>
                 <Icon className="h-6 w-6" />
@@ -451,9 +451,9 @@ export default function WarrantyManagementPage() {
           ))}
         </div>
 
-        <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm">
+        <div className="rounded-2xl border border-white/10 bg-[#2A2F3B] p-4 shadow-sm">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <div className="flex gap-2 rounded-xl bg-slate-100 p-1">
+            <div className="flex gap-2 rounded-xl bg-[#181B22] p-1 border border-white/5">
               {[
                 ['all', 'Tất cả'],
                 ['laptop', 'Laptop / PC'],
@@ -462,8 +462,8 @@ export default function WarrantyManagementPage() {
                 <button
                   key={key}
                   onClick={() => setActiveTab(key as typeof activeTab)}
-                  className={`rounded-lg px-4 py-1.5 text-xs font-bold ${
-                    activeTab === key ? view.tabClass : 'text-slate-500 hover:text-slate-900'
+                  className={`rounded-lg px-4 py-1.5 text-xs font-bold cursor-pointer ${
+                    activeTab === key ? view.tabClass : 'text-[#909AAB] hover:text-white'
                   }`}
                 >
                   {label}
@@ -472,21 +472,21 @@ export default function WarrantyManagementPage() {
             </div>
 
             <div className="relative w-full md:w-80">
-              <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#909AAB]" />
               <input
                 value={keyword}
                 onChange={(event) => setKeyword(event.target.value)}
                 onKeyDown={(event) => event.key === 'Enter' && loadTickets()}
                 placeholder={view.searchPlaceholder}
-                className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2 pl-9 pr-4 text-xs focus:border-blue-500 focus:bg-white focus:outline-none"
+                className="w-full rounded-xl border border-white/10 bg-[#181B22] text-white py-2 pl-9 pr-4 text-xs focus:border-blue-600 focus:outline-none placeholder:text-[#909AAB]"
               />
             </div>
           </div>
         </div>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[420px_1fr]">
-          <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
-            <h2 className="mb-4 text-sm font-bold text-slate-800">{view.listTitle}</h2>
+          <section className="rounded-2xl border border-white/10 bg-[#2A2F3B] p-5 shadow-sm">
+            <h2 className="mb-4 text-sm font-bold text-white">{view.listTitle}</h2>
             <div className="max-h-[640px] space-y-3 overflow-y-auto pr-1">
               {isLoading ? (
                 <p className="py-8 text-center text-sm text-slate-400">Đang tải ticket...</p>
@@ -504,18 +504,18 @@ export default function WarrantyManagementPage() {
                       key={ticket._id}
                       type="button"
                       onClick={() => openTicket(ticket._id)}
-                      className={`w-full rounded-xl border px-4 py-3 text-left transition-all ${
-                        selected ? view.selectedClass : 'border-slate-200 hover:bg-slate-50'
+                      className={`w-full rounded-xl border px-4 py-3 text-left transition-all cursor-pointer ${
+                        selected ? view.selectedClass : 'border-white/10 hover:bg-[#202530] text-slate-300'
                       }`}
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-bold text-slate-900">{ticket.ticket_code ?? ticket._id}</p>
-                          <p className="mt-1 truncate text-xs text-slate-500">{ticket.title}</p>
+                          <p className="truncate text-sm font-bold text-white">{ticket.ticket_code ?? ticket._id}</p>
+                          <p className="mt-1 truncate text-xs text-[#909AAB]">{ticket.title}</p>
                         </div>
-                        <Icon className={`h-4 w-4 shrink-0 ${mode === 'support' ? 'text-blue-500' : 'text-emerald-500'}`} />
+                        <Icon className={`h-4 w-4 shrink-0 ${mode === 'support' ? 'text-blue-400' : 'text-emerald-400'}`} />
                       </div>
-                      <div className="mt-3 flex items-center justify-between text-[11px] font-semibold text-slate-400">
+                      <div className="mt-3 flex items-center justify-between text-[11px] font-semibold text-[#909AAB]">
                         <span>{statusLabels[ticket.status] ?? ticket.status}</span>
                         <span>{formatDate(ticket.createdAt)}</span>
                       </div>
@@ -526,23 +526,23 @@ export default function WarrantyManagementPage() {
             </div>
           </section>
 
-          <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
+          <section className="rounded-2xl border border-white/10 bg-[#2A2F3B] p-5 shadow-sm text-white">
             {!selectedTicket ? (
               <div className="py-20 text-center text-sm text-slate-400">Chọn một ticket để xem chi tiết.</div>
             ) : (
               <div className="space-y-5">
-                <div className="flex flex-col gap-3 border-b border-slate-100 pb-4 md:flex-row md:items-start md:justify-between">
+                <div className="flex flex-col gap-3 border-b border-white/10 pb-4 md:flex-row md:items-start md:justify-between">
                   <div>
-                    <p className="text-xs uppercase text-slate-400">{view.detailTitle}</p>
-                    <h2 className="text-xl font-extrabold text-slate-900">{selectedTicket.ticket_code ?? selectedTicket._id}</h2>
-                    <p className="mt-1 text-sm text-slate-500">{selectedTicket.title}</p>
+                    <p className="text-xs uppercase text-[#909AAB]">{view.detailTitle}</p>
+                    <h2 className="text-xl font-extrabold text-white">{selectedTicket.ticket_code ?? selectedTicket._id}</h2>
+                    <p className="mt-1 text-sm text-slate-400">{selectedTicket.title}</p>
                   </div>
-                  <label className="flex flex-col gap-1 text-xs font-bold text-slate-500">
+                  <label className="flex flex-col gap-1 text-xs font-bold text-slate-300">
                     Độ ưu tiên xử lý
                     <select
                       value={selectedTicket.priority ?? 'medium'}
                       onChange={(event) => changePriority(event.target.value as NonNullable<SupportTicket['priority']>)}
-                      className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-bold text-slate-600"
+                      className="rounded-xl border border-white/10 bg-[#181B22] text-white px-3 py-2 text-xs font-bold focus:border-blue-600 outline-none cursor-pointer"
                     >
                       <option value="low">Thấp</option>
                       <option value="medium">Trung bình</option>
@@ -560,8 +560,8 @@ export default function WarrantyManagementPage() {
                 </div>
 
                 <div>
-                  <h3 className="text-sm font-bold text-slate-900">{ticketAssignLabel(selectedTicket)} cho nhân viên xử lý</h3>
-                  <p className="mt-1 text-xs text-slate-500">
+                  <h3 className="text-sm font-bold text-white">{ticketAssignLabel(selectedTicket)} cho nhân viên xử lý</h3>
+                  <p className="mt-1 text-xs text-[#909AAB]">
                     Nhập mã nhân viên được cấp trong màn quản lý nhân viên. Hiện đang gán: {assigneeLabel(selectedTicket)}.
                   </p>
                   <div className="mt-2 flex flex-col gap-2 sm:flex-row">
@@ -569,7 +569,7 @@ export default function WarrantyManagementPage() {
                       <select
                         value={assignStaffId}
                         onChange={(event) => setAssignStaffId(event.target.value)}
-                        className="h-10 flex-1 rounded-xl border border-slate-200 px-3 text-sm focus:border-blue-500 focus:outline-none"
+                        className="h-10 flex-1 rounded-xl border border-white/10 bg-[#181B22] text-white px-3 text-sm focus:border-blue-600 focus:outline-none cursor-pointer"
                       >
                         <option value="">Chọn nhân viên xử lý</option>
                         {staffOptions.map((staff) => (
@@ -583,10 +583,10 @@ export default function WarrantyManagementPage() {
                         value={assignStaffId}
                         onChange={(event) => setAssignStaffId(event.target.value)}
                         placeholder="Nhập mã nhân viên"
-                        className="h-10 flex-1 rounded-xl border border-slate-200 px-3 text-sm focus:border-blue-500 focus:outline-none"
+                        className="h-10 flex-1 rounded-xl border border-white/10 bg-[#181B22] text-white px-3 text-sm focus:border-blue-600 focus:outline-none"
                       />
                     )}
-                    <button onClick={assignSelectedTicket} className={`inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-xs font-bold text-white ${mode === 'support' ? 'bg-indigo-600 hover:bg-indigo-500' : 'bg-emerald-600 hover:bg-emerald-500'}`}>
+                    <button onClick={assignSelectedTicket} className={`inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-xs font-bold text-white cursor-pointer ${mode === 'support' ? 'bg-indigo-600 hover:bg-indigo-500' : 'bg-emerald-600 hover:bg-emerald-500'}`}>
                       <UserCheck className="h-4 w-4" />
                       {ticketAssignLabel(selectedTicket)}
                     </button>
@@ -594,25 +594,25 @@ export default function WarrantyManagementPage() {
                 </div>
 
                 <div>
-                  <h3 className="text-sm font-bold text-slate-900">Mô tả yêu cầu</h3>
-                  <p className="mt-2 whitespace-pre-line rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-700">
+                  <h3 className="text-sm font-bold text-white">Mô tả yêu cầu</h3>
+                  <p className="mt-2 whitespace-pre-line rounded-xl border border-white/10 bg-[#181B22] p-4 text-sm leading-6 text-slate-300">
                     {selectedTicket.description}
                   </p>
                 </div>
 
                 <div>
-                  <h3 className="text-sm font-bold text-slate-900">Tin nhắn</h3>
-                  <div className="mt-2 max-h-[280px] space-y-3 overflow-y-auto rounded-xl border border-slate-200 bg-slate-50 p-3">
+                  <h3 className="text-sm font-bold text-white">Tin nhắn</h3>
+                  <div className="mt-2 max-h-[280px] space-y-3 overflow-y-auto rounded-xl border border-white/10 bg-[#181B22] p-3">
                     {messages.length === 0 ? (
-                      <p className="text-sm text-slate-400">Chưa có tin nhắn.</p>
+                      <p className="text-sm text-[#909AAB]">Chưa có tin nhắn.</p>
                     ) : (
                       messages.map((message) => (
-                        <div key={message._id} className="rounded-xl bg-white p-3 text-sm shadow-sm">
-                          <div className="mb-1 flex items-center justify-between text-xs font-semibold text-slate-400">
+                        <div key={message._id} className="rounded-xl bg-[#2A2F3B] border border-white/5 p-3 text-sm shadow-sm">
+                          <div className="mb-1 flex items-center justify-between text-xs font-semibold text-[#909AAB]">
                             <span>{message.sender_role}{message.is_internal ? ' - nội bộ' : ''}</span>
                             <span>{formatDate(message.createdAt)}</span>
                           </div>
-                          <p className="whitespace-pre-line text-slate-700">{message.content}</p>
+                          <p className="whitespace-pre-line text-slate-300">{message.content}</p>
                         </div>
                       ))
                     )}
@@ -621,32 +621,32 @@ export default function WarrantyManagementPage() {
 
                 <div className="grid gap-4 lg:grid-cols-2">
                   <div>
-                    <label className="text-sm font-bold text-slate-900">{view.replyLabel}</label>
+                    <label className="text-sm font-bold text-white">{view.replyLabel}</label>
                     <textarea
                       value={reply}
                       onChange={(event) => setReply(event.target.value)}
-                      className="mt-2 min-h-[120px] w-full rounded-xl border border-slate-200 p-3 text-sm focus:border-blue-500 focus:outline-none"
+                      className="mt-2 min-h-[120px] w-full rounded-xl border border-white/10 bg-[#181B22] text-white p-3 text-sm focus:border-blue-600 focus:outline-none"
                       placeholder="Nhập nội dung phản hồi..."
                     />
-                    <label className="mt-2 flex items-center gap-2 text-xs font-semibold text-slate-600">
+                    <label className="mt-2 flex items-center gap-2 text-xs font-semibold text-slate-300">
                       <input type="checkbox" checked={isInternal} onChange={(event) => setIsInternal(event.target.checked)} />
                       Ghi chú nội bộ
                     </label>
-                    <button onClick={sendReply} className={`mt-3 inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold text-white ${view.buttonClass}`}>
+                    <button onClick={sendReply} className={`mt-3 inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold text-white cursor-pointer ${view.buttonClass}`}>
                       <Send className="h-4 w-4" />
                       Gửi phản hồi
                     </button>
                   </div>
 
                   <div>
-                    <label className="text-sm font-bold text-slate-900">{view.resolveLabel}</label>
+                    <label className="text-sm font-bold text-white">{view.resolveLabel}</label>
                     <textarea
                       value={resolution}
                       onChange={(event) => setResolution(event.target.value)}
-                      className="mt-2 min-h-[120px] w-full rounded-xl border border-slate-200 p-3 text-sm focus:border-emerald-500 focus:outline-none"
+                      className="mt-2 min-h-[120px] w-full rounded-xl border border-white/10 bg-[#181B22] text-white p-3 text-sm focus:border-emerald-600 focus:outline-none"
                       placeholder="Nhập kết quả xử lý trước khi đánh dấu hoàn tất..."
                     />
-                    <button onClick={markResolved} className="mt-3 inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white hover:bg-emerald-500">
+                    <button onClick={markResolved} className="mt-3 inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white hover:bg-emerald-500 cursor-pointer">
                       <Check className="h-4 w-4" />
                       Đánh dấu đã xử lý
                     </button>
@@ -654,39 +654,39 @@ export default function WarrantyManagementPage() {
                 </div>
 
                 {selectedTicket.type === 'refund_request' && (
-                  <div className="rounded-2xl border border-amber-200 bg-amber-50/70 p-4">
+                  <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 p-4 text-amber-200">
                     <div className="flex flex-col gap-1">
-                      <p className="text-sm font-black text-amber-950">Xử lý yêu cầu hoàn tiền</p>
-                      <p className="text-xs leading-5 text-amber-800">
+                      <p className="text-sm font-black text-amber-300">Xử lý yêu cầu hoàn tiền</p>
+                      <p className="text-xs leading-5 text-amber-400">
                         BE sẽ hoàn đúng sản phẩm gắn với ticket này, không hoàn toàn bộ đơn.
                       </p>
                     </div>
 
                     {!canHandleRefundTicket(selectedTicket) && (
-                      <p className="mt-4 rounded-xl border border-amber-200 bg-white px-4 py-3 text-xs font-bold text-amber-800">
+                      <p className="mt-4 rounded-xl border border-amber-500/30 bg-[#181B22] px-4 py-3 text-xs font-bold text-amber-300">
                         Ticket đang ở trạng thái "{statusLabels[selectedTicket.status] ?? selectedTicket.status}", không còn thao tác hoàn tiền/từ chối.
                       </p>
                     )}
 
                     <div className="mt-4 grid gap-4 lg:grid-cols-2">
                       <div className="space-y-3">
-                        <label className="block text-xs font-bold text-slate-700">
+                        <label className="block text-xs font-bold text-slate-300">
                           Lý do hoàn tiền
                           <textarea
                             value={refundReason}
                             onChange={(event) => setRefundReason(event.target.value)}
-                            className="mt-2 min-h-[96px] w-full rounded-xl border border-amber-200 bg-white p-3 text-sm focus:border-amber-500 focus:outline-none"
+                            className="mt-2 min-h-[96px] w-full rounded-xl border border-white/10 bg-[#181B22] text-white p-3 text-sm focus:border-blue-600 focus:outline-none"
                             placeholder="Nhập lý do hoàn tiền..."
                           />
                         </label>
 
                         <div className="grid gap-3 sm:grid-cols-2">
-                          <label className="block text-xs font-bold text-slate-700">
+                          <label className="block text-xs font-bold text-slate-300">
                             Phương thức hoàn
                             <select
                               value={refundMethod}
                               onChange={(event) => setRefundMethod(event.target.value as typeof refundMethod)}
-                              className="mt-2 h-11 w-full rounded-xl border border-amber-200 bg-white px-3 text-sm font-semibold focus:border-amber-500 focus:outline-none"
+                              className="mt-2 h-11 w-full rounded-xl border border-white/10 bg-[#181B22] text-white px-3 text-sm font-semibold focus:border-blue-600 focus:outline-none cursor-pointer"
                             >
                               <option value="original_payment">Theo phương thức gốc</option>
                               <option value="bank_transfer">Chuyển khoản</option>
@@ -694,7 +694,7 @@ export default function WarrantyManagementPage() {
                             </select>
                           </label>
 
-                          <label className="mt-6 flex items-center gap-2 text-xs font-bold text-slate-700">
+                          <label className="mt-6 flex items-center gap-2 text-xs font-bold text-slate-300">
                             <input
                               type="checkbox"
                               checked={restockPhysical}
@@ -708,7 +708,7 @@ export default function WarrantyManagementPage() {
                           type="button"
                           onClick={approveRefund}
                           disabled={!canHandleRefundTicket(selectedTicket)}
-                          className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white hover:bg-emerald-500 disabled:opacity-50"
+                          className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white hover:bg-emerald-500 disabled:opacity-50 cursor-pointer"
                         >
                           <Check className="h-4 w-4" />
                           Duyệt hoàn tiền
@@ -716,12 +716,12 @@ export default function WarrantyManagementPage() {
                       </div>
 
                       <div className="space-y-3">
-                        <label className="block text-xs font-bold text-slate-700">
+                        <label className="block text-xs font-bold text-slate-300">
                           Lý do từ chối
                           <textarea
                             value={rejectReason}
                             onChange={(event) => setRejectReason(event.target.value)}
-                            className="mt-2 min-h-[96px] w-full rounded-xl border border-rose-200 bg-white p-3 text-sm focus:border-rose-500 focus:outline-none"
+                            className="mt-2 min-h-[96px] w-full rounded-xl border border-white/10 bg-[#181B22] text-white p-3 text-sm focus:border-rose-600 focus:outline-none"
                             placeholder="Nhập lý do từ chối..."
                           />
                         </label>
@@ -729,7 +729,7 @@ export default function WarrantyManagementPage() {
                           type="button"
                           onClick={rejectRefundRequest}
                           disabled={!canHandleRefundTicket(selectedTicket)}
-                          className="inline-flex items-center gap-2 rounded-xl bg-rose-600 px-4 py-2 text-xs font-bold text-white hover:bg-rose-500 disabled:opacity-50"
+                          className="inline-flex items-center gap-2 rounded-xl bg-rose-600 px-4 py-2 text-xs font-bold text-white hover:bg-rose-500 disabled:opacity-50 cursor-pointer"
                         >
                           <ShieldAlert className="h-4 w-4" />
                           Từ chối yêu cầu
